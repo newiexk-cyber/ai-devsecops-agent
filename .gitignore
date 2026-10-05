@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+venv/
+.venv/
+
+# Antigravity Local Identity (Mỗi máy lưu danh tính riêng, không ghi đè nhau)
+.agents/identity.txt
