@@ -11,7 +11,7 @@ Hệ thống AI Agent hỗ trợ rà soát lỗ hổng mã nguồn (SAST), lọc
 
 ## 2. PHÂN QUYỀN LÃNH THỔ BẤT KHẢ XÂM PHẠM (TERRITORY GUARD):
 - **PHÚC** sở hữu độc quyền: `src/core/`
-- **KHANG** sở hữu độc quyền: `src/security/`
+- **KHANG** sở hữu độc quyền: `src/security/` (Bao gồm bộ dữ liệu benchmark `src/security/datasets/` từ DiverseVul - RAID 2023)
 - **LÂM** sở hữu độc quyền: `src/automation/`
 - **Quy tắc chặn tự động:** Khi nhận lệnh sửa file, Agent PHẢI kiểm tra file đó có nằm trong thư mục của người dùng hiện tại không. NẾU KHÔNG: Lập tức từ chối và cảnh báo người dùng: *"File này thuộc quyền sở hữu của [Tên bạn]. Tôi không được phép chỉnh sửa trực tiếp. Hãy liên hệ với [Tên bạn] hoặc gọi qua hàm Interface trong shared/schemas.py!"*
 
@@ -22,3 +22,4 @@ Hệ thống AI Agent hỗ trợ rà soát lỗ hổng mã nguồn (SAST), lọc
 ## 4. GIAO ƯỚC DỮ LIỆU CHUNG (SHARED INTERFACE):
 - Mọi dữ liệu trao đổi giữa các thành viên BẮT BUỘC tuân thủ theo các Model định nghĩa trong `shared/schemas.py`.
 - Khi cần dùng kết quả của bạn mình, chỉ được ĐỌC (Read-only) và `import` hàm, TUYỆT ĐỐI không sửa logic bên trong file của bạn.
+- Bộ dữ liệu đánh giá thực nghiệm chính thức: **DiverseVul (RAID 2023 - UC Berkeley)** lưu tại `src/security/datasets/README.md`.

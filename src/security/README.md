@@ -3,7 +3,7 @@
 Thư mục này dành riêng cho KHANG phát triển Engine rà soát và Benchmark:
 - `semgrep_runner.py`: Script gọi Semgrep CLI quét thư mục
 - `rules/`: Bộ rule Semgrep bắt 4 nhóm lỗi cốt lõi (SQLi, XSS, Path Traversal, Secrets)
-- `datasets/`: 50-100 mẫu code lỗi thực tế (lấy từ Vulncode-DB)
+- `datasets/`: Bộ dữ liệu kiểm thử chuẩn **DiverseVul (RAID 2023 - UC Berkeley)** [Xem chi tiết tại đây](datasets/README.md)
 - `benchmark.py`: Script đo đạc Precision, Recall, Tỷ lệ giảm báo ảo (FPRR)
 
 👉 **Quy ước:** 
