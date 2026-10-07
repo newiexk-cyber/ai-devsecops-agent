@@ -199,17 +199,17 @@ def check_virustotal(
                     undetected = int(stats.get("undetected", 0))
                     total = max(1, malicious + suspicious + harmless + undetected)
 
-                    # Tính điểm đe dọa chuẩn hóa (0 - 100)
+                    # Tính điểm đe dọa chuẩn hóa (0 - 100), ngưỡng độc hại chuẩn: Score > 80
                     raw_ratio = ((malicious + 0.5 * suspicious) / total) * 100.0
-                    rep_score = min(100, int(round(raw_ratio * 1.4))) if malicious > 0 else 0
-                    if malicious >= 5 and rep_score < 65:
-                        rep_score = min(100, 60 + malicious * 2)
+                    rep_score = min(100, int(round(raw_ratio * 1.5))) if malicious > 0 else 0
+                    if malicious >= 3 and rep_score <= 80:
+                        rep_score = min(100, 81 + malicious)
 
                     result = {
                         "source": "VirusTotal",
                         "ioc_value": clean_val,
                         "ioc_type": norm_type,
-                        "is_malicious": malicious >= 2 or rep_score >= 50,
+                        "is_malicious": rep_score > 80,
                         "reputation_score": rep_score,
                         "malicious_vendors": malicious,
                         "suspicious_vendors": suspicious,
@@ -241,13 +241,13 @@ def check_virustotal(
             "cached": False,
         }
     else:
-        score = _deterministic_score(clean_val, base=76, spread=21)
+        score = _deterministic_score(clean_val, base=82, spread=17)  # Luôn > 80 (82..98)
         malicious_cnt = int(round((score / 100.0) * 78))
         result = {
             "source": "VirusTotal",
             "ioc_value": clean_val,
             "ioc_type": norm_type,
-            "is_malicious": True,
+            "is_malicious": score > 80,
             "reputation_score": score,
             "malicious_vendors": malicious_cnt,
             "suspicious_vendors": 3,
@@ -344,13 +344,17 @@ def check_abuseipdb(
 # ============================================================================
 # HÀM GIAO DIỆN CHÍNH (INTERFACE) XUẤT RA `EnrichedIOC` CHO PHÚC & LÂM
 # ============================================================================
+MALICIOUS_SCORE_THRESHOLD = 80
+
+
 def enrich_ioc(
     ioc: ExtractedIOC,
     cache: Optional[SQLiteThreatCache] = None,
+    score_threshold: int = MALICIOUS_SCORE_THRESHOLD,
 ) -> EnrichedIOC:
     """
     Nhận 1 `ExtractedIOC` từ AI Core của Phúc -> Gọi Tool 3 (VirusTotal) và Tool 4 (AbuseIPDB)
-    -> Hợp nhất điểm số và trả về đúng chuẩn `EnrichedIOC` trong `shared/schemas.py`.
+    -> Hợp nhất điểm số, áp dụng ngưỡng `Score > 80` = Độc hại và trả về đúng chuẩn `EnrichedIOC`.
     """
     ioc_type = ioc.ioc_type.strip().upper()
     val = ioc.value.strip()
@@ -362,7 +366,7 @@ def enrich_ioc(
             int(vt_data.get("reputation_score", 0)),
             int(abuse_data.get("abuse_confidence_score", 0)),
         )
-        is_mal = bool(vt_data.get("is_malicious") or abuse_data.get("is_malicious"))
+        is_mal = combined_score > score_threshold
         return EnrichedIOC(
             ioc=ioc,
             is_malicious=is_mal,
@@ -371,6 +375,7 @@ def enrich_ioc(
             raw_lookup_details={
                 "virustotal": vt_data,
                 "abuseipdb": abuse_data,
+                "threshold_applied": f"Score > {score_threshold}",
             },
         )
 
@@ -379,13 +384,16 @@ def enrich_ioc(
         score = int(vt_data.get("reputation_score", 0))
         return EnrichedIOC(
             ioc=ioc,
-            is_malicious=bool(vt_data.get("is_malicious")),
+            is_malicious=score > score_threshold,
             reputation_score=score,
             enrichment_source="VirusTotal",
-            raw_lookup_details={"virustotal": vt_data},
+            raw_lookup_details={
+                "virustotal": vt_data,
+                "threshold_applied": f"Score > {score_threshold}",
+            },
         )
 
-    # Đối với CVE hoặc APT_ACTOR: Mặc định xác thực là thực thể đe dọa hợp lệ
+    # Đối với CVE hoặc APT_ACTOR: Mặc định xác thực là thực thể đe dọa hợp lệ (Score = 90 > 80)
     return EnrichedIOC(
         ioc=ioc,
         is_malicious=True,
@@ -398,6 +406,20 @@ def enrich_ioc(
 def enrich_ioc_list(
     iocs: List[ExtractedIOC],
     cache: Optional[SQLiteThreatCache] = None,
+    score_threshold: int = MALICIOUS_SCORE_THRESHOLD,
 ) -> List[EnrichedIOC]:
     """Làm giàu hàng loạt danh sách `ExtractedIOC`."""
-    return [enrich_ioc(item, cache=cache) for item in iocs]
+    return [enrich_ioc(item, cache=cache, score_threshold=score_threshold) for item in iocs]
+
+
+def filter_high_risk_iocs(
+    enriched_iocs: List[EnrichedIOC],
+    min_score: int = MALICIOUS_SCORE_THRESHOLD,
+) -> List[EnrichedIOC]:
+    """
+    Chốt chặn Gatekeeper (`C -->|Score > 80 Độc hại| D`):
+    Chỉ giữ lại các IOC có `reputation_score > 80` để chuyển sang Bước D (AI Reasoning sinh
+    Sigma Rule `.yml`, YARA Rule `.yar` và Firewall Blocklist `.txt`).
+    """
+    return [item for item in enriched_iocs if item.is_malicious and item.reputation_score > min_score]
+
