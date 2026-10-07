@@ -1,11 +1,11 @@
-# 🛡️ AI DEVSECOPS MULTI-AGENT SYSTEM
+# 🛡️ AUTONOMOUS CYBER THREAT INTELLIGENCE (CTI) AI AGENT SYSTEM
 
-> Hệ thống Multi-Agent AI tự động rà soát lỗ hổng mã nguồn (SAST), lọc cảnh báo ảo và tự sinh Pull Request vá lỗi tích hợp CI/CD.
+> Hệ thống Multi-Agent AI tự chủ thu thập, trích xuất chỉ số mối đe dọa (IOCs), làm giàu dữ liệu và sinh báo cáo Tình báo An ninh mạng tích hợp MITRE ATT&CK.
 
 ## 👥 Nhóm phát triển (3 thành viên):
-- 👑 **PHÚC (Trưởng nhóm):** AI Core & LangGraph Lead (`src/core/`)
-- 🛡️ **KHANG:** Security Engine & Benchmark Lead (`src/security/`)
-- ⚙️ **LÂM:** DevOps, CI/CD & Git Bot Lead (`src/automation/`)
+- 👑 **PHÚC (Trưởng nhóm):** AI Core & CTI Reasoning Lead (`src/core/`)
+- 🛡️ **KHANG:** Threat Intel & Enrichment Lead (`src/security/`)
+- ⚙️ **LÂM:** Data Pipeline, DevOps & Dashboard Lead (`src/automation/`)
 
 ## 🔗 Repository GitHub:
 ```bash
@@ -31,5 +31,5 @@ git clone https://github.com/newiexk-cyber/ai-devsecops-agent.git
    ```
 
 4. **Tài liệu chi tiết:**
-   - Kế hoạch 12 tuần & đề cương: xem tại `docs/DACN.docx`
+   - Đề cương & Kế hoạch 12 tuần: xem tại `docs/DACN.docx`
    - Hướng dẫn điều khiển & phối hợp: xem tại `docs/HUONG_DAN_DIEU_KHIEN_AGENT_DONG_BO.docx`
