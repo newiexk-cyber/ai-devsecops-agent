@@ -44,9 +44,9 @@ def test_tool3_check_virustotal_and_sqlite_cache(tmp_path):
 
 def test_tool4_check_abuseipdb(tmp_path):
     cache = SQLiteThreatCache(tmp_path / "test_abuse.sqlite")
-    mal_ip = check_abuseipdb("45.155.205.233", cache=cache)
+    mal_ip = check_abuseipdb("185.220.101.14", cache=cache)
     assert mal_ip["is_malicious"] is True
-    assert mal_ip["abuse_confidence_score"] >= 75
+    assert mal_ip["abuse_confidence_score"] > 80
 
     safe_ip = check_abuseipdb("192.168.1.1", cache=cache)
     assert safe_ip["is_malicious"] is False
@@ -57,14 +57,15 @@ def test_enrich_ioc_schema_compliance(tmp_path):
     cache = SQLiteThreatCache(tmp_path / "test_schema.sqlite")
     raw_ioc = ExtractedIOC(
         ioc_type="IP",
-        value="91.219.236.174",
-        context_sentence="Connected to C2 server 91.219.236.174",
+        value="185.220.101[.]14",
+        context_sentence="Connected to C2 server 185.220.101[.]14",
         confidence=0.95,
     )
     enriched = enrich_ioc(raw_ioc, cache=cache)
     assert isinstance(enriched, EnrichedIOC)
+    assert enriched.ioc.value == "185.220.101.14"
     assert enriched.is_malicious is True
-    assert enriched.reputation_score >= 70
+    assert enriched.reputation_score > 80
 
 
 def test_tool5_export_stix_package():

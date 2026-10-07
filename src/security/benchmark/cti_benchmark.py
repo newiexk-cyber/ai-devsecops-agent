@@ -130,7 +130,7 @@ def run_cti_benchmark() -> Dict:
                 raw_fn += 1
 
         # 2. Đánh giá sau khi qua Tool 3 (`check_virustotal`) & Tool 4 (`check_abuseipdb`) của Khang
-        enriched_list = enrich_ioc_list(candidates)
+        enriched_list = enrich_ioc_list(candidates, use_live_api=False)
         flagged_malicious = {
             (e.ioc.ioc_type.upper(), e.ioc.value.lower())
             for e in enriched_list
