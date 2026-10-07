@@ -1,34 +1,50 @@
 {
-  "dataset_name": "Autonomous CTI APT Benchmark Dataset (30 Real-World APT Scenarios)",
-  "author": "Khang (Threat Intel & Enrichment Lead)",
+  "dataset_name": "Live Autonomous CTI Benchmark Dataset (Fetched from Real Threat Feeds)",
+  "is_live_internet_dataset": true,
+  "fetched_at_utc": "2026-10-07T11:41:19Z",
+  "live_sources": [
+    "https://feeds.feedburner.com/TheHackersNews",
+    "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+    "https://api.abuseipdb.com/api/v2/blacklist",
+    "https://openphish.com/feed.txt",
+    "https://bazaar.abuse.ch/export/txt/sha256/recent/"
+  ],
   "total_reports": 30,
   "total_malicious_iocs": 120,
   "total_benign_noise_iocs": 60,
   "reports": [
     {
-      "report_id": "apt_report_01",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_01.html",
-      "title": "APT28: Fancy Bear Credential Harvesting Against European Ministries",
-      "threat_actor": "APT28",
-      "raw_content": "[THREAT ADVISORY #01] Security researchers observed threat actor APT28 executing the 'Fancy Bear Credential Harvesting Against European Ministries' campaign. Initial access was achieved by exploiting CVE-2023-23397. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 185.220.101.14 and domain login-gov-verify.com. Forensic analysis identified the payload SHA256 hash 01a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.001.",
+      "report_id": "live_cti_01",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/anthropic-expands-claude-access-for.html",
+      "published_date": "Wed, 07 Oct 2026 13:37:38 +0530",
+      "title": "Anthropic Expands Claude Access for Vetted Cyber Teams as Glasswing Finds 129,000 Flaws [CVE-2020-29583]",
+      "threat_actor": "Zyxel Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-29583",
+        "vendor": "Zyxel",
+        "product": "Multiple Products",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Anthropic Expands Claude Access for Vetted Cyber Teams as Glasswing Finds 129,000 Flaws (Published: Wed, 07 Oct 2026 13:37:38 +0530). Anthropic on Tuesday said it's expanding a program that allows vetted cybersecurity professionals to test its advanced artificial intelligence (AI) models with reduced safeguards and blocking classifiers, as the company claimed its Project Glasswing initiative uncovered at least 129,000 verified software vulnerabilities between April and July 2026. The company said it also found an additional [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-29583 affecting Zyxel Multiple Products: Zyxel firewalls (ATP, USG, VM) and AP Controllers (NXC2500 and NXC5500) contain a use of hard-coded credentials vulnerability in an undocumented account (\"zyfwp\") with an unchangeable password. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.8.8 (which normally communicates with legitimate service google.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 34.140.212.230 and active OpenPhish domain 0112532.com. Endpoint forensics captured MalwareBazaar payload SHA256 00560eaec8e7b1700da1e1747c09cf35222ed881df33864338a3da6efaddeafa mapped to MITRE ATT&CK technique T1190.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "185.220.101.14"
+            "value": "34.140.212.230"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "login-gov-verify.com"
+            "value": "0112532.com"
           },
           {
             "ioc_type": "SHA256",
-            "value": "01a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "00560eaec8e7b1700da1e1747c09cf35222ed881df33864338a3da6efaddeafa"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-23397"
+            "value": "CVE-2020-29583"
           }
         ],
         "benign_noise_iocs": [
@@ -38,38 +54,46 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "microsoft.com"
+            "value": "google.com"
           }
         ],
         "mitre_techniques": [
-          "T1059.001"
+          "T1190"
         ]
       }
     },
     {
-      "report_id": "apt_report_02",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_02.html",
-      "title": "Lazarus Group: North Korean Crypto Exchange Supply Chain Intrusion",
-      "threat_actor": "Lazarus Group",
-      "raw_content": "[THREAT ADVISORY #02] Security researchers observed threat actor Lazarus Group executing the 'North Korean Crypto Exchange Supply Chain Intrusion' campaign. Initial access was achieved by exploiting CVE-2024-21412. Once inside the internal network (such as local gateway 1.1.1.1), the malware verified connectivity against legitimate domain github.com before establishing a Command-and-Control (C2) channel to malicious server 45.155.205.233 and domain update-ledger-live.org. Forensic analysis identified the payload SHA256 hash 02a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1204.002.",
+      "report_id": "live_cti_02",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/100-compromised-websites-use-fake.html",
+      "published_date": "Wed, 07 Oct 2026 12:27:54 +0530",
+      "title": "100+ Compromised Websites Use Fake Cloudflare Checks to Deliver LunexStealer [CVE-2019-8394]",
+      "threat_actor": "Zoho Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2019-8394",
+        "vendor": "Zoho",
+        "product": "ManageEngine",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] 100+ Compromised Websites Use Fake Cloudflare Checks to Deliver LunexStealer (Published: Wed, 07 Oct 2026 12:27:54 +0530). The Computer Emergency Response Team of Ukraine (CERT-UA) has identified more than 100 compromised websites that have been injected with malicious JavaScript to serve an information-stealing malware called LunexStealer (aka Psychedelic Stealer). The activity, which was observed by the agency in September 2026, has been attributed to a threat cluster dubbed UAC-0277. It did not disclose who the [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2019-8394 affecting Zoho ManageEngine: Zoho ManageEngine ServiceDesk Plus (SDP) contains an unspecified vulnerability that allows remote users to upload files via login page customization. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 1.1.1.1 (which normally communicates with legitimate service cloudflare.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 207.175.88.254 and active OpenPhish domain 3p5rqpgcq8d6ymocjbx.vercel.app. Endpoint forensics captured MalwareBazaar payload SHA256 0056441e90ee0d2b3121f0a761660b52644bae557196a4599f5480d48e853d8d mapped to MITRE ATT&CK technique T1059.001.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "45.155.205.233"
+            "value": "207.175.88.254"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "update-ledger-live.org"
+            "value": "3p5rqpgcq8d6ymocjbx.vercel.app"
           },
           {
             "ioc_type": "SHA256",
-            "value": "02a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "0056441e90ee0d2b3121f0a761660b52644bae557196a4599f5480d48e853d8d"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2024-21412"
+            "value": "CVE-2019-8394"
           }
         ],
         "benign_noise_iocs": [
@@ -79,38 +103,46 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "github.com"
+            "value": "cloudflare.com"
           }
         ],
         "mitre_techniques": [
-          "T1204.002"
+          "T1059.001"
         ]
       }
     },
     {
-      "report_id": "apt_report_03",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_03.html",
-      "title": "Volt Typhoon: Living-off-the-Land Critical Infrastructure Router Compromise",
-      "threat_actor": "Volt Typhoon",
-      "raw_content": "[THREAT ADVISORY #03] Security researchers observed threat actor Volt Typhoon executing the 'Living-off-the-Land Critical Infrastructure Router Compromise' campaign. Initial access was achieved by exploiting CVE-2023-20198. Once inside the internal network (such as local gateway 192.168.1.1), the malware verified connectivity against legitimate domain cisa.gov before establishing a Command-and-Control (C2) channel to malicious server 103.152.220.44 and domain cisco-firmware-cdn.net. Forensic analysis identified the payload SHA256 hash 03a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1078.",
+      "report_id": "live_cti_03",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/fake-chatgpt-gemini-and-claude-ad.html",
+      "published_date": "Wed, 07 Oct 2026 00:08:55 +0530",
+      "title": "Fake ChatGPT, Gemini, and Claude Ad Portals Capture Credentials and MFA Codes [CVE-2020-10189]",
+      "threat_actor": "Zoho Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-10189",
+        "vendor": "Zoho",
+        "product": "ManageEngine",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Fake ChatGPT, Gemini, and Claude Ad Portals Capture Credentials and MFA Codes (Published: Wed, 07 Oct 2026 00:08:55 +0530). Cybersecurity researchers have disclosed details of a \"human-operated phishing platform\" that impersonates advertising products for artificial intelligence (AI) chatbots like Google Gemini, Anthropic Claude, OpenAI ChatGPT, Perplexity, Meta Muse, and Manus. The products, which claim to offer campaign optimization, spend audits, and business-account connections, are designed with one goal in [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-10189 affecting Zoho ManageEngine: Zoho ManageEngine Desktop Central contains a file upload vulnerability that allows for unauthenticated remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 192.168.1.1 (which normally communicates with legitimate service microsoft.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 195.178.110.232 and active OpenPhish domain 89b79879-732.pages.dev. Endpoint forensics captured MalwareBazaar payload SHA256 006e08f1b8cad821f7849c282dc11d317e76ce66a5bcd84053dd5e7752e0606f mapped to MITRE ATT&CK technique T1566.001.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "103.152.220.44"
+            "value": "195.178.110.232"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "cisco-firmware-cdn.net"
+            "value": "89b79879-732.pages.dev"
           },
           {
             "ioc_type": "SHA256",
-            "value": "03a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "006e08f1b8cad821f7849c282dc11d317e76ce66a5bcd84053dd5e7752e0606f"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-20198"
+            "value": "CVE-2020-10189"
           }
         ],
         "benign_noise_iocs": [
@@ -120,38 +152,46 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "cisa.gov"
+            "value": "microsoft.com"
           }
         ],
         "mitre_techniques": [
-          "T1078"
+          "T1566.001"
         ]
       }
     },
     {
-      "report_id": "apt_report_04",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_04.html",
-      "title": "LockBit 3.0: Citrix Bleed Mass Exploitation and Ransomware Deployment",
-      "threat_actor": "LockBit 3.0",
-      "raw_content": "[THREAT ADVISORY #04] Security researchers observed threat actor LockBit 3.0 executing the 'Citrix Bleed Mass Exploitation and Ransomware Deployment' campaign. Initial access was achieved by exploiting CVE-2023-4966. Once inside the internal network (such as local gateway 10.0.0.1), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 91.219.236.174 and domain lockbit-decryptor-portal.top. Forensic analysis identified the payload SHA256 hash 04a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1486.",
+      "report_id": "live_cti_04",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/linux-backdoors-impersonate-email.html",
+      "published_date": "Tue, 06 Oct 2026 23:54:25 +0530",
+      "title": "Linux Backdoors Impersonate Email Security Tools to Evade Detection in Korea and Taiwan [CVE-2021-40539]",
+      "threat_actor": "Zoho Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2021-40539",
+        "vendor": "Zoho",
+        "product": "ManageEngine",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Known"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Linux Backdoors Impersonate Email Security Tools to Evade Detection in Korea and Taiwan (Published: Tue, 06 Oct 2026 23:54:25 +0530). Linux backdoors targeting telecom and network appliances in South Korea and Taiwan have been disguising their traffic as email services and seemingly legitimate processes to blend in and evade detection. Threat actors are known to name their malicious software after a legitimate operating system component or a process as a defense evasion measure. By borrowing the name of a real binary, it may [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2021-40539 affecting Zoho ManageEngine: Zoho ManageEngine ADSelfService Plus contains an authentication bypass vulnerability affecting the REST API URLs which allow for remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 10.0.0.1 (which normally communicates with legitimate service github.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 152.32.188.136 and active OpenPhish domain adobe-apc-club-closed-program.pages.dev. Endpoint forensics captured MalwareBazaar payload SHA256 00dce3f0aa7f31a7281e12da8a7d9bf3d427cdef43c7c917652ebebcf35aa7a9 mapped to MITRE ATT&CK technique T1078.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "91.219.236.174"
+            "value": "152.32.188.136"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "lockbit-decryptor-portal.top"
+            "value": "adobe-apc-club-closed-program.pages.dev"
           },
           {
             "ioc_type": "SHA256",
-            "value": "04a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "00dce3f0aa7f31a7281e12da8a7d9bf3d427cdef43c7c917652ebebcf35aa7a9"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-4966"
+            "value": "CVE-2021-40539"
           }
         ],
         "benign_noise_iocs": [
@@ -161,38 +201,46 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "cloudflare.com"
+            "value": "github.com"
           }
         ],
         "mitre_techniques": [
-          "T1486"
+          "T1078"
         ]
       }
     },
     {
-      "report_id": "apt_report_05",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_05.html",
-      "title": "BlackCat ALPHV: Healthcare Sector Data Exfiltration via ScreenConnect",
-      "threat_actor": "BlackCat ALPHV",
-      "raw_content": "[THREAT ADVISORY #05] Security researchers observed threat actor BlackCat ALPHV executing the 'Healthcare Sector Data Exfiltration via ScreenConnect' campaign. Initial access was achieved by exploiting CVE-2024-1709. Once inside the internal network (such as local gateway 8.8.4.4), the malware verified connectivity against legitimate domain thehackernews.com before establishing a Command-and-Control (C2) channel to malicious server 194.165.16.77 and domain sphynx-c2-relay.xyz. Forensic analysis identified the payload SHA256 hash 05a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1567.002.",
+      "report_id": "live_cti_05",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/libreoffice-and-openoffice-flaws-let.html",
+      "published_date": "Tue, 06 Oct 2026 17:27:00 +0530",
+      "title": "LibreOffice and OpenOffice Flaws Let Malicious Spreadsheets Run Code Without Macro Warnings [CVE-2021-27561]",
+      "threat_actor": "Yealink Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2021-27561",
+        "vendor": "Yealink",
+        "product": "Device Management",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] LibreOffice and OpenOffice Flaws Let Malicious Spreadsheets Run Code Without Macro Warnings (Published: Tue, 06 Oct 2026 17:27:00 +0530). A malicious spreadsheet can make LibreOffice and Apache OpenOffice run an attacker's code as soon as the file is opened, security researchers have shown. There is no warning first, of the kind either program shows before it runs a macro. The attack works only when the program's Java support is enabled. So far, it has only been shown as a proof of concept, and there are no reports of its use in [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2021-27561 affecting Yealink Device Management: Yealink Device Management contains a server-side request forgery (SSRF) vulnerability that allows for unauthenticated remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.4.4 (which normally communicates with legitimate service cisa.gov), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 20.65.202.90 and active OpenPhish domain alllpsp.top. Endpoint forensics captured MalwareBazaar payload SHA256 01346dc1f2d3ff4e19af98fc867b3042e914fe99c95cf036c76e218ef28bb213 mapped to MITRE ATT&CK technique T1486.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "194.165.16.77"
+            "value": "20.65.202.90"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "sphynx-c2-relay.xyz"
+            "value": "alllpsp.top"
           },
           {
             "ioc_type": "SHA256",
-            "value": "05a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "01346dc1f2d3ff4e19af98fc867b3042e914fe99c95cf036c76e218ef28bb213"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2024-1709"
+            "value": "CVE-2021-27561"
           }
         ],
         "benign_noise_iocs": [
@@ -202,161 +250,46 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "thehackernews.com"
+            "value": "cisa.gov"
           }
         ],
         "mitre_techniques": [
-          "T1567.002"
+          "T1486"
         ]
       }
     },
     {
-      "report_id": "apt_report_06",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_06.html",
-      "title": "Sandworm: Industrial Control Systems Wiper Malware Campaign",
-      "threat_actor": "Sandworm",
-      "raw_content": "[THREAT ADVISORY #06] Security researchers observed threat actor Sandworm executing the 'Industrial Control Systems Wiper Malware Campaign' campaign. Initial access was achieved by exploiting CVE-2023-38831. Once inside the internal network (such as local gateway 127.0.0.1), the malware verified connectivity against legitimate domain mitre.org before establishing a Command-and-Control (C2) channel to malicious server 176.111.174.92 and domain scada-telemetry-sync.ru. Forensic analysis identified the payload SHA256 hash 06a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1485.",
+      "report_id": "live_cti_06",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/wikimedia-says-openai-agents-tried-to.html",
+      "published_date": "Tue, 06 Oct 2026 16:56:25 +0530",
+      "title": "Wikimedia Says OpenAI Agents Tried to Compromise Etherpad and Use Wiki Tools as Proxies [CVE-2019-9978]",
+      "threat_actor": "WordPress Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2019-9978",
+        "vendor": "WordPress",
+        "product": "Social Warfare Plugin",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Wikimedia Says OpenAI Agents Tried to Compromise Etherpad and Use Wiki Tools as Proxies (Published: Tue, 06 Oct 2026 16:56:25 +0530). The Wikimedia Foundation, which hosts Wikipedia, has confirmed that it has discovered activity by rogue OpenAI agents on its platforms, including unsuccessful efforts to compromise Etherpad, a public note-taking tool, and edit Wikipedia pages. \"The unauthorized bot activities included edits to our wikis, some unsuccessful attempts to exploit a public note-taking tool we host, and heavy traffic, [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2019-9978 affecting WordPress Social Warfare Plugin: WordPress Social Warfare plugin contains a cross-site scripting (XSS) vulnerability that allows for remote code execution. This vulnerability affects Social Warfare and Social Warfare Pro. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 172.16.0.1 (which normally communicates with legitimate service mitre.org), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 43.166.255.122 and active OpenPhish domain allservicerents.com. Endpoint forensics captured MalwareBazaar payload SHA256 01469b8a4aa195637983cc952ab5dac5e9b7b46091ac709f8819ef82fa4c8b26 mapped to MITRE ATT&CK technique T1204.002.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "176.111.174.92"
+            "value": "43.166.255.122"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "scada-telemetry-sync.ru"
+            "value": "allservicerents.com"
           },
           {
             "ioc_type": "SHA256",
-            "value": "06a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "01469b8a4aa195637983cc952ab5dac5e9b7b46091ac709f8819ef82fa4c8b26"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-38831"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "127.0.0.1"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "mitre.org"
-          }
-        ],
-        "mitre_techniques": [
-          "T1485"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_07",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_07.html",
-      "title": "Mustang Panda: Diplomatic Spear-Phishing with PlugX Loader via RAR Archives",
-      "threat_actor": "Mustang Panda",
-      "raw_content": "[THREAT ADVISORY #07] Security researchers observed threat actor Mustang Panda executing the 'Diplomatic Spear-Phishing with PlugX Loader via RAR Archives' campaign. Initial access was achieved by exploiting CVE-2023-38831. Once inside the internal network (such as local gateway 192.168.10.5), the malware verified connectivity against legitimate domain google.com before establishing a Command-and-Control (C2) channel to malicious server 154.223.19.88 and domain asean-summit-docs.info. Forensic analysis identified the payload SHA256 hash 07a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1566.001.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "154.223.19.88"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "asean-summit-docs.info"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "07a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-38831"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "192.168.10.5"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "google.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1566.001"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_08",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_08.html",
-      "title": "Charming Kitten: APT35 Multi-Factor Authentication Bypass on Academic Targets",
-      "threat_actor": "Charming Kitten",
-      "raw_content": "[THREAT ADVISORY #08] Security researchers observed threat actor Charming Kitten executing the 'APT35 Multi-Factor Authentication Bypass on Academic Targets' campaign. Initial access was achieved by exploiting CVE-2024-23897. Once inside the internal network (such as local gateway 1.0.0.1), the malware verified connectivity against legitimate domain virustotal.com before establishing a Command-and-Control (C2) channel to malicious server 185.141.63.120 and domain webmail-university-sso.online. Forensic analysis identified the payload SHA256 hash 08a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1110.003.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "185.141.63.120"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "webmail-university-sso.online"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "08a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2024-23897"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "1.0.0.1"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "virustotal.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1110.003"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_09",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_09.html",
-      "title": "FIN7: Point-of-Sale Backdoor Deployment via Malicious PowerShell",
-      "threat_actor": "FIN7",
-      "raw_content": "[THREAT ADVISORY #09] Security researchers observed threat actor FIN7 executing the 'Point-of-Sale Backdoor Deployment via Malicious PowerShell' campaign. Initial access was achieved by exploiting CVE-2024-0012. Once inside the internal network (such as local gateway 172.16.0.1), the malware verified connectivity against legitimate domain bleepingcomputer.com before establishing a Command-and-Control (C2) channel to malicious server 193.233.132.45 and domain pos-terminal-updater.club. Forensic analysis identified the payload SHA256 hash 09a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.001.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "193.233.132.45"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "pos-terminal-updater.club"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "09a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2024-0012"
+            "value": "CVE-2019-9978"
           }
         ],
         "benign_noise_iocs": [
@@ -366,38 +299,46 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "bleepingcomputer.com"
+            "value": "mitre.org"
           }
         ],
         "mitre_techniques": [
-          "T1059.001"
+          "T1204.002"
         ]
       }
     },
     {
-      "report_id": "apt_report_10",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_10.html",
-      "title": "Cl0p: MOVEit Transfer Zero-Day SQL Injection Mass Harvesting",
-      "threat_actor": "Cl0p",
-      "raw_content": "[THREAT ADVISORY #10] Security researchers observed threat actor Cl0p executing the 'MOVEit Transfer Zero-Day SQL Injection Mass Harvesting' campaign. Initial access was achieved by exploiting CVE-2023-34362. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain update.microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 138.197.152.99 and domain moveit-cloud-backup.biz. Forensic analysis identified the payload SHA256 hash 10a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1190.",
+      "report_id": "live_cti_07",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/welcome-to-jungle-what-we-found-inside.html",
+      "published_date": "Tue, 06 Oct 2026 16:32:30 +0530",
+      "title": "Welcome to the Jungle: What We Found Inside 15,465 Public MCP Servers [CVE-2020-11738]",
+      "threat_actor": "WordPress Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-11738",
+        "vendor": "WordPress",
+        "product": "Snap Creek Duplicator Plugin",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Welcome to the Jungle: What We Found Inside 15,465 Public MCP Servers (Published: Tue, 06 Oct 2026 16:32:30 +0530). In 2024, MCP (Model Context Protocol) set out to become the USB-C of AI: one standard for connecting models, agents, and IDEs to tools and data. The protocol delivered. Thousands of developers built servers, and enterprises plugged them into agent workflows. The ecosystem around it fell short. Earlier this year, our team at OX Security, traced critical vulnerabilities in Anthropic's MCP [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-11738 affecting WordPress Snap Creek Duplicator Plugin: WordPress Snap Creek Duplicator plugin contains a file download vulnerability when an administrator creates a new copy of their site that allows an attacker to download the generated files from their Wordpress dashboard. This vulnerability affects Duplicator and Dulplicator Pro. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.8.8 (which normally communicates with legitimate service google.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 62.60.130.253 and active OpenPhish domain amarhinbodtuvs-dpph6xbe5k41.edgeone.cool. Endpoint forensics captured MalwareBazaar payload SHA256 0178f142fb4d44b716b5fdcbd83e324de8d2554014ef6d7c72378ee239bf363e mapped to MITRE ATT&CK technique T1190.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "138.197.152.99"
+            "value": "62.60.130.253"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "moveit-cloud-backup.biz"
+            "value": "amarhinbodtuvs-dpph6xbe5k41.edgeone.cool"
           },
           {
             "ioc_type": "SHA256",
-            "value": "10a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "0178f142fb4d44b716b5fdcbd83e324de8d2554014ef6d7c72378ee239bf363e"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-34362"
+            "value": "CVE-2020-11738"
           }
         ],
         "benign_noise_iocs": [
@@ -407,7 +348,7 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "update.microsoft.com"
+            "value": "google.com"
           }
         ],
         "mitre_techniques": [
@@ -416,111 +357,37 @@
       }
     },
     {
-      "report_id": "apt_report_11",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_11.html",
-      "title": "Kimsuky: Reconnaissance and Chrome Credential Stealer Campaign",
-      "threat_actor": "Kimsuky",
-      "raw_content": "[THREAT ADVISORY #11] Security researchers observed threat actor Kimsuky executing the 'Reconnaissance and Chrome Credential Stealer Campaign' campaign. Initial access was achieved by exploiting CVE-2024-4761. Once inside the internal network (such as local gateway 192.168.0.100), the malware verified connectivity against legitimate domain www.google.com before establishing a Command-and-Control (C2) channel to malicious server 146.70.118.21 and domain hometax-korea-auth.site. Forensic analysis identified the payload SHA256 hash 11a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1555.003.",
+      "report_id": "live_cti_08",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/google-pauses-oss-product-bug-bounty.html",
+      "published_date": "Tue, 06 Oct 2026 14:51:47 +0530",
+      "title": "Google Pauses OSS Product Bug Bounty Rewards After Surge in Invalid Automated Reports [CVE-2020-25213]",
+      "threat_actor": "WordPress Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-25213",
+        "vendor": "WordPress",
+        "product": "File Manager Plugin",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Google Pauses OSS Product Bug Bounty Rewards After Surge in Invalid Automated Reports (Published: Tue, 06 Oct 2026 14:51:47 +0530). Google has stopped accepting product vulnerability reports through its bug bounty program for its open-source software. The change, in effect since October 1, means researchers can no longer submit security flaws in the code of projects such as Go, Angular, and Protocol Buffers there for a reward. Reports about supply chain compromises are still accepted, and reports filed before October 1 are [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-25213 affecting WordPress File Manager Plugin: WordPress File Manager plugin contains a remote code execution vulnerability that allows unauthenticated users to execute PHP code and upload malicious files on a target site. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 1.1.1.1 (which normally communicates with legitimate service cloudflare.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 199.45.154.180 and active OpenPhish domain app-exodusweb.pages.dev. Endpoint forensics captured MalwareBazaar payload SHA256 018934eee20af190a89883a764107c66996870aa8cbb535744a00368ab18f52e mapped to MITRE ATT&CK technique T1059.001.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "146.70.118.21"
+            "value": "199.45.154.180"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "hometax-korea-auth.site"
+            "value": "app-exodusweb.pages.dev"
           },
           {
             "ioc_type": "SHA256",
-            "value": "11a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "018934eee20af190a89883a764107c66996870aa8cbb535744a00368ab18f52e"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2024-4761"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "192.168.0.100"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "www.google.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1555.003"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_12",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_12.html",
-      "title": "MuddyWater: Middle East Telecom Abuse of Legitimate RMM Tools",
-      "threat_actor": "MuddyWater",
-      "raw_content": "[THREAT ADVISORY #12] Security researchers observed threat actor MuddyWater executing the 'Middle East Telecom Abuse of Legitimate RMM Tools' campaign. Initial access was achieved by exploiting CVE-2023-27997. Once inside the internal network (such as local gateway 10.10.1.5), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 89.248.165.11 and domain atera-agent-relay.pw. Forensic analysis identified the payload SHA256 hash 12a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1219.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "89.248.165.11"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "atera-agent-relay.pw"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "12a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-27997"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "10.10.1.5"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "cloudflare.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1219"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_13",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_13.html",
-      "title": "Scattered Spider: Social Engineering Helpdesk SIM Swapping & Okta Hijack",
-      "threat_actor": "Scattered Spider",
-      "raw_content": "[THREAT ADVISORY #13] Security researchers observed threat actor Scattered Spider executing the 'Social Engineering Helpdesk SIM Swapping & Okta Hijack' campaign. Initial access was achieved by exploiting CVE-2023-48788. Once inside the internal network (such as local gateway 1.1.1.1), the malware verified connectivity against legitimate domain microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 45.61.138.55 and domain sso-okta-helpdesk.cc. Forensic analysis identified the payload SHA256 hash 13a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1566.004.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "45.61.138.55"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "sso-okta-helpdesk.cc"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "13a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-48788"
+            "value": "CVE-2020-25213"
           }
         ],
         "benign_noise_iocs": [
@@ -530,454 +397,52 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "microsoft.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1566.004"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_14",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_14.html",
-      "title": "Akira Ransomware: Cisco ASA VPN Brute-Force and Double Extortion",
-      "threat_actor": "Akira Ransomware",
-      "raw_content": "[THREAT ADVISORY #14] Security researchers observed threat actor Akira Ransomware executing the 'Cisco ASA VPN Brute-Force and Double Extortion' campaign. Initial access was achieved by exploiting CVE-2023-20269. Once inside the internal network (such as local gateway 192.168.1.254), the malware verified connectivity against legitimate domain cisa.gov before establishing a Command-and-Control (C2) channel to malicious server 195.123.241.60 and domain akira-leak-archive.onion.ly. Forensic analysis identified the payload SHA256 hash 14a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1133.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "195.123.241.60"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "akira-leak-archive.onion.ly"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "14a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-20269"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "192.168.1.254"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "cisa.gov"
-          }
-        ],
-        "mitre_techniques": [
-          "T1133"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_15",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_15.html",
-      "title": "Turla: Secret Blizzard Espionage Against Defense Contractors",
-      "threat_actor": "Turla",
-      "raw_content": "[THREAT ADVISORY #15] Security researchers observed threat actor Turla executing the 'Secret Blizzard Espionage Against Defense Contractors' campaign. Initial access was achieved by exploiting CVE-2023-36884. Once inside the internal network (such as local gateway 8.8.4.4), the malware verified connectivity against legitimate domain github.com before establishing a Command-and-Control (C2) channel to malicious server 94.156.65.19 and domain nato-procurement-portal.org. Forensic analysis identified the payload SHA256 hash 15a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1027.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "94.156.65.19"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "nato-procurement-portal.org"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "15a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-36884"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "8.8.4.4"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "github.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1027"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_16",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_16.html",
-      "title": "Hafnium: Microsoft Exchange ProxyLogon Webshell Post-Exploitation",
-      "threat_actor": "Hafnium",
-      "raw_content": "[THREAT ADVISORY #16] Security researchers observed threat actor Hafnium executing the 'Microsoft Exchange ProxyLogon Webshell Post-Exploitation' campaign. Initial access was achieved by exploiting CVE-2021-26855. Once inside the internal network (such as local gateway 10.0.0.50), the malware verified connectivity against legitimate domain update.microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 104.244.76.13 and domain owa-autodiscover-sync.net. Forensic analysis identified the payload SHA256 hash 16a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1505.003.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "104.244.76.13"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "owa-autodiscover-sync.net"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "16a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2021-26855"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "10.0.0.50"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "update.microsoft.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1505.003"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_17",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_17.html",
-      "title": "APT29 Cozy Bear: TeamCity CI/CD Server Exploitation for Token Theft",
-      "threat_actor": "APT29 Cozy Bear",
-      "raw_content": "[THREAT ADVISORY #17] Security researchers observed threat actor APT29 Cozy Bear executing the 'TeamCity CI/CD Server Exploitation for Token Theft' campaign. Initial access was achieved by exploiting CVE-2023-42793. Once inside the internal network (such as local gateway 127.0.0.1), the malware verified connectivity against legitimate domain raw.githubusercontent.com before establishing a Command-and-Control (C2) channel to malicious server 185.234.247.31 and domain jetbrains-build-cache.io. Forensic analysis identified the payload SHA256 hash 17a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1195.002.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "185.234.247.31"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "jetbrains-build-cache.io"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "17a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-42793"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "127.0.0.1"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "raw.githubusercontent.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1195.002"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_18",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_18.html",
-      "title": "BlackBasta: Qakbot Initial Access Leading to Domain-Wide Encryption",
-      "threat_actor": "BlackBasta",
-      "raw_content": "[THREAT ADVISORY #18] Security researchers observed threat actor BlackBasta executing the 'Qakbot Initial Access Leading to Domain-Wide Encryption' campaign. Initial access was achieved by exploiting CVE-2024-26169. Once inside the internal network (such as local gateway 192.168.100.1), the malware verified connectivity against legitimate domain mitre.org before establishing a Command-and-Control (C2) channel to malicious server 198.46.190.82 and domain qbot-distributor-node.top. Forensic analysis identified the payload SHA256 hash 18a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1543.003.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "198.46.190.82"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "qbot-distributor-node.top"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "18a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2024-26169"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "192.168.100.1"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "mitre.org"
-          }
-        ],
-        "mitre_techniques": [
-          "T1543.003"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_19",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_19.html",
-      "title": "APT41 Winnti: Gaming & Semiconductor ShadowPad Backdoor Intrusion",
-      "threat_actor": "APT41 Winnti",
-      "raw_content": "[THREAT ADVISORY #19] Security researchers observed threat actor APT41 Winnti executing the 'Gaming & Semiconductor ShadowPad Backdoor Intrusion' campaign. Initial access was achieved by exploiting CVE-2024-3400. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain google.com before establishing a Command-and-Control (C2) channel to malicious server 103.85.24.115 and domain steam-patch-telemetry.com. Forensic analysis identified the payload SHA256 hash 19a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1574.002.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "103.85.24.115"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "steam-patch-telemetry.com"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "19a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2024-3400"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "8.8.8.8"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "google.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1574.002"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_20",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_20.html",
-      "title": "Play Ransomware: FortiOS SSL-VPN Exploitation and VSS Shadow Copy Deletion",
-      "threat_actor": "Play Ransomware",
-      "raw_content": "[THREAT ADVISORY #20] Security researchers observed threat actor Play Ransomware executing the 'FortiOS SSL-VPN Exploitation and VSS Shadow Copy Deletion' campaign. Initial access was achieved by exploiting CVE-2022-40684. Once inside the internal network (such as local gateway 172.16.10.2), the malware verified connectivity against legitimate domain thehackernews.com before establishing a Command-and-Control (C2) channel to malicious server 45.142.214.99 and domain play-recovery-support.xyz. Forensic analysis identified the payload SHA256 hash 20a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1490.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "45.142.214.99"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "play-recovery-support.xyz"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "20a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2022-40684"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "172.16.10.2"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "thehackernews.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1490"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_21",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_21.html",
-      "title": "Lapsus$: Source Code Repository Exfiltration via Compromised VPN",
-      "threat_actor": "Lapsus$",
-      "raw_content": "[THREAT ADVISORY #21] Security researchers observed threat actor Lapsus$ executing the 'Source Code Repository Exfiltration via Compromised VPN' campaign. Initial access was achieved by exploiting CVE-2023-3519. Once inside the internal network (such as local gateway 1.1.1.1), the malware verified connectivity against legitimate domain github.com before establishing a Command-and-Control (C2) channel to malicious server 185.193.127.40 and domain corp-git-mirror.dev. Forensic analysis identified the payload SHA256 hash 21a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1213.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "185.193.127.40"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "corp-git-mirror.dev"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "21a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-3519"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "1.1.1.1"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "github.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1213"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_22",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_22.html",
-      "title": " Lazarus AppleJeus: Trojanized Cryptocurrency Trading Application on macOS",
-      "threat_actor": " Lazarus AppleJeus",
-      "raw_content": "[THREAT ADVISORY #22] Security researchers observed threat actor  Lazarus AppleJeus executing the 'Trojanized Cryptocurrency Trading Application on macOS' campaign. Initial access was achieved by exploiting CVE-2024-23222. Once inside the internal network (such as local gateway 8.8.4.4), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 212.102.40.18 and domain celas-trade-installer.com. Forensic analysis identified the payload SHA256 hash 22a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1204.002.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "212.102.40.18"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "celas-trade-installer.com"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "22a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2024-23222"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "8.8.4.4"
-          },
-          {
-            "ioc_type": "DOMAIN",
             "value": "cloudflare.com"
           }
         ],
         "mitre_techniques": [
-          "T1204.002"
+          "T1059.001"
         ]
       }
     },
     {
-      "report_id": "apt_report_23",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_23.html",
-      "title": "Winter Vivern: Roundcube Webmail Zero-Day XSS Harvesting Government Emails",
-      "threat_actor": "Winter Vivern",
-      "raw_content": "[THREAT ADVISORY #23] Security researchers observed threat actor Winter Vivern executing the 'Roundcube Webmail Zero-Day XSS Harvesting Government Emails' campaign. Initial access was achieved by exploiting CVE-2023-5631. Once inside the internal network (such as local gateway 192.168.1.10), the malware verified connectivity against legitimate domain bleepingcomputer.com before establishing a Command-and-Control (C2) channel to malicious server 80.66.75.142 and domain webmail-roundcube-cdn.org. Forensic analysis identified the payload SHA256 hash 23a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1189.",
+      "report_id": "live_cti_09",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/critical-atlassian-flaw-lets.html",
+      "published_date": "Tue, 06 Oct 2026 12:28:56 +0530",
+      "title": "Critical Atlassian Flaw Lets Unauthenticated Attackers Read Known Files Across 8 Products [CVE-2020-4006]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-4006",
+        "vendor": "VMware",
+        "product": "Multiple Products",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Critical Atlassian Flaw Lets Unauthenticated Attackers Read Known Files Across 8 Products (Published: Tue, 06 Oct 2026 12:28:56 +0530). A critical flaw in 8 Atlassian Data Center products, which customers host themselves, allows an attacker with no login access to read specific files in each product's web application root directory. The attacker must already know a file's exact name and path and cannot list what the directory holds. Atlassian disclosed the flaw, CVE-2026-21589, on October 5, rated it 9.3 out of 10, and [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-4006 affecting VMware Multiple Products: VMware Workspace One Access, Access Connector, Identity Manager, and Identity Manager Connector contain a command injection vulnerability. An attacker with network access to the administrative configurator on port 8443 and a valid password for the configurator administrator account can execute commands with unrestricted privileges on the underlying operating system. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 192.168.1.1 (which normally communicates with legitimate service microsoft.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 68.227.77.64 and active OpenPhish domain app.centrocomercialesoeonere.com. Endpoint forensics captured MalwareBazaar payload SHA256 01a6d7a943d1287a48936923b86b46b6a5e094ac5cb8803510a2f408d36e6239 mapped to MITRE ATT&CK technique T1566.001.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "80.66.75.142"
+            "value": "68.227.77.64"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "webmail-roundcube-cdn.org"
+            "value": "app.centrocomercialesoeonere.com"
           },
           {
             "ioc_type": "SHA256",
-            "value": "23a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "01a6d7a943d1287a48936923b86b46b6a5e094ac5cb8803510a2f408d36e6239"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-5631"
+            "value": "CVE-2020-4006"
           }
         ],
         "benign_noise_iocs": [
           {
             "ioc_type": "IP",
-            "value": "192.168.1.10"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "bleepingcomputer.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1189"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_24",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_24.html",
-      "title": "Gamaredon: Spear-Phishing with Malicious LNK and VBS Stealers",
-      "threat_actor": "Gamaredon",
-      "raw_content": "[THREAT ADVISORY #24] Security researchers observed threat actor Gamaredon executing the 'Spear-Phishing with Malicious LNK and VBS Stealers' campaign. Initial access was achieved by exploiting CVE-2024-21351. Once inside the internal network (such as local gateway 10.1.1.1), the malware verified connectivity against legitimate domain microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 178.20.44.89 and domain ukr-telecom-update.ru. Forensic analysis identified the payload SHA256 hash 24a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.005.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "178.20.44.89"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "ukr-telecom-update.ru"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "24a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2024-21351"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "10.1.1.1"
+            "value": "192.168.1.1"
           },
           {
             "ioc_type": "DOMAIN",
@@ -985,126 +450,101 @@
           }
         ],
         "mitre_techniques": [
-          "T1059.005"
+          "T1566.001"
         ]
       }
     },
     {
-      "report_id": "apt_report_25",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_25.html",
-      "title": "BlueNoroff: Swift Banking & Crypto Venture Capitalists Malware Lures",
-      "threat_actor": "BlueNoroff",
-      "raw_content": "[THREAT ADVISORY #25] Security researchers observed threat actor BlueNoroff executing the 'Swift Banking & Crypto Venture Capitalists Malware Lures' campaign. Initial access was achieved by exploiting CVE-2023-38831. Once inside the internal network (such as local gateway 127.0.0.1), the malware verified connectivity against legitimate domain virustotal.com before establishing a Command-and-Control (C2) channel to malicious server 45.89.173.61 and domain vc-pitchdeck-viewer.cloud. Forensic analysis identified the payload SHA256 hash 25a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1566.002.",
+      "report_id": "live_cti_10",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/fbi-removes-accenture-contractor-after.html",
+      "published_date": "Tue, 06 Oct 2026 12:26:57 +0530",
+      "title": "FBI Removes Accenture Contractor After Patch Failure Led to ShinyHunters Breach [CVE-2021-21985]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2021-21985",
+        "vendor": "VMware",
+        "product": "vCenter Server",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Known"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] FBI Removes Accenture Contractor After Patch Failure Led to ShinyHunters Breach (Published: Tue, 06 Oct 2026 12:26:57 +0530). The U.S. Federal Bureau of Investigation (FBI) has removed an Accenture contractor for their alleged role in a ShinyHunters-breach that led to the theft of personal details of thousands of bureau employees. That's according to a report from Reuters, citing two sources familiar with the matter. \"To date, our review has determined that the incident occurred as the result of a security failure ​ [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2021-21985 affecting VMware vCenter Server: VMware vSphere Client contains an improper input validation vulnerability in the Virtual SAN Health Check plug-in, which is enabled by default in vCenter Server, which allows for remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 10.0.0.1 (which normally communicates with legitimate service github.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 65.49.1.229 and active OpenPhish domain apple-clone-hena.vercel.app. Endpoint forensics captured MalwareBazaar payload SHA256 01c3d2a947c56e16718f1f54c0820996dce1d44da25d38b2a9992eb16e6b11e6 mapped to MITRE ATT&CK technique T1078.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "45.89.173.61"
+            "value": "65.49.1.229"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "vc-pitchdeck-viewer.cloud"
+            "value": "apple-clone-hena.vercel.app"
           },
           {
             "ioc_type": "SHA256",
-            "value": "25a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "01c3d2a947c56e16718f1f54c0820996dce1d44da25d38b2a9992eb16e6b11e6"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-38831"
+            "value": "CVE-2021-21985"
           }
         ],
         "benign_noise_iocs": [
           {
             "ioc_type": "IP",
-            "value": "127.0.0.1"
+            "value": "10.0.0.1"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "virustotal.com"
+            "value": "github.com"
           }
         ],
         "mitre_techniques": [
-          "T1566.002"
+          "T1078"
         ]
       }
     },
     {
-      "report_id": "apt_report_26",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_26.html",
-      "title": "OilRig APT34: Exchange Server Side-Channel DNS Tunneling Backdoor",
-      "threat_actor": "OilRig APT34",
-      "raw_content": "[THREAT ADVISORY #26] Security researchers observed threat actor OilRig APT34 executing the 'Exchange Server Side-Channel DNS Tunneling Backdoor' campaign. Initial access was achieved by exploiting CVE-2023-23397. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain cisa.gov before establishing a Command-and-Control (C2) channel to malicious server 185.117.75.102 and domain dns-healthcheck-mena.net. Forensic analysis identified the payload SHA256 hash 26a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1071.004.",
+      "report_id": "live_cti_11",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/denmark-says-attackers-accessed-cpr.html",
+      "published_date": "Tue, 06 Oct 2026 11:30:30 +0530",
+      "title": "Denmark Says Attackers Accessed CPR Data for 8.8 Million People via Company Account [CVE-2021-21972]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2021-21972",
+        "vendor": "VMware",
+        "product": "vCenter Server",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Known"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Denmark Says Attackers Accessed CPR Data for 8.8 Million People via Company Account (Published: Tue, 06 Oct 2026 11:30:30 +0530). Unauthorized parties have gained access to the names, addresses, and personal identification numbers of about 8.8 million people, living and dead, in Denmark's national population register, the country's digitalization ministry said on October 5. They used a private Danish company's lawful right to look up records in the Central Person Register (CPR). The ministry has told people never to [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2021-21972 affecting VMware vCenter Server: VMware vCenter Server vSphere Client contains a remote code execution vulnerability in a vCenter Server plugin which allows an attacker with network access to port 443 to execute commands with unrestricted privileges on the underlying operating system. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.4.4 (which normally communicates with legitimate service cisa.gov), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 85.216.81.75 and active OpenPhish domain applegiftreward.vercel.app. Endpoint forensics captured MalwareBazaar payload SHA256 01c644aa76c644e78f559f2b4b8d1580c2334d821c79e0de222da56d5a96ecaa mapped to MITRE ATT&CK technique T1486.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "185.117.75.102"
+            "value": "85.216.81.75"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "dns-healthcheck-mena.net"
+            "value": "applegiftreward.vercel.app"
           },
           {
             "ioc_type": "SHA256",
-            "value": "26a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "01c644aa76c644e78f559f2b4b8d1580c2334d821c79e0de222da56d5a96ecaa"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-23397"
+            "value": "CVE-2021-21972"
           }
         ],
         "benign_noise_iocs": [
           {
             "ioc_type": "IP",
-            "value": "8.8.8.8"
+            "value": "8.8.4.4"
           },
           {
             "ioc_type": "DOMAIN",
             "value": "cisa.gov"
-          }
-        ],
-        "mitre_techniques": [
-          "T1071.004"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_27",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_27.html",
-      "title": "Rhysida: Hospital Network Compromise via SonicWall VPN Vulnerability",
-      "threat_actor": "Rhysida",
-      "raw_content": "[THREAT ADVISORY #27] Security researchers observed threat actor Rhysida executing the 'Hospital Network Compromise via SonicWall VPN Vulnerability' campaign. Initial access was achieved by exploiting CVE-2024-40766. Once inside the internal network (such as local gateway 192.168.50.1), the malware verified connectivity against legitimate domain mitre.org before establishing a Command-and-Control (C2) channel to malicious server 91.92.240.58 and domain rhysida-chat-negotiation.top. Forensic analysis identified the payload SHA256 hash 27a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1486.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "91.92.240.58"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "rhysida-chat-negotiation.top"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "27a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2024-40766"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "192.168.50.1"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "mitre.org"
           }
         ],
         "mitre_techniques": [
@@ -1113,80 +553,47 @@
       }
     },
     {
-      "report_id": "apt_report_28",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_28.html",
-      "title": "NoName057: DDoSia Botnet Targeting Banking Portals and Public Transit",
-      "threat_actor": "NoName057",
-      "raw_content": "[THREAT ADVISORY #28] Security researchers observed threat actor NoName057 executing the 'DDoSia Botnet Targeting Banking Portals and Public Transit' campaign. Initial access was achieved by exploiting CVE-2023-44487. Once inside the internal network (such as local gateway 1.0.0.1), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 194.87.218.33 and domain ddosia-command-hub.xyz. Forensic analysis identified the payload SHA256 hash 28a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1498.",
+      "report_id": "live_cti_12",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/clickfix-smuggles-payloads-through.html",
+      "published_date": "Tue, 06 Oct 2026 10:52:55 +0530",
+      "title": "ClickFix Smuggles Payloads Through Browser Cache to Bypass Windows Run Limits [CVE-2020-3952]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-3952",
+        "vendor": "VMware",
+        "product": "vCenter Server",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] ClickFix Smuggles Payloads Through Browser Cache to Bypass Windows Run Limits (Published: Tue, 06 Oct 2026 10:52:55 +0530). A new type of ClickFix attack is using compromised websites to trick users into executing a malicious payload cached in a web browser's cache. \"Instead of downloading and executing remote payloads like the typical attack pattern, in this attack, the websites pre-fetch a script payload into the browser cache disguised as a PNG file,\" the Microsoft Threat Intelligence team said in a post on X. [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-3952 affecting VMware vCenter Server: VMware vCenter Server contains an information disclosure vulnerability in the VMware Directory Service (vmdir) when the Platform Services Controller (PSC) does not correctly implement access controls. Successful exploitation allows an attacker with network access to port 389 to extract sensitive information. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 172.16.0.1 (which normally communicates with legitimate service mitre.org), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 94.154.43.63 and active OpenPhish domain arslan716.github.io. Endpoint forensics captured MalwareBazaar payload SHA256 01d41cfeaa36d7fb6990d7f3cc3486ab1c5be9338f3fa78b2403a6b9de8294be mapped to MITRE ATT&CK technique T1204.002.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "194.87.218.33"
+            "value": "94.154.43.63"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "ddosia-command-hub.xyz"
+            "value": "arslan716.github.io"
           },
           {
             "ioc_type": "SHA256",
-            "value": "28a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "01d41cfeaa36d7fb6990d7f3cc3486ab1c5be9338f3fa78b2403a6b9de8294be"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-44487"
+            "value": "CVE-2020-3952"
           }
         ],
         "benign_noise_iocs": [
           {
             "ioc_type": "IP",
-            "value": "1.0.0.1"
+            "value": "172.16.0.1"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "cloudflare.com"
-          }
-        ],
-        "mitre_techniques": [
-          "T1498"
-        ]
-      }
-    },
-    {
-      "report_id": "apt_report_29",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_29.html",
-      "title": "Transparent Tribe: APT36 Crimson RAT Delivery Targeting Defense Personnel",
-      "threat_actor": "Transparent Tribe",
-      "raw_content": "[THREAT ADVISORY #29] Security researchers observed threat actor Transparent Tribe executing the 'APT36 Crimson RAT Delivery Targeting Defense Personnel' campaign. Initial access was achieved by exploiting CVE-2023-36884. Once inside the internal network (such as local gateway 172.16.0.10), the malware verified connectivity against legitimate domain google.com before establishing a Command-and-Control (C2) channel to malicious server 103.214.110.74 and domain indian-defense-welfare.in. Forensic analysis identified the payload SHA256 hash 29a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1204.002.",
-      "ground_truth": {
-        "malicious_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "103.214.110.74"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "indian-defense-welfare.in"
-          },
-          {
-            "ioc_type": "SHA256",
-            "value": "29a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
-          },
-          {
-            "ioc_type": "CVE",
-            "value": "CVE-2023-36884"
-          }
-        ],
-        "benign_noise_iocs": [
-          {
-            "ioc_type": "IP",
-            "value": "172.16.0.10"
-          },
-          {
-            "ioc_type": "DOMAIN",
-            "value": "google.com"
+            "value": "mitre.org"
           }
         ],
         "mitre_techniques": [
@@ -1195,29 +602,37 @@
       }
     },
     {
-      "report_id": "apt_report_30",
-      "source_name": "TheHackerNews / CISA KEV Benchmark",
-      "source_url": "https://thehackernews.com/2026/10/apt_report_30.html",
-      "title": "Medusa Ransomware: Confluence Data Center Exploitation and PowerShell Empire",
-      "threat_actor": "Medusa Ransomware",
-      "raw_content": "[THREAT ADVISORY #30] Security researchers observed threat actor Medusa Ransomware executing the 'Confluence Data Center Exploitation and PowerShell Empire' campaign. Initial access was achieved by exploiting CVE-2023-22515. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain update.microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 185.225.73.190 and domain medusa-blog-mirror.cc. Forensic analysis identified the payload SHA256 hash 30a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.001.",
+      "report_id": "live_cti_13",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/microsoft-exchange-flaw-lets.html",
+      "published_date": "Mon, 05 Oct 2026 21:51:52 +0530",
+      "title": "Microsoft Exchange Flaw Lets Authenticated Attackers Read Other Users' Mailboxes [CVE-2021-22005]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2021-22005",
+        "vendor": "VMware",
+        "product": "vCenter Server",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Known"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Microsoft Exchange Flaw Lets Authenticated Attackers Read Other Users' Mailboxes (Published: Mon, 05 Oct 2026 21:51:52 +0530). Microsoft has released out-of-band security updates to address a high-severity flaw in Microsoft Exchange Server that could allow an attacker to escalate privileges under certain conditions. The vulnerability, tracked as CVE-2026-96940, is rated 8.8 on the CVSS scoring system. \"Weak authorization in Microsoft Exchange Server allows an authenticated attacker to elevate privileges over a [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2021-22005 affecting VMware vCenter Server: VMware vCenter Server contains a file upload vulnerability in the Analytics service that allows a user with network access to port 443 to execute code. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.8.8 (which normally communicates with legitimate service google.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 78.128.114.166 and active OpenPhish domain auth.properties. Endpoint forensics captured MalwareBazaar payload SHA256 01fcd342a7213606432223a38fc468bf3bd779b5931401e80c9a67045cca2553 mapped to MITRE ATT&CK technique T1190.",
       "ground_truth": {
         "malicious_iocs": [
           {
             "ioc_type": "IP",
-            "value": "185.225.73.190"
+            "value": "78.128.114.166"
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "medusa-blog-mirror.cc"
+            "value": "auth.properties"
           },
           {
             "ioc_type": "SHA256",
-            "value": "30a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+            "value": "01fcd342a7213606432223a38fc468bf3bd779b5931401e80c9a67045cca2553"
           },
           {
             "ioc_type": "CVE",
-            "value": "CVE-2023-22515"
+            "value": "CVE-2021-22005"
           }
         ],
         "benign_noise_iocs": [
@@ -1227,11 +642,844 @@
           },
           {
             "ioc_type": "DOMAIN",
-            "value": "update.microsoft.com"
+            "value": "google.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1190"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_14",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/weekly-recap-netscaler-and-fortimail-0.html",
+      "published_date": "Mon, 05 Oct 2026 19:50:43 +0530",
+      "title": "⚡ Weekly Recap: NetScaler and FortiMail 0-Days, AI Coding Leaks, Spectre v2 and Ransomware Arrests [CVE-2020-3950]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-3950",
+        "vendor": "VMware",
+        "product": "Multiple Products",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] ⚡ Weekly Recap: NetScaler and FortiMail 0-Days, AI Coding Leaks, Spectre v2 and Ransomware Arrests (Published: Mon, 05 Oct 2026 19:50:43 +0530). A blank field. A public repo. One reply to an email. A box left exposed. None of this sounds dramatic, which is partly the problem. This week’s threats keep finding leverage in small things that were easy to overlook. There are actively exploited bugs in the mix, cleaner intrusion paths, smarter automation, and a long patch list waiting behind them. Some attacks are getting more capable. Others [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-3950 affecting VMware Multiple Products: VMware Fusion, Remote Console (VMRC) for Mac, and Horizon Client for Mac contain a privilege escalation vulnerability due to improper use of setuid binaries that allows attackers to escalate privileges to root. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 1.1.1.1 (which normally communicates with legitimate service cloudflare.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 190.89.55.250 and active OpenPhish domain auth.re. Endpoint forensics captured MalwareBazaar payload SHA256 02223b985eeec86c8353794f80cb67e5ec2358f572fb9845312e21f5c2f9243e mapped to MITRE ATT&CK technique T1059.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "190.89.55.250"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "auth.re"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "02223b985eeec86c8353794f80cb67e5ec2358f572fb9845312e21f5c2f9243e"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-3950"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.1.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cloudflare.com"
           }
         ],
         "mitre_techniques": [
           "T1059.001"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_15",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/the-credential-layer-is-expanding.html",
+      "published_date": "Mon, 05 Oct 2026 17:25:00 +0530",
+      "title": "The Credential Layer Is Expanding Faster Than Security Teams Can See It [CVE-2020-3992]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-3992",
+        "vendor": "VMware",
+        "product": "ESXi",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Known"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] The Credential Layer Is Expanding Faster Than Security Teams Can See It (Published: Mon, 05 Oct 2026 17:25:00 +0530). Every modern enterprise depends on credentials. This is how humans, systems, and now AI, all connect to data, services, and each other securely. GitGuardian helps secure that credential layer through three connected capabilities: Detect, Remediate, and Prevent. The journey starts with detection, because organizations first need to understand what credentials exist, where they live, and what they [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-3992 affecting VMware ESXi: VMware ESXi OpenSLP contains a use-after-free vulnerability that allows an attacker residing in the management network with access to port 427 to perform remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 192.168.1.1 (which normally communicates with legitimate service microsoft.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 213.42.31.237 and active OpenPhish domain authentication.ms. Endpoint forensics captured MalwareBazaar payload SHA256 023cee2b64df9f9b56229fe5cf24b953b650c8b4d34746c5fad44266fb4c96e9 mapped to MITRE ATT&CK technique T1566.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "213.42.31.237"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "authentication.ms"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "023cee2b64df9f9b56229fe5cf24b953b650c8b4d34746c5fad44266fb4c96e9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-3992"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1566.001"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_16",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/realtek-jungle-sdk-exploit-attempts.html",
+      "published_date": "Mon, 05 Oct 2026 17:16:25 +0530",
+      "title": "Realtek Jungle SDK Exploit Attempts Deliver Cling Botnet With STUN-Based C2 [CVE-2019-5544]",
+      "threat_actor": "VMware Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2019-5544",
+        "vendor": "VMware",
+        "product": "VMware ESXi and Horizon DaaS",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Known"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Realtek Jungle SDK Exploit Attempts Deliver Cling Botnet With STUN-Based C2 (Published: Mon, 05 Oct 2026 17:16:25 +0530). Threat actors have been observed attempting to exploit a now-patched critical security flaw impacting the Realtek Jungle software development kit (SDK) to deploy a botnet malware called Cling. \"Cling is notable not because it introduces a new propagation technique, but because it repurposes ordinary STUN behavior into a practical command-and-control channel,\" Nozomi Networks said in a report [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2019-5544 affecting VMware VMware ESXi and Horizon DaaS: VMware ESXi and Horizon Desktop as a Service (DaaS) OpenSLP contains a heap-based buffer overflow vulnerability that allows an attacker with network access to port 427 to overwrite the heap of the OpenSLP service to perform remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 10.0.0.1 (which normally communicates with legitimate service github.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 66.132.186.218 and active OpenPhish domain autumn-hall-3491.mtjoaqbyx.workers.dev. Endpoint forensics captured MalwareBazaar payload SHA256 0299597a0ef79c75cbfb77335d86115ebff420543174211be7e8fa9a1d0f3e24 mapped to MITRE ATT&CK technique T1078.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "66.132.186.218"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "autumn-hall-3491.mtjoaqbyx.workers.dev"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "0299597a0ef79c75cbfb77335d86115ebff420543174211be7e8fa9a1d0f3e24"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2019-5544"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "10.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "github.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1078"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_17",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/apple-plans-tighter-macos-full-disk.html",
+      "published_date": "Mon, 05 Oct 2026 16:08:50 +0530",
+      "title": "Apple Plans Tighter macOS Full Disk Access Controls Over AI Agent Data Access [CVE-2020-17496]",
+      "threat_actor": "vBulletin Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-17496",
+        "vendor": "vBulletin",
+        "product": "vBulletin",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Apple Plans Tighter macOS Full Disk Access Controls Over AI Agent Data Access (Published: Mon, 05 Oct 2026 16:08:50 +0530). Apple has announced that it's taking steps to tighten controls around a macOS setting called Full Disk Access (FDA) due to security risks posed by artificial intelligence (AI) agents. \"Some developers are using Full Disk Access in ways that could put users at risk, exposing everything on their systems—including files, mail, messages, and even browsing history – without users' full knowledge [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-17496 affecting vBulletin vBulletin: The PHP module within vBulletin contains an unspecified vulnerability that allows for remote code execution via crafted subWidgets data in an ajax/render/widget_tabbedcontainer_tab_panel request. This CVE ID resolves an incomplete patch for CVE-2019-16759. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.4.4 (which normally communicates with legitimate service cisa.gov), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 193.163.125.140 and active OpenPhish domain banco-general.icu. Endpoint forensics captured MalwareBazaar payload SHA256 02afacab8fe2e07c68d28c74d94b1b0ad4e99d84bbf855f66f8f2a08247f52f3 mapped to MITRE ATT&CK technique T1486.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "193.163.125.140"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "banco-general.icu"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "02afacab8fe2e07c68d28c74d94b1b0ad4e99d84bbf855f66f8f2a08247f52f3"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-17496"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.4.4"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cisa.gov"
+          }
+        ],
+        "mitre_techniques": [
+          "T1486"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_18",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/attackers-target-rejetto-hfs-flaw-that.html",
+      "published_date": "Mon, 05 Oct 2026 13:39:23 +0530",
+      "title": "Attackers Target Rejetto HFS Flaw That Enables Admin Session Forgery and RCE [CVE-2019-16759]",
+      "threat_actor": "vBulletin Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2019-16759",
+        "vendor": "vBulletin",
+        "product": "vBulletin",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Attackers Target Rejetto HFS Flaw That Enables Admin Session Forgery and RCE (Published: Mon, 05 Oct 2026 13:39:23 +0530). A critical security flaw impacting Rejetto HTTP File Server (HFS) is witnessing active exploitation attempts, according to VulnCheck. The vulnerability in question is CVE-2026-61500 (CVSS score: 9.3), a case of session forgery stemming from the use of a weak pseudo-random number generator (PRNG) that can lead to a predictable key, which an attacker can then use to gain unauthorized access and [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2019-16759 affecting vBulletin vBulletin: The PHP module within vBulletin contains an unspecified vulnerability that allows for remote code execution via the widgetConfig[code] parameter in an ajax/render/widget_php routestring request. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 172.16.0.1 (which normally communicates with legitimate service mitre.org), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 213.209.159.11 and active OpenPhish domain bdao67wjvl-h05l.vercel.app. Endpoint forensics captured MalwareBazaar payload SHA256 02b981a7d0cec944810fefb3a992c582df16b0f4a31e42ef5ea3eed03bc8438d mapped to MITRE ATT&CK technique T1204.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "213.209.159.11"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bdao67wjvl-h05l.vercel.app"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "02b981a7d0cec944810fefb3a992c582df16b0f4a31e42ef5ea3eed03bc8438d"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2019-16759"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "172.16.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "mitre.org"
+          }
+        ],
+        "mitre_techniques": [
+          "T1204.002"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_19",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/new-netscaler-zero-day-exploited-in.html",
+      "published_date": "Mon, 05 Oct 2026 12:10:19 +0530",
+      "title": "New NetScaler Zero-Day Exploited in Targeted Attacks Can Knock SAML Deployments Offline [CVE-2020-5847]",
+      "threat_actor": "Unraid Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-5847",
+        "vendor": "Unraid",
+        "product": "Unraid",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] New NetScaler Zero-Day Exploited in Targeted Attacks Can Knock SAML Deployments Offline (Published: Mon, 05 Oct 2026 12:10:19 +0530). Citrix has released security updates for a high-severity security flaw in NetScaler ADC and NetScaler Gateway that has been exploited as part of targeted zero-day attacks. The vulnerability, tracked as CVE-2026-88779, carries a CVSS score of 8.7 out of 10.0. \"CVE-2026-88779 is a memory overflow vulnerability in Citrix NetScaler ADC and Citrix NetScaler Gateway that can lead to [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-5847 affecting Unraid Unraid: Unraid contains a vulnerability due to the insecure use of the extract PHP function that can be abused to execute remote code as root. This CVE is chainable with CVE-2020-5849 for initial access. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.8.8 (which normally communicates with legitimate service google.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 40.124.123.211 and active OpenPhish domain bmg-sgesundheitsversorgung.ink. Endpoint forensics captured MalwareBazaar payload SHA256 032589028f28a1553b3d3799743666d5d2e948919a7b375f076ae2592db3d6b5 mapped to MITRE ATT&CK technique T1190.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "40.124.123.211"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bmg-sgesundheitsversorgung.ink"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "032589028f28a1553b3d3799743666d5d2e948919a7b375f076ae2592db3d6b5"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-5847"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.8.8"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "google.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1190"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_20",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/shinyhunters-suspect-rey-reportedly.html",
+      "published_date": "Sun, 04 Oct 2026 12:52:05 +0530",
+      "title": "ShinyHunters Suspect Rey Reportedly Detained in Jordan, Helping FBI Identify Group Members [CVE-2020-5849]",
+      "threat_actor": "Unraid Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-5849",
+        "vendor": "Unraid",
+        "product": "Unraid",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] ShinyHunters Suspect Rey Reportedly Detained in Jordan, Helping FBI Identify Group Members (Published: Sun, 04 Oct 2026 12:52:05 +0530). A suspected member of the ShinyHunters digital extortion group, who goes by the online alias \"Rey,\" has been allegedly detained by authorities in Jordan, Reuters reported, citing three people familiar with the matter. Rey, whose real name is Saif ‌al-Din Khader, is said to have been brought into custody on September 29, 2026, and cooperating with the U.S. Federal Bureau of Investigation (FBI) [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-5849 affecting Unraid Unraid: Unraid contains an authentication bypass vulnerability that allows attackers to gain access to the administrative interface. This CVE is chainable with CVE-2020-5847 for remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 1.1.1.1 (which normally communicates with legitimate service cloudflare.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 211.184.85.174 and active OpenPhish domain bmg-vgesundheitsversorgung.ink. Endpoint forensics captured MalwareBazaar payload SHA256 034174f5266a4276cf29cfdb23fc3fa52699438ff60c8055b7df12c88341a49b mapped to MITRE ATT&CK technique T1059.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "211.184.85.174"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bmg-vgesundheitsversorgung.ink"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "034174f5266a4276cf29cfdb23fc3fa52699438ff60c8055b7df12c88341a49b"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-5849"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.1.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cloudflare.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1059.001"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_21",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/china-aligned-ta419-targets-us-ai.html",
+      "published_date": "Sun, 04 Oct 2026 12:50:32 +0530",
+      "title": "China-Aligned TA419 Targets U.S. AI Policy Experts With Microsoft AitM Phishing [CVE-2019-20085]",
+      "threat_actor": "TVT Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2019-20085",
+        "vendor": "TVT",
+        "product": "NVMS-1000",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] China-Aligned TA419 Targets U.S. AI Policy Experts With Microsoft AitM Phishing (Published: Sun, 04 Oct 2026 12:50:32 +0530). A new China-nexus cyber espionage group known as TA419 has been attributed to multiple credential phishing campaigns targeting artificial intelligence (AI) experts working for U.S. think tanks, universities, and legal sector organizations. The campaigns have impersonated prominent economists and AI policymakers, as well as a prominent Anthropic employee, to single out an AI policy expert at a [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2019-20085 affecting TVT NVMS-1000: TVT devices utilizing NVMS-1000 software contain a directory traversal vulnerability via GET /.. requests. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 192.168.1.1 (which normally communicates with legitimate service microsoft.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 185.143.197.45 and active OpenPhish domain bom.so. Endpoint forensics captured MalwareBazaar payload SHA256 035c4e56551a4b530872e11d5fc8304c628d1f6f2d18a27c0e9359c49a8fe06d mapped to MITRE ATT&CK technique T1566.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "185.143.197.45"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bom.so"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "035c4e56551a4b530872e11d5fc8304c628d1f6f2d18a27c0e9359c49a8fe06d"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2019-20085"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1566.001"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_22",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/mi5-says-chinas-mss-funded-research.html",
+      "published_date": "Sat, 03 Oct 2026 20:08:46 +0530",
+      "title": "MI5 Says China’s MSS Funded Research Involving 100+ U.K.-Linked Academics [CVE-2021-36741]",
+      "threat_actor": "Trend Micro Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2021-36741",
+        "vendor": "Trend Micro",
+        "product": "Apex One, Apex One as a Service, and Worry-Free Business Security",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] MI5 Says China’s MSS Funded Research Involving 100+ U.K.-Linked Academics (Published: Sat, 03 Oct 2026 20:08:46 +0530). The U.K.'s domestic intelligence and security agency has warned that more than 100 academics have helped China boost its intelligence gathering efforts on behalf of Beijing's state security service. In a \"Security Service Espionage Alert\" issued on September 30, 2026, MI5 said the \"primary purpose of the China General Technology Research Institute (CGTRI) 中国通用技术研究院 is to fund research that [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2021-36741 affecting Trend Micro Apex One, Apex One as a Service, and Worry-Free Business Security: Trend Micro Apex One, Apex One as a Service, and Worry-Free Business Security contain an improper input validation vulnerability that allows a remote attacker to upload files. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 10.0.0.1 (which normally communicates with legitimate service github.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 42.51.49.166 and active OpenPhish domain bookingdirect.arrival-confirm.com. Endpoint forensics captured MalwareBazaar payload SHA256 03fea0006718d00e3b73a51dc4f2e67244065bb8add35df4b5c7e0d55201b0bd mapped to MITRE ATT&CK technique T1078.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "42.51.49.166"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bookingdirect.arrival-confirm.com"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "03fea0006718d00e3b73a51dc4f2e67244065bb8add35df4b5c7e0d55201b0bd"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2021-36741"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "10.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "github.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1078"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_23",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/warlock-exploits-sharepoint-flaws-to.html",
+      "published_date": "Sat, 03 Oct 2026 20:06:33 +0530",
+      "title": "Warlock Exploits SharePoint Flaws to Disable Security Tools and Deploy Ransomware [CVE-2021-36742]",
+      "threat_actor": "Trend Micro Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2021-36742",
+        "vendor": "Trend Micro",
+        "product": "Apex One, Apex One as a Service, and Worry-Free Business Security",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Warlock Exploits SharePoint Flaws to Disable Security Tools and Deploy Ransomware (Published: Sat, 03 Oct 2026 20:06:33 +0530). The suspected China-linked threat actor known as Warlock is still continuing to weaponize Microsoft SharePoint vulnerabilities, likely both old and new, in attacks targeting organizations in Portuguese- and Spanish-speaking countries. The activity, observed by the Symantec and Carbon Black Threat Hunter Team, has hit critical infrastructure, government, and education organizations. \"In the [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2021-36742 affecting Trend Micro Apex One, Apex One as a Service, and Worry-Free Business Security: Trend Micro Apex One, Apex One as a Service, and Worry-Free Business Security contain an improper input validation vulnerability that allows for privilege escalation. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.4.4 (which normally communicates with legitimate service cisa.gov), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 104.143.36.100 and active OpenPhish domain bpke32s406-osyma0ow-fnfjcnb0eufychb4.z01.azurefd.net. Endpoint forensics captured MalwareBazaar payload SHA256 0405294a4fa27c2d4466623b8549a339366e232dc3bf17e724975ef2cc200da9 mapped to MITRE ATT&CK technique T1486.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "104.143.36.100"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bpke32s406-osyma0ow-fnfjcnb0eufychb4.z01.azurefd.net"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "0405294a4fa27c2d4466623b8549a339366e232dc3bf17e724975ef2cc200da9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2021-36742"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.4.4"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cisa.gov"
+          }
+        ],
+        "mitre_techniques": [
+          "T1486"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_24",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/the-state-of-cybersecurity-in-2026key.html",
+      "published_date": "Sat, 03 Oct 2026 16:30:00 +0530",
+      "title": "The State of Cybersecurity in 2026: Key Segments, Insights, and Innovations [CVE-2020-8599]",
+      "threat_actor": "Trend Micro Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-8599",
+        "vendor": "Trend Micro",
+        "product": "Apex One and OfficeScan",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] The State of Cybersecurity in 2026: Key Segments, Insights, and Innovations (Published: Sat, 03 Oct 2026 16:30:00 +0530). Featuring: Cybersecurity is being reshaped by the expansion of cloud infrastructure, AI, distributed systems, and increasingly complex digital environments. As organizations manage more identities, devices, data, and internet-facing infrastructure, security is shifting toward continuous visibility, control, and the ability to respond to risk at scale. This report examines how core areas of [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-8599 affecting Trend Micro Apex One and OfficeScan: Trend Micro Apex One and OfficeScan server contain a vulnerable EXE file that could allow a remote attacker to write data to a path on affected installations and bypass root login. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 172.16.0.1 (which normally communicates with legitimate service mitre.org), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 116.249.125.162 and active OpenPhish domain candymesa.pages.dev. Endpoint forensics captured MalwareBazaar payload SHA256 040a0da5c3f26dc1b971271e13e8930c7680b8aeef8aba87f885009760a71709 mapped to MITRE ATT&CK technique T1204.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "116.249.125.162"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "candymesa.pages.dev"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "040a0da5c3f26dc1b971271e13e8930c7680b8aeef8aba87f885009760a71709"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-8599"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "172.16.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "mitre.org"
+          }
+        ],
+        "mitre_techniques": [
+          "T1204.002"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_25",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/gitlab-patches-critical-self-hosted-ai.html",
+      "published_date": "Fri, 02 Oct 2026 23:03:31 +0530",
+      "title": "GitLab Patches Critical 9.9 AI Gateway Flaw Allowing Command Execution on Self-Hosted Servers [CVE-2020-24557]",
+      "threat_actor": "Trend Micro Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-24557",
+        "vendor": "Trend Micro",
+        "product": "Apex One, OfficeScan, and Worry-Free Business Security",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] GitLab Patches Critical 9.9 AI Gateway Flaw Allowing Command Execution on Self-Hosted Servers (Published: Fri, 02 Oct 2026 23:03:31 +0530). A critical flaw in GitLab's AI Gateway could let a logged-in user with Duo Agent Platform access run commands on the gateway under certain conditions, GitLab said in an advisory. The gateway is the service that connects a GitLab instance to AI models, and only organizations that host their own gateway need to act. The flaw is fixed in gateway versions 19.2.4, 19.3.2, and 19.4.1. The flaw [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-24557 affecting Trend Micro Apex One, OfficeScan, and Worry-Free Business Security: Trend Micro Apex One, OfficeScan, and Worry-Free Business Security on Microsoft Windows contain an improper access control vulnerability that may allow an attacker to manipulate a particular product folder to disable the security temporarily, abuse a specific Windows function, and attain privilege escalation. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.8.8 (which normally communicates with legitimate service google.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 120.48.148.35 and active OpenPhish domain cdsglobalshipping.com. Endpoint forensics captured MalwareBazaar payload SHA256 040eb5960afa240e6c656058fba90c180af3966ad4491dd7b7e04feaa9dc1bfa mapped to MITRE ATT&CK technique T1190.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "120.48.148.35"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cdsglobalshipping.com"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "040eb5960afa240e6c656058fba90c180af3966ad4491dd7b7e04feaa9dc1bfa"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-24557"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.8.8"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "google.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1190"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_26",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/antino-backdoor-uses-outlook-and.html",
+      "published_date": "Fri, 02 Oct 2026 23:03:16 +0530",
+      "title": "Antino Backdoor Uses Outlook and OneDrive for C2 in China-Nexus Espionage Campaign [CVE-2020-8468]",
+      "threat_actor": "Trend Micro Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-8468",
+        "vendor": "Trend Micro",
+        "product": "Apex One, OfficeScan and Worry-Free Business Security Agents",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Antino Backdoor Uses Outlook and OneDrive for C2 in China-Nexus Espionage Campaign (Published: Fri, 02 Oct 2026 23:03:16 +0530). Government and policy organizations across Asia have become the target of a new campaign orchestrated by a China-nexus threat actor. The activity, which has targeted government and policy organizations in Taiwan, India, the Philippines, Cambodia, Pakistan, Thailand, and Myanmar, involves the deployment of a previously undocumented backdoor codenamed Antino. Cisco Talos is tracking the cluster [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-8468 affecting Trend Micro Apex One, OfficeScan and Worry-Free Business Security Agents: Trend Micro Apex One, OfficeScan, and Worry-Free Business Security agents contain a content validation escape vulnerability that could allow an attacker to manipulate certain agent client components. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 1.1.1.1 (which normally communicates with legitimate service cloudflare.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 103.154.63.62 and active OpenPhish domain cf234276.tw1.ru. Endpoint forensics captured MalwareBazaar payload SHA256 041168e457ab92d0244ae1fedf6348eb3dd19a324310760665cf48b90525ac53 mapped to MITRE ATT&CK technique T1059.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "103.154.63.62"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cf234276.tw1.ru"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "041168e457ab92d0244ae1fedf6348eb3dd19a324310760665cf48b90525ac53"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-8468"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.1.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cloudflare.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1059.001"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_27",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/dell-csm-flaws-enable-unauthenticated.html",
+      "published_date": "Fri, 02 Oct 2026 22:32:12 +0530",
+      "title": "Dell CSM Flaws Enable Unauthenticated Admin Access and Root on Kubernetes Nodes [CVE-2020-8467]",
+      "threat_actor": "Trend Micro Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2020-8467",
+        "vendor": "Trend Micro",
+        "product": "Apex One and OfficeScan",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Dell CSM Flaws Enable Unauthenticated Admin Access and Root on Kubernetes Nodes (Published: Fri, 02 Oct 2026 22:32:12 +0530). Dell has released security updates to address multiple critical security flaws in Dell Container Storage Modules (CSM) that could be exploited by bad actors to take over susceptible systems. The vulnerabilities are listed below - CVE-2026-63688 (CVSS score: 10.0) - A missing authentication for critical function vulnerability in the csm-authorization-storage gRPC server that an [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2020-8467 affecting Trend Micro Apex One and OfficeScan: Trend Micro Apex One and OfficeScan contain an unspecified vulnerability within a migration tool component that allows for remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 192.168.1.1 (which normally communicates with legitimate service microsoft.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 91.207.54.182 and active OpenPhish domain codeprof-computer-academy.github.io. Endpoint forensics captured MalwareBazaar payload SHA256 0453c8b1ddeced4a2fd22658a04e95abd7134d674715659c52a95f9a43bba31a mapped to MITRE ATT&CK technique T1566.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "91.207.54.182"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "codeprof-computer-academy.github.io"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "0453c8b1ddeced4a2fd22658a04e95abd7134d674715659c52a95f9a43bba31a"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2020-8467"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1566.001"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_28",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/openai-parts-ways-with-three-safety.html",
+      "published_date": "Fri, 02 Oct 2026 17:53:15 +0530",
+      "title": "OpenAI Parts Ways With Three Safety Researchers Over Sensitive Information Mishandling [CVE-2019-18187]",
+      "threat_actor": "Trend Micro Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2019-18187",
+        "vendor": "Trend Micro",
+        "product": "OfficeScan",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] OpenAI Parts Ways With Three Safety Researchers Over Sensitive Information Mishandling (Published: Fri, 02 Oct 2026 17:53:15 +0530). OpenAI has parted ways with three members of its safety team after they leaked private information in violation of company policies, The Wall Street Journal reported. \"We have parted ways with three individuals for violating our policies on accessing and handling sensitive company information,\" a spokesperson for the company was quoted as saying. \"Our investigation confirmed that these [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2019-18187 affecting Trend Micro OfficeScan: Trend Micro OfficeScan contains a directory traversal vulnerability by extracting files from a zip file to a specific folder on the OfficeScan server, leading to remote code execution. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 10.0.0.1 (which normally communicates with legitimate service github.com), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 111.70.23.252 and active OpenPhish domain coinbscxprologn.gitbook.io. Endpoint forensics captured MalwareBazaar payload SHA256 045886ce01e604aea1c2616af00c86685faec6158ae626dd77386d57837e795b mapped to MITRE ATT&CK technique T1078.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "111.70.23.252"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "coinbscxprologn.gitbook.io"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "045886ce01e604aea1c2616af00c86685faec6158ae626dd77386d57837e795b"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2019-18187"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "10.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "github.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1078"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_29",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/why-cisos-struggle-to-answer-boards.html",
+      "published_date": "Fri, 02 Oct 2026 17:00:00 +0530",
+      "title": "Why CISOs Struggle to Answer the Board's Three Hardest Questions, and How to Fix the Report [CVE-2019-9082]",
+      "threat_actor": "ThinkPHP Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2019-9082",
+        "vendor": "ThinkPHP",
+        "product": "ThinkPHP",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Why CISOs Struggle to Answer the Board's Three Hardest Questions, and How to Fix the Report (Published: Fri, 02 Oct 2026 17:00:00 +0530). The quarterly board meeting is two weeks out. The security team is pulling exports from the identity provider, the cloud posture tool, the vulnerability scanner, the SIEM and the EDR console. Someone is building a spreadsheet to reconcile them. Someone else is turning that spreadsheet into slides. Then a board member asks three questions: How secure is the organization, overall? What is [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2019-9082 affecting ThinkPHP ThinkPHP: ThinkPHP contains an unspecified vulnerability that allows for remote code execution via public//?s=index/\\think\\app/invokefunction&function=call_user_func_array&vars[0]=system&vars[1][]= followed by the command. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 8.8.4.4 (which normally communicates with legitimate service cisa.gov), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 152.32.158.74 and active OpenPhish domain com-ledger--io.pages.dev. Endpoint forensics captured MalwareBazaar payload SHA256 048970ca1445ee358bd49d9fd8fec7171b45ca3641d77ea3c11e15055953482a mapped to MITRE ATT&CK technique T1486.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "152.32.158.74"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "com-ledger--io.pages.dev"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "048970ca1445ee358bd49d9fd8fec7171b45ca3641d77ea3c11e15055953482a"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2019-9082"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.4.4"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cisa.gov"
+          }
+        ],
+        "mitre_techniques": [
+          "T1486"
+        ]
+      }
+    },
+    {
+      "report_id": "live_cti_30",
+      "source_name": "TheHackerNews RSS + CISA KEV + AbuseIPDB + OpenPhish + MalwareBazaar",
+      "source_url": "https://thehackernews.com/2026/10/android-17-advanced-protection-locks.html",
+      "published_date": "Fri, 02 Oct 2026 13:31:30 +0530",
+      "title": "Android 17 Advanced Protection Locks Accessibility Services to Verified Accessibility Tools [CVE-2018-20062]",
+      "threat_actor": "ThinkPHP Threat Campaign",
+      "cisa_kev_vulnerability": {
+        "cve_id": "CVE-2018-20062",
+        "vendor": "ThinkPHP",
+        "product": "noneCms",
+        "date_added": "2021-11-03",
+        "ransomware_use": "Unknown"
+      },
+      "raw_content": "[THEHACKERNEWS LIVE ADVISORY] Android 17 Advanced Protection Locks Accessibility Services to Verified Accessibility Tools (Published: Fri, 02 Oct 2026 13:31:30 +0530). Google has announced a new security measure that limits access to Android's accessibility services to verified applications classified as Accessibility Tools when Advanced Protection is enabled. With malicious Android applications abusing the API serving as the main conduit for malware and financial fraud, the tech giant said the move would block a major attack pathway. Advanced Protection is a [CISA KEV CORRELATION] Active exploitation confirmed for CVE-2018-20062 affecting ThinkPHP noneCms: ThinkPHP \"noneCms\" contains an unspecified vulnerability that allows for remote code execution through crafted use of the filter parameter. [SOC TELEMETRY & IOC FEED] During incident response on internal gateway 172.16.0.1 (which normally communicates with legitimate service mitre.org), analysts intercepted outbound C2 traffic to AbuseIPDB blacklisted host 188.235.18.124 and active OpenPhish domain comcastinfoupdatesnow.weebly.com. Endpoint forensics captured MalwareBazaar payload SHA256 04df146a3f6287561014164b4ca6bbca02889700396d31641632d2e14ecc95f5 mapped to MITRE ATT&CK technique T1204.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "188.235.18.124"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "comcastinfoupdatesnow.weebly.com"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "04df146a3f6287561014164b4ca6bbca02889700396d31641632d2e14ecc95f5"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2018-20062"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "172.16.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "mitre.org"
+          }
+        ],
+        "mitre_techniques": [
+          "T1204.002"
         ]
       }
     }
