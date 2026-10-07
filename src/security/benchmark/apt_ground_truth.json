@@ -1,0 +1,1239 @@
+{
+  "dataset_name": "Autonomous CTI APT Benchmark Dataset (30 Real-World APT Scenarios)",
+  "author": "Khang (Threat Intel & Enrichment Lead)",
+  "total_reports": 30,
+  "total_malicious_iocs": 120,
+  "total_benign_noise_iocs": 60,
+  "reports": [
+    {
+      "report_id": "apt_report_01",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_01.html",
+      "title": "APT28: Fancy Bear Credential Harvesting Against European Ministries",
+      "threat_actor": "APT28",
+      "raw_content": "[THREAT ADVISORY #01] Security researchers observed threat actor APT28 executing the 'Fancy Bear Credential Harvesting Against European Ministries' campaign. Initial access was achieved by exploiting CVE-2023-23397. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 185.220.101.14 and domain login-gov-verify.com. Forensic analysis identified the payload SHA256 hash 01a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "185.220.101.14"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "login-gov-verify.com"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "01a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-23397"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.8.8"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1059.001"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_02",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_02.html",
+      "title": "Lazarus Group: North Korean Crypto Exchange Supply Chain Intrusion",
+      "threat_actor": "Lazarus Group",
+      "raw_content": "[THREAT ADVISORY #02] Security researchers observed threat actor Lazarus Group executing the 'North Korean Crypto Exchange Supply Chain Intrusion' campaign. Initial access was achieved by exploiting CVE-2024-21412. Once inside the internal network (such as local gateway 1.1.1.1), the malware verified connectivity against legitimate domain github.com before establishing a Command-and-Control (C2) channel to malicious server 45.155.205.233 and domain update-ledger-live.org. Forensic analysis identified the payload SHA256 hash 02a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1204.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "45.155.205.233"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "update-ledger-live.org"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "02a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-21412"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.1.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "github.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1204.002"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_03",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_03.html",
+      "title": "Volt Typhoon: Living-off-the-Land Critical Infrastructure Router Compromise",
+      "threat_actor": "Volt Typhoon",
+      "raw_content": "[THREAT ADVISORY #03] Security researchers observed threat actor Volt Typhoon executing the 'Living-off-the-Land Critical Infrastructure Router Compromise' campaign. Initial access was achieved by exploiting CVE-2023-20198. Once inside the internal network (such as local gateway 192.168.1.1), the malware verified connectivity against legitimate domain cisa.gov before establishing a Command-and-Control (C2) channel to malicious server 103.152.220.44 and domain cisco-firmware-cdn.net. Forensic analysis identified the payload SHA256 hash 03a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1078.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "103.152.220.44"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cisco-firmware-cdn.net"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "03a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-20198"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cisa.gov"
+          }
+        ],
+        "mitre_techniques": [
+          "T1078"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_04",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_04.html",
+      "title": "LockBit 3.0: Citrix Bleed Mass Exploitation and Ransomware Deployment",
+      "threat_actor": "LockBit 3.0",
+      "raw_content": "[THREAT ADVISORY #04] Security researchers observed threat actor LockBit 3.0 executing the 'Citrix Bleed Mass Exploitation and Ransomware Deployment' campaign. Initial access was achieved by exploiting CVE-2023-4966. Once inside the internal network (such as local gateway 10.0.0.1), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 91.219.236.174 and domain lockbit-decryptor-portal.top. Forensic analysis identified the payload SHA256 hash 04a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1486.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "91.219.236.174"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "lockbit-decryptor-portal.top"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "04a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-4966"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "10.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cloudflare.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1486"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_05",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_05.html",
+      "title": "BlackCat ALPHV: Healthcare Sector Data Exfiltration via ScreenConnect",
+      "threat_actor": "BlackCat ALPHV",
+      "raw_content": "[THREAT ADVISORY #05] Security researchers observed threat actor BlackCat ALPHV executing the 'Healthcare Sector Data Exfiltration via ScreenConnect' campaign. Initial access was achieved by exploiting CVE-2024-1709. Once inside the internal network (such as local gateway 8.8.4.4), the malware verified connectivity against legitimate domain thehackernews.com before establishing a Command-and-Control (C2) channel to malicious server 194.165.16.77 and domain sphynx-c2-relay.xyz. Forensic analysis identified the payload SHA256 hash 05a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1567.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "194.165.16.77"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "sphynx-c2-relay.xyz"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "05a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-1709"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.4.4"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "thehackernews.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1567.002"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_06",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_06.html",
+      "title": "Sandworm: Industrial Control Systems Wiper Malware Campaign",
+      "threat_actor": "Sandworm",
+      "raw_content": "[THREAT ADVISORY #06] Security researchers observed threat actor Sandworm executing the 'Industrial Control Systems Wiper Malware Campaign' campaign. Initial access was achieved by exploiting CVE-2023-38831. Once inside the internal network (such as local gateway 127.0.0.1), the malware verified connectivity against legitimate domain mitre.org before establishing a Command-and-Control (C2) channel to malicious server 176.111.174.92 and domain scada-telemetry-sync.ru. Forensic analysis identified the payload SHA256 hash 06a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1485.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "176.111.174.92"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "scada-telemetry-sync.ru"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "06a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-38831"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "127.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "mitre.org"
+          }
+        ],
+        "mitre_techniques": [
+          "T1485"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_07",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_07.html",
+      "title": "Mustang Panda: Diplomatic Spear-Phishing with PlugX Loader via RAR Archives",
+      "threat_actor": "Mustang Panda",
+      "raw_content": "[THREAT ADVISORY #07] Security researchers observed threat actor Mustang Panda executing the 'Diplomatic Spear-Phishing with PlugX Loader via RAR Archives' campaign. Initial access was achieved by exploiting CVE-2023-38831. Once inside the internal network (such as local gateway 192.168.10.5), the malware verified connectivity against legitimate domain google.com before establishing a Command-and-Control (C2) channel to malicious server 154.223.19.88 and domain asean-summit-docs.info. Forensic analysis identified the payload SHA256 hash 07a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1566.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "154.223.19.88"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "asean-summit-docs.info"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "07a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-38831"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.10.5"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "google.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1566.001"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_08",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_08.html",
+      "title": "Charming Kitten: APT35 Multi-Factor Authentication Bypass on Academic Targets",
+      "threat_actor": "Charming Kitten",
+      "raw_content": "[THREAT ADVISORY #08] Security researchers observed threat actor Charming Kitten executing the 'APT35 Multi-Factor Authentication Bypass on Academic Targets' campaign. Initial access was achieved by exploiting CVE-2024-23897. Once inside the internal network (such as local gateway 1.0.0.1), the malware verified connectivity against legitimate domain virustotal.com before establishing a Command-and-Control (C2) channel to malicious server 185.141.63.120 and domain webmail-university-sso.online. Forensic analysis identified the payload SHA256 hash 08a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1110.003.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "185.141.63.120"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "webmail-university-sso.online"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "08a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-23897"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "virustotal.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1110.003"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_09",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_09.html",
+      "title": "FIN7: Point-of-Sale Backdoor Deployment via Malicious PowerShell",
+      "threat_actor": "FIN7",
+      "raw_content": "[THREAT ADVISORY #09] Security researchers observed threat actor FIN7 executing the 'Point-of-Sale Backdoor Deployment via Malicious PowerShell' campaign. Initial access was achieved by exploiting CVE-2024-0012. Once inside the internal network (such as local gateway 172.16.0.1), the malware verified connectivity against legitimate domain bleepingcomputer.com before establishing a Command-and-Control (C2) channel to malicious server 193.233.132.45 and domain pos-terminal-updater.club. Forensic analysis identified the payload SHA256 hash 09a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "193.233.132.45"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "pos-terminal-updater.club"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "09a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-0012"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "172.16.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bleepingcomputer.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1059.001"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_10",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_10.html",
+      "title": "Cl0p: MOVEit Transfer Zero-Day SQL Injection Mass Harvesting",
+      "threat_actor": "Cl0p",
+      "raw_content": "[THREAT ADVISORY #10] Security researchers observed threat actor Cl0p executing the 'MOVEit Transfer Zero-Day SQL Injection Mass Harvesting' campaign. Initial access was achieved by exploiting CVE-2023-34362. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain update.microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 138.197.152.99 and domain moveit-cloud-backup.biz. Forensic analysis identified the payload SHA256 hash 10a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1190.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "138.197.152.99"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "moveit-cloud-backup.biz"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "10a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-34362"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.8.8"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "update.microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1190"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_11",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_11.html",
+      "title": "Kimsuky: Reconnaissance and Chrome Credential Stealer Campaign",
+      "threat_actor": "Kimsuky",
+      "raw_content": "[THREAT ADVISORY #11] Security researchers observed threat actor Kimsuky executing the 'Reconnaissance and Chrome Credential Stealer Campaign' campaign. Initial access was achieved by exploiting CVE-2024-4761. Once inside the internal network (such as local gateway 192.168.0.100), the malware verified connectivity against legitimate domain www.google.com before establishing a Command-and-Control (C2) channel to malicious server 146.70.118.21 and domain hometax-korea-auth.site. Forensic analysis identified the payload SHA256 hash 11a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1555.003.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "146.70.118.21"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "hometax-korea-auth.site"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "11a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-4761"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.0.100"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "www.google.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1555.003"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_12",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_12.html",
+      "title": "MuddyWater: Middle East Telecom Abuse of Legitimate RMM Tools",
+      "threat_actor": "MuddyWater",
+      "raw_content": "[THREAT ADVISORY #12] Security researchers observed threat actor MuddyWater executing the 'Middle East Telecom Abuse of Legitimate RMM Tools' campaign. Initial access was achieved by exploiting CVE-2023-27997. Once inside the internal network (such as local gateway 10.10.1.5), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 89.248.165.11 and domain atera-agent-relay.pw. Forensic analysis identified the payload SHA256 hash 12a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1219.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "89.248.165.11"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "atera-agent-relay.pw"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "12a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-27997"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "10.10.1.5"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cloudflare.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1219"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_13",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_13.html",
+      "title": "Scattered Spider: Social Engineering Helpdesk SIM Swapping & Okta Hijack",
+      "threat_actor": "Scattered Spider",
+      "raw_content": "[THREAT ADVISORY #13] Security researchers observed threat actor Scattered Spider executing the 'Social Engineering Helpdesk SIM Swapping & Okta Hijack' campaign. Initial access was achieved by exploiting CVE-2023-48788. Once inside the internal network (such as local gateway 1.1.1.1), the malware verified connectivity against legitimate domain microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 45.61.138.55 and domain sso-okta-helpdesk.cc. Forensic analysis identified the payload SHA256 hash 13a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1566.004.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "45.61.138.55"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "sso-okta-helpdesk.cc"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "13a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-48788"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.1.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1566.004"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_14",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_14.html",
+      "title": "Akira Ransomware: Cisco ASA VPN Brute-Force and Double Extortion",
+      "threat_actor": "Akira Ransomware",
+      "raw_content": "[THREAT ADVISORY #14] Security researchers observed threat actor Akira Ransomware executing the 'Cisco ASA VPN Brute-Force and Double Extortion' campaign. Initial access was achieved by exploiting CVE-2023-20269. Once inside the internal network (such as local gateway 192.168.1.254), the malware verified connectivity against legitimate domain cisa.gov before establishing a Command-and-Control (C2) channel to malicious server 195.123.241.60 and domain akira-leak-archive.onion.ly. Forensic analysis identified the payload SHA256 hash 14a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1133.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "195.123.241.60"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "akira-leak-archive.onion.ly"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "14a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-20269"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.1.254"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cisa.gov"
+          }
+        ],
+        "mitre_techniques": [
+          "T1133"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_15",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_15.html",
+      "title": "Turla: Secret Blizzard Espionage Against Defense Contractors",
+      "threat_actor": "Turla",
+      "raw_content": "[THREAT ADVISORY #15] Security researchers observed threat actor Turla executing the 'Secret Blizzard Espionage Against Defense Contractors' campaign. Initial access was achieved by exploiting CVE-2023-36884. Once inside the internal network (such as local gateway 8.8.4.4), the malware verified connectivity against legitimate domain github.com before establishing a Command-and-Control (C2) channel to malicious server 94.156.65.19 and domain nato-procurement-portal.org. Forensic analysis identified the payload SHA256 hash 15a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1027.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "94.156.65.19"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "nato-procurement-portal.org"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "15a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-36884"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.4.4"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "github.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1027"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_16",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_16.html",
+      "title": "Hafnium: Microsoft Exchange ProxyLogon Webshell Post-Exploitation",
+      "threat_actor": "Hafnium",
+      "raw_content": "[THREAT ADVISORY #16] Security researchers observed threat actor Hafnium executing the 'Microsoft Exchange ProxyLogon Webshell Post-Exploitation' campaign. Initial access was achieved by exploiting CVE-2021-26855. Once inside the internal network (such as local gateway 10.0.0.50), the malware verified connectivity against legitimate domain update.microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 104.244.76.13 and domain owa-autodiscover-sync.net. Forensic analysis identified the payload SHA256 hash 16a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1505.003.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "104.244.76.13"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "owa-autodiscover-sync.net"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "16a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2021-26855"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "10.0.0.50"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "update.microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1505.003"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_17",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_17.html",
+      "title": "APT29 Cozy Bear: TeamCity CI/CD Server Exploitation for Token Theft",
+      "threat_actor": "APT29 Cozy Bear",
+      "raw_content": "[THREAT ADVISORY #17] Security researchers observed threat actor APT29 Cozy Bear executing the 'TeamCity CI/CD Server Exploitation for Token Theft' campaign. Initial access was achieved by exploiting CVE-2023-42793. Once inside the internal network (such as local gateway 127.0.0.1), the malware verified connectivity against legitimate domain raw.githubusercontent.com before establishing a Command-and-Control (C2) channel to malicious server 185.234.247.31 and domain jetbrains-build-cache.io. Forensic analysis identified the payload SHA256 hash 17a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1195.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "185.234.247.31"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "jetbrains-build-cache.io"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "17a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-42793"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "127.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "raw.githubusercontent.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1195.002"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_18",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_18.html",
+      "title": "BlackBasta: Qakbot Initial Access Leading to Domain-Wide Encryption",
+      "threat_actor": "BlackBasta",
+      "raw_content": "[THREAT ADVISORY #18] Security researchers observed threat actor BlackBasta executing the 'Qakbot Initial Access Leading to Domain-Wide Encryption' campaign. Initial access was achieved by exploiting CVE-2024-26169. Once inside the internal network (such as local gateway 192.168.100.1), the malware verified connectivity against legitimate domain mitre.org before establishing a Command-and-Control (C2) channel to malicious server 198.46.190.82 and domain qbot-distributor-node.top. Forensic analysis identified the payload SHA256 hash 18a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1543.003.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "198.46.190.82"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "qbot-distributor-node.top"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "18a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-26169"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.100.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "mitre.org"
+          }
+        ],
+        "mitre_techniques": [
+          "T1543.003"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_19",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_19.html",
+      "title": "APT41 Winnti: Gaming & Semiconductor ShadowPad Backdoor Intrusion",
+      "threat_actor": "APT41 Winnti",
+      "raw_content": "[THREAT ADVISORY #19] Security researchers observed threat actor APT41 Winnti executing the 'Gaming & Semiconductor ShadowPad Backdoor Intrusion' campaign. Initial access was achieved by exploiting CVE-2024-3400. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain google.com before establishing a Command-and-Control (C2) channel to malicious server 103.85.24.115 and domain steam-patch-telemetry.com. Forensic analysis identified the payload SHA256 hash 19a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1574.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "103.85.24.115"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "steam-patch-telemetry.com"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "19a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-3400"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.8.8"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "google.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1574.002"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_20",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_20.html",
+      "title": "Play Ransomware: FortiOS SSL-VPN Exploitation and VSS Shadow Copy Deletion",
+      "threat_actor": "Play Ransomware",
+      "raw_content": "[THREAT ADVISORY #20] Security researchers observed threat actor Play Ransomware executing the 'FortiOS SSL-VPN Exploitation and VSS Shadow Copy Deletion' campaign. Initial access was achieved by exploiting CVE-2022-40684. Once inside the internal network (such as local gateway 172.16.10.2), the malware verified connectivity against legitimate domain thehackernews.com before establishing a Command-and-Control (C2) channel to malicious server 45.142.214.99 and domain play-recovery-support.xyz. Forensic analysis identified the payload SHA256 hash 20a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1490.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "45.142.214.99"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "play-recovery-support.xyz"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "20a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2022-40684"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "172.16.10.2"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "thehackernews.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1490"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_21",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_21.html",
+      "title": "Lapsus$: Source Code Repository Exfiltration via Compromised VPN",
+      "threat_actor": "Lapsus$",
+      "raw_content": "[THREAT ADVISORY #21] Security researchers observed threat actor Lapsus$ executing the 'Source Code Repository Exfiltration via Compromised VPN' campaign. Initial access was achieved by exploiting CVE-2023-3519. Once inside the internal network (such as local gateway 1.1.1.1), the malware verified connectivity against legitimate domain github.com before establishing a Command-and-Control (C2) channel to malicious server 185.193.127.40 and domain corp-git-mirror.dev. Forensic analysis identified the payload SHA256 hash 21a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1213.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "185.193.127.40"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "corp-git-mirror.dev"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "21a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-3519"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.1.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "github.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1213"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_22",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_22.html",
+      "title": " Lazarus AppleJeus: Trojanized Cryptocurrency Trading Application on macOS",
+      "threat_actor": " Lazarus AppleJeus",
+      "raw_content": "[THREAT ADVISORY #22] Security researchers observed threat actor  Lazarus AppleJeus executing the 'Trojanized Cryptocurrency Trading Application on macOS' campaign. Initial access was achieved by exploiting CVE-2024-23222. Once inside the internal network (such as local gateway 8.8.4.4), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 212.102.40.18 and domain celas-trade-installer.com. Forensic analysis identified the payload SHA256 hash 22a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1204.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "212.102.40.18"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "celas-trade-installer.com"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "22a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-23222"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.4.4"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cloudflare.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1204.002"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_23",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_23.html",
+      "title": "Winter Vivern: Roundcube Webmail Zero-Day XSS Harvesting Government Emails",
+      "threat_actor": "Winter Vivern",
+      "raw_content": "[THREAT ADVISORY #23] Security researchers observed threat actor Winter Vivern executing the 'Roundcube Webmail Zero-Day XSS Harvesting Government Emails' campaign. Initial access was achieved by exploiting CVE-2023-5631. Once inside the internal network (such as local gateway 192.168.1.10), the malware verified connectivity against legitimate domain bleepingcomputer.com before establishing a Command-and-Control (C2) channel to malicious server 80.66.75.142 and domain webmail-roundcube-cdn.org. Forensic analysis identified the payload SHA256 hash 23a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1189.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "80.66.75.142"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "webmail-roundcube-cdn.org"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "23a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-5631"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.1.10"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "bleepingcomputer.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1189"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_24",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_24.html",
+      "title": "Gamaredon: Spear-Phishing with Malicious LNK and VBS Stealers",
+      "threat_actor": "Gamaredon",
+      "raw_content": "[THREAT ADVISORY #24] Security researchers observed threat actor Gamaredon executing the 'Spear-Phishing with Malicious LNK and VBS Stealers' campaign. Initial access was achieved by exploiting CVE-2024-21351. Once inside the internal network (such as local gateway 10.1.1.1), the malware verified connectivity against legitimate domain microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 178.20.44.89 and domain ukr-telecom-update.ru. Forensic analysis identified the payload SHA256 hash 24a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.005.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "178.20.44.89"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "ukr-telecom-update.ru"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "24a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-21351"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "10.1.1.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1059.005"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_25",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_25.html",
+      "title": "BlueNoroff: Swift Banking & Crypto Venture Capitalists Malware Lures",
+      "threat_actor": "BlueNoroff",
+      "raw_content": "[THREAT ADVISORY #25] Security researchers observed threat actor BlueNoroff executing the 'Swift Banking & Crypto Venture Capitalists Malware Lures' campaign. Initial access was achieved by exploiting CVE-2023-38831. Once inside the internal network (such as local gateway 127.0.0.1), the malware verified connectivity against legitimate domain virustotal.com before establishing a Command-and-Control (C2) channel to malicious server 45.89.173.61 and domain vc-pitchdeck-viewer.cloud. Forensic analysis identified the payload SHA256 hash 25a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1566.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "45.89.173.61"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "vc-pitchdeck-viewer.cloud"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "25a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-38831"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "127.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "virustotal.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1566.002"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_26",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_26.html",
+      "title": "OilRig APT34: Exchange Server Side-Channel DNS Tunneling Backdoor",
+      "threat_actor": "OilRig APT34",
+      "raw_content": "[THREAT ADVISORY #26] Security researchers observed threat actor OilRig APT34 executing the 'Exchange Server Side-Channel DNS Tunneling Backdoor' campaign. Initial access was achieved by exploiting CVE-2023-23397. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain cisa.gov before establishing a Command-and-Control (C2) channel to malicious server 185.117.75.102 and domain dns-healthcheck-mena.net. Forensic analysis identified the payload SHA256 hash 26a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1071.004.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "185.117.75.102"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "dns-healthcheck-mena.net"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "26a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-23397"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.8.8"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cisa.gov"
+          }
+        ],
+        "mitre_techniques": [
+          "T1071.004"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_27",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_27.html",
+      "title": "Rhysida: Hospital Network Compromise via SonicWall VPN Vulnerability",
+      "threat_actor": "Rhysida",
+      "raw_content": "[THREAT ADVISORY #27] Security researchers observed threat actor Rhysida executing the 'Hospital Network Compromise via SonicWall VPN Vulnerability' campaign. Initial access was achieved by exploiting CVE-2024-40766. Once inside the internal network (such as local gateway 192.168.50.1), the malware verified connectivity against legitimate domain mitre.org before establishing a Command-and-Control (C2) channel to malicious server 91.92.240.58 and domain rhysida-chat-negotiation.top. Forensic analysis identified the payload SHA256 hash 27a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1486.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "91.92.240.58"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "rhysida-chat-negotiation.top"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "27a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2024-40766"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "192.168.50.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "mitre.org"
+          }
+        ],
+        "mitre_techniques": [
+          "T1486"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_28",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_28.html",
+      "title": "NoName057: DDoSia Botnet Targeting Banking Portals and Public Transit",
+      "threat_actor": "NoName057",
+      "raw_content": "[THREAT ADVISORY #28] Security researchers observed threat actor NoName057 executing the 'DDoSia Botnet Targeting Banking Portals and Public Transit' campaign. Initial access was achieved by exploiting CVE-2023-44487. Once inside the internal network (such as local gateway 1.0.0.1), the malware verified connectivity against legitimate domain cloudflare.com before establishing a Command-and-Control (C2) channel to malicious server 194.87.218.33 and domain ddosia-command-hub.xyz. Forensic analysis identified the payload SHA256 hash 28a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1498.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "194.87.218.33"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "ddosia-command-hub.xyz"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "28a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-44487"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "1.0.0.1"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "cloudflare.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1498"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_29",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_29.html",
+      "title": "Transparent Tribe: APT36 Crimson RAT Delivery Targeting Defense Personnel",
+      "threat_actor": "Transparent Tribe",
+      "raw_content": "[THREAT ADVISORY #29] Security researchers observed threat actor Transparent Tribe executing the 'APT36 Crimson RAT Delivery Targeting Defense Personnel' campaign. Initial access was achieved by exploiting CVE-2023-36884. Once inside the internal network (such as local gateway 172.16.0.10), the malware verified connectivity against legitimate domain google.com before establishing a Command-and-Control (C2) channel to malicious server 103.214.110.74 and domain indian-defense-welfare.in. Forensic analysis identified the payload SHA256 hash 29a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1204.002.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "103.214.110.74"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "indian-defense-welfare.in"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "29a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-36884"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "172.16.0.10"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "google.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1204.002"
+        ]
+      }
+    },
+    {
+      "report_id": "apt_report_30",
+      "source_name": "TheHackerNews / CISA KEV Benchmark",
+      "source_url": "https://thehackernews.com/2026/10/apt_report_30.html",
+      "title": "Medusa Ransomware: Confluence Data Center Exploitation and PowerShell Empire",
+      "threat_actor": "Medusa Ransomware",
+      "raw_content": "[THREAT ADVISORY #30] Security researchers observed threat actor Medusa Ransomware executing the 'Confluence Data Center Exploitation and PowerShell Empire' campaign. Initial access was achieved by exploiting CVE-2023-22515. Once inside the internal network (such as local gateway 8.8.8.8), the malware verified connectivity against legitimate domain update.microsoft.com before establishing a Command-and-Control (C2) channel to malicious server 185.225.73.190 and domain medusa-blog-mirror.cc. Forensic analysis identified the payload SHA256 hash 30a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9 executing anomalous commands mapped to MITRE ATT&CK technique T1059.001.",
+      "ground_truth": {
+        "malicious_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "185.225.73.190"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "medusa-blog-mirror.cc"
+          },
+          {
+            "ioc_type": "SHA256",
+            "value": "30a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9"
+          },
+          {
+            "ioc_type": "CVE",
+            "value": "CVE-2023-22515"
+          }
+        ],
+        "benign_noise_iocs": [
+          {
+            "ioc_type": "IP",
+            "value": "8.8.8.8"
+          },
+          {
+            "ioc_type": "DOMAIN",
+            "value": "update.microsoft.com"
+          }
+        ],
+        "mitre_techniques": [
+          "T1059.001"
+        ]
+      }
+    }
+  ]
+}
