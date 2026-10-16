@@ -110,6 +110,8 @@ function renderFeeds(articles) {
         const snippet = art.raw_content ? art.raw_content.slice(0, 160) + '...' : 'Không có tóm tắt';
         const dateStr = art.published_date ? art.published_date.slice(0, 10) : 'Gần đây';
 
+        const sourceUrl = art.source_url || '#';
+
         return `
             <div class="feed-card" data-id="${art.id}">
                 <div>
@@ -117,11 +119,17 @@ function renderFeeds(articles) {
                         <span class="feed-source-badge ${badgeClass}">${art.source_name}</span>
                         <span class="feed-date">${dateStr}</span>
                     </div>
-                    <h3 class="feed-card-title">${art.title}</h3>
+                    <h3 class="feed-card-title">
+                        <a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="feed-title-link" title="Mở trang gốc tại ${art.source_name}">
+                            ${art.title} <span class="external-icon">↗</span>
+                        </a>
+                    </h3>
                     <p class="feed-card-snippet">${snippet}</p>
                 </div>
                 <div class="feed-card-footer">
-                    <span class="tlp-tag">&bull; TLP:CLEAR</span>
+                    <a href="${sourceUrl}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm btn-source">
+                        🔗 Bài gốc
+                    </a>
                     <button class="btn btn-primary btn-analyze-card" onclick="analyzeArticle(${art.id})">
                         🔍 Phân tích AI Agent
                     </button>
