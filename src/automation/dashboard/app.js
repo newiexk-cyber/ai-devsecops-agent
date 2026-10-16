@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadSystemStatus();
     loadFeeds();
     bindEvents();
+    initSastStudio();
 });
 
 // Toast notification
@@ -448,3 +449,230 @@ function bindEvents() {
     searchInput.addEventListener('input', filterFeeds);
     sourceSelect.addEventListener('change', filterFeeds);
 }
+
+// ==========================================================================
+// 6. SAST CODE AUDITOR & AUTO-PATCH STUDIO (DEVSECOPS)
+// ==========================================================================
+let sastPresets = {};
+let currentPatchedCode = '';
+
+async function initSastStudio() {
+    const codeInput = document.getElementById('sastCodeInput');
+    const langSelect = document.getElementById('sastLangSelect');
+    const filenameEl = document.getElementById('sastFilename');
+    const btnScan = document.getElementById('btnSastScan');
+    const btnClear = document.getElementById('btnSastClear');
+    const btnCopy = document.getElementById('btnCopyPatch');
+
+    // Load presets from API
+    try {
+        const res = await fetch('/api/sast/presets');
+        const data = await res.json();
+        if (data.status === 'success') {
+            sastPresets = data.presets;
+        }
+    } catch (err) {
+        console.warn('Lỗi nạp presets từ API:', err);
+    }
+
+    // Language dropdown change
+    if (langSelect && filenameEl) {
+        langSelect.addEventListener('change', () => {
+            const extMap = { csharp: 'cs', python: 'py', javascript: 'js', php: 'php', sql: 'sql' };
+            const ext = extMap[langSelect.value] || 'txt';
+            filenameEl.textContent = `Snippet.${ext}`;
+        });
+    }
+
+    // Preset button clicks
+    document.querySelectorAll('.sast-preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const key = chip.getAttribute('data-preset');
+            const preset = sastPresets[key];
+            if (preset && codeInput) {
+                codeInput.value = preset.code;
+                if (langSelect) {
+                    langSelect.value = preset.language;
+                    const extMap = { csharp: 'cs', python: 'py', javascript: 'js', php: 'php', sql: 'sql' };
+                    const ext = extMap[preset.language] || 'txt';
+                    filenameEl.textContent = `${key}.${ext}`;
+                }
+                showToast(`Đã nạp mẫu: ${preset.title}`, '🎯');
+            }
+        });
+    });
+
+    // Clear button
+    if (btnClear && codeInput) {
+        btnClear.addEventListener('click', () => {
+            codeInput.value = '';
+            document.getElementById('sastEmptyState').classList.remove('hidden');
+            document.getElementById('sastLoadingState').classList.add('hidden');
+            document.getElementById('sastResultContent').classList.add('hidden');
+            currentPatchedCode = '';
+            showToast('Đã xóa sạch khung soạn thảo', '🧹');
+        });
+    }
+
+    // Copy patch button
+    if (btnCopy) {
+        btnCopy.addEventListener('click', () => {
+            if (!currentPatchedCode) {
+                showToast('Chưa có mã nguồn vá lỗi để copy!', '⚠️');
+                return;
+            }
+            navigator.clipboard.writeText(currentPatchedCode).then(() => {
+                showToast('Đã copy bản vá an toàn vào bộ nhớ tạm!', '📋');
+            }).catch(() => {
+                showToast('Lỗi khi copy bản vá!', '❌');
+            });
+        });
+    }
+
+    // AI Scan & Auto-Patch button
+    if (btnScan) {
+        btnScan.addEventListener('click', handleSastScan);
+    }
+}
+
+async function handleSastScan() {
+    const codeInput = document.getElementById('sastCodeInput');
+    const langSelect = document.getElementById('sastLangSelect');
+    const filenameEl = document.getElementById('sastFilename');
+
+    const code = codeInput ? codeInput.value.trim() : '';
+    if (!code) {
+        showToast('Vui lòng dán đoạn mã nguồn hoặc chọn 1 mẫu thử nghiệm!', '⚠️');
+        return;
+    }
+
+    const emptyState = document.getElementById('sastEmptyState');
+    const loadingState = document.getElementById('sastLoadingState');
+    const resultContent = document.getElementById('sastResultContent');
+
+    // UI Loading state
+    emptyState.classList.add('hidden');
+    resultContent.classList.add('hidden');
+    loadingState.classList.remove('hidden');
+
+    // Animated progress simulation
+    const steps = loadingState.querySelectorAll('.scan-step-item');
+    steps.forEach((s, idx) => {
+        setTimeout(() => {
+            steps.forEach(st => st.classList.remove('active'));
+            if (s) s.classList.add('active');
+        }, idx * 400);
+    });
+
+    try {
+        const payload = {
+            code: code,
+            language: langSelect ? langSelect.value : 'csharp',
+            filename: filenameEl ? filenameEl.textContent : 'Snippet.cs'
+        };
+
+        const response = await fetch('/api/sast/scan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+        setTimeout(() => {
+            loadingState.classList.add('hidden');
+            if (data.status === 'success') {
+                renderSastResult(data);
+                resultContent.classList.remove('hidden');
+                showToast(`Quét hoàn tất: Phát hiện ${data.total_issues} điểm nghi vấn`, data.total_issues > 0 ? '⚠️' : '✅');
+            } else {
+                emptyState.classList.remove('hidden');
+                showToast(data.message || 'Lỗi khi quét mã nguồn', '❌');
+            }
+        }, 800);
+    } catch (err) {
+        loadingState.classList.add('hidden');
+        emptyState.classList.remove('hidden');
+        showToast('Không thể kết nối đến AI SAST Engine', '❌');
+        console.error('SAST scan error:', err);
+    }
+}
+
+function renderSastResult(data) {
+    const riskBadge = document.getElementById('sastRiskBadge');
+    const summaryText = document.getElementById('sastSummaryText');
+    const pillCrit = document.getElementById('pillCrit');
+    const pillHigh = document.getElementById('pillHigh');
+    const pillMed = document.getElementById('pillMed');
+    const traceList = document.getElementById('sastTraceList');
+    const findingsList = document.getElementById('sastFindingsList');
+    const patchDisplay = document.getElementById('sastPatchedCodeDisplay');
+
+    // 1. Severity counts
+    const crit = data.severity_counts.CRITICAL || 0;
+    const high = data.severity_counts.HIGH || 0;
+    const med = data.severity_counts.MEDIUM || 0;
+
+    if (pillCrit) pillCrit.textContent = `${crit} Critical`;
+    if (pillHigh) pillHigh.textContent = `${high} High`;
+    if (pillMed) pillMed.textContent = `${med} Med`;
+
+    // 2. Risk Badge & Summary Text
+    if (crit > 0) {
+        riskBadge.className = 'badge-risk critical';
+        riskBadge.textContent = 'CRITICAL RISK';
+        summaryText.textContent = `Phát hiện ${crit} lỗ hổng nghiêm trọng (RCE/SQLi) cần vá ngay!`;
+    } else if (high > 0) {
+        riskBadge.className = 'badge-risk high';
+        riskBadge.textContent = 'HIGH RISK';
+        summaryText.textContent = `Phát hiện ${high} lỗ hổng nguy cơ cao (XSS/Secret Leak/Path Traversal).`;
+    } else {
+        riskBadge.className = 'badge-risk safe';
+        riskBadge.textContent = 'SECURE PASS';
+        summaryText.textContent = 'Mã nguồn đạt chuẩn an toàn phòng thủ theo OWASP Top 10.';
+    }
+
+    // 3. Agent ReAct Trace
+    if (traceList) {
+        traceList.innerHTML = (data.agent_trace || []).map(tr => `
+            <div class="trace-item">
+                <div class="trace-phase">${escapeHtml(tr.phase)}</div>
+                <div class="trace-detail">${escapeHtml(tr.detail)}</div>
+            </div>
+        `).join('');
+    }
+
+    // 4. Findings List
+    if (findingsList) {
+        if (!data.findings || data.findings.length === 0) {
+            findingsList.innerHTML = `
+                <div class="finding-item" style="border-color: rgba(16, 185, 129, 0.4);">
+                    <div style="color: var(--color-emerald); font-size: 13px; font-weight: 700;">
+                        ✅ Không phát hiện lỗ hổng bảo mật nào trong đoạn mã này.
+                    </div>
+                </div>
+            `;
+        } else {
+            findingsList.innerHTML = data.findings.map(f => `
+                <div class="finding-item">
+                    <div class="finding-top">
+                        <div class="finding-title-group">
+                            <span class="finding-cwe">${escapeHtml(f.cwe)}</span>
+                            <span class="finding-name">${escapeHtml(f.title)}</span>
+                        </div>
+                        <span class="finding-line">Dòng: ${f.line} &bull; ${escapeHtml(f.owasp)}</span>
+                    </div>
+                    <div class="finding-desc">${escapeHtml(f.description)}</div>
+                    <div class="finding-snippet">🔴 Dòng code lỗi: ${escapeHtml(f.vulnerable_code)}</div>
+                    <div class="finding-advice">💡 <strong>Khuyến nghị khắc phục:</strong> ${escapeHtml(f.remediation_advice)}</div>
+                </div>
+            `).join('');
+        }
+    }
+
+    // 5. Patched Code
+    currentPatchedCode = data.patched_code || '';
+    if (patchDisplay) {
+        patchDisplay.textContent = currentPatchedCode;
+    }
+}
+

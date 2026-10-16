@@ -24,6 +24,7 @@ from src.security.enrichment_service import enrich_ioc_list
 from src.core.rule_generator import (
     generate_sigma_rule, generate_yara_rule, generate_firewall_blocklist, generate_stix_bundle
 )
+from src.core.sast_analyzer import analyze_code, get_preset_samples
 
 # Khởi tạo DB khi khởi động
 init_database()
@@ -47,6 +48,11 @@ class AnalyzeRequest(BaseModel):
     article_id: Optional[int] = None
     custom_title: Optional[str] = None
     custom_text: Optional[str] = None
+
+class SastScanRequest(BaseModel):
+    code: str
+    language: Optional[str] = "csharp"
+    filename: Optional[str] = None
 
 @app.on_event("startup")
 def startup_event():
@@ -202,6 +208,33 @@ def download_rule_file(report_id: str, rule_type: str):
         media_type=media_type,
         headers={"Content-Disposition": f"attachment; filename={filename}"}
     )
+
+# ==============================================================================
+# SAST DEVSECOPS API (AI CODE SECURITY AUDIT & AUTO-PATCH)
+# ==============================================================================
+@app.post("/api/sast/scan")
+def scan_code_security(payload: SastScanRequest):
+    """
+    Rà soát mã nguồn đầu vào bằng AI SAST Analyzer:
+    - Phát hiện lỗ hổng theo chuẩn OWASP Top 10 và CWE
+    - Thực hiện suy luận ReAct Agent để phân tích ngữ cảnh
+    - Tự động sinh bản vá mã nguồn an toàn (Remediation Patch)
+    """
+    result = analyze_code(
+        code=payload.code,
+        language=payload.language or "csharp",
+        filename=payload.filename
+    )
+    return result
+
+@app.get("/api/sast/presets")
+def get_sast_presets():
+    """
+    Trả về danh sách 5 bộ mã nguồn mẫu có sẵn lỗ hổng thực tế
+    để giảng viên và sinh viên kiểm thử nhanh trên Dashboard.
+    """
+    presets = get_preset_samples()
+    return {"status": "success", "presets": presets}
 
 # Phục vụ thư mục Dashboard tĩnh
 dashboard_dir = os.path.join(os.path.dirname(__file__), "dashboard")

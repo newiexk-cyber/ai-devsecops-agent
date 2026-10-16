@@ -105,6 +105,9 @@
             <button class="tab-btn" data-tab="tab-rules">
                 <span class="tab-icon">🛡️</span> Xưởng quy tắc phòng thủ (Rules Studio)
             </button>
+            <button class="tab-btn" data-tab="tab-sast">
+                <span class="tab-icon">💻</span> Rà soát mã nguồn (SAST Studio)
+            </button>
             <button class="tab-btn" data-tab="tab-about">
                 <span class="tab-icon">👥</span> Thành viên & Đề cương dự án
             </button>
@@ -288,7 +291,150 @@
             </div>
         </main>
 
-        <!-- TAB 4: TEAM & PROPOSAL ABOUT -->
+        <!-- TAB: SAST CODE AUDITOR & AUTO-PATCH -->
+        <main id="tab-sast" class="tab-content">
+            <div class="panel-header">
+                <div>
+                    <h2>💻 Phòng Rà Soát Mã Nguồn & Tự Động Vá Lỗi (AI SAST Auditor)</h2>
+                    <p class="panel-desc">Gửi đoạn mã nguồn của bạn (C#, Python, JavaScript, PHP, SQL) để AI Agent phân tích luồng dữ liệu (Taint Analysis), phát hiện lỗ hổng OWASP Top 10/CWE và tự động sinh bản vá an toàn.</p>
+                </div>
+            </div>
+
+            <!-- Quick Vulnerability Presets Bar -->
+            <div class="sast-preset-bar">
+                <div class="preset-title">
+                    <span class="preset-icon">🎯</span>
+                    <span>MẪU CODE KIỂM THỬ NHANH (BẤM ĐỂ NẠP NGAY):</span>
+                </div>
+                <div class="preset-chips">
+                    <button class="sast-preset-chip" data-preset="csharp_sqli">🔴 C# SQL Injection (Raw Query)</button>
+                    <button class="sast-preset-chip" data-preset="csharp_xss">🟠 C# Stored XSS (@Html.Raw)</button>
+                    <button class="sast-preset-chip" data-preset="python_cmdi">🔴 Python Command Injection</button>
+                    <button class="sast-preset-chip" data-preset="nodejs_secret">🟡 Node.js Hardcoded JWT Secret</button>
+                    <button class="sast-preset-chip" data-preset="csharp_pathtraversal">🟠 C# Path Traversal</button>
+                </div>
+            </div>
+
+            <!-- Main Workspace: Editor Left, Analysis & Patch Right -->
+            <div class="sast-grid">
+                <!-- Left: Code Input & Editor Controls -->
+                <div class="sast-editor-card">
+                    <div class="editor-header">
+                        <div class="editor-header-left">
+                            <span class="editor-dot red"></span>
+                            <span class="editor-dot yellow"></span>
+                            <span class="editor-dot green"></span>
+                            <span class="editor-filename" id="sastFilename">Snippet.cs</span>
+                        </div>
+                        <div class="editor-header-right">
+                            <label for="sastLangSelect" class="lang-label">Ngôn ngữ:</label>
+                            <select id="sastLangSelect" class="cyber-select select-compact">
+                                <option value="csharp" selected>C# (ASP.NET Core)</option>
+                                <option value="python">Python</option>
+                                <option value="javascript">JavaScript / Node.js</option>
+                                <option value="php">PHP</option>
+                                <option value="sql">SQL</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="editor-body">
+                        <textarea id="sastCodeInput" class="code-textarea" placeholder="// Dán đoạn mã nguồn của bạn vào đây (hoặc chọn 1 mẫu thử nghiệm ở trên)...
+// Ví dụ: Đoạn code C# Controller, Repository, Python script, Express route..."></textarea>
+                    </div>
+                    <div class="editor-footer">
+                        <button id="btnSastClear" class="btn btn-secondary">
+                            <span>🧹</span> Xóa trắng
+                        </button>
+                        <button id="btnSastScan" class="btn btn-primary glow-cyan">
+                            <span>🤖</span> AI Scan & Sinh Bản Vá (ReAct)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: AI Agent Analysis & Patch Results -->
+                <div class="sast-result-card">
+                    <div id="sastEmptyState" class="sast-empty-state">
+                        <div class="empty-icon">🛡️</div>
+                        <h3>Chưa có mã nguồn nào được quét</h3>
+                        <p>Nhập mã nguồn hoặc chọn một trong các mẫu kiểm thử ở thanh phía trên, sau đó bấm <strong>"AI Scan & Sinh Bản Vá"</strong>.</p>
+                        
+                        <div class="sast-benchmark-guide">
+                            <h4>📚 Bạn có thể lấy mã nguồn có lỗi ở đâu để kiểm thử?</h4>
+                            <ul>
+                                <li><strong>Mẫu bài tập trên lớp:</strong> Các bài thực hành C# ASP.NET Core MVC, Node.js nối chuỗi SQL hoặc viết API nhận <code>id</code> chưa validate.</li>
+                                <li><strong>OWASP Benchmark:</strong> Bộ kiểm thử chuẩn quốc tế với hàng ngàn mẫu kiểm tra lỗi cho Java và C#.</li>
+                                <li><strong>Vulncode-DB (vulncode-db.com):</strong> Kho mã nguồn thực tế ghi nhận các bản vá lỗ hổng CVE trong thế giới thực.</li>
+                                <li><strong>OWASP Juice Shop & NodeGoat:</strong> Ứng dụng mã nguồn mở cố tình chứa các lỗi OWASP Top 10 phổ biến.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="sastLoadingState" class="sast-loading-state hidden">
+                        <div class="cyber-spinner"></div>
+                        <h4>AI Agent đang rà soát mã nguồn & phân tích luồng dữ liệu...</h4>
+                        <div class="sast-scan-steps">
+                            <div class="scan-step-item active">🔍 Bước 1: Quét cú pháp & Taint Analysis</div>
+                            <div class="scan-step-item">🧠 Bước 2: Lọc cảnh báo ảo (False Positive Elimination)</div>
+                            <div class="scan-step-item">🛡️ Bước 3: Tự động tổng hợp bản vá an toàn (Safe Patch Synthesis)</div>
+                        </div>
+                    </div>
+
+                    <div id="sastResultContent" class="sast-result-content hidden">
+                        <!-- Summary Risk Badge -->
+                        <div class="sast-summary-header">
+                            <div class="summary-badge-group">
+                                <span id="sastRiskBadge" class="badge-risk critical">CRITICAL</span>
+                                <span class="summary-text" id="sastSummaryText">Phát hiện 1 lỗ hổng nghiêm trọng</span>
+                            </div>
+                            <div class="severity-mini-pills">
+                                <span class="pill pill-crit" id="pillCrit">0 Critical</span>
+                                <span class="pill pill-high" id="pillHigh">0 High</span>
+                                <span class="pill pill-med" id="pillMed">0 Med</span>
+                            </div>
+                        </div>
+
+                        <!-- Agent ReAct Trace Card -->
+                        <div class="agent-trace-box">
+                            <div class="trace-header">
+                                <span>🧠</span> CHU TRÌNH SUY LUẬN AI AGENT (REACT TRACE):
+                            </div>
+                            <div id="sastTraceList" class="trace-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Vulnerabilities List -->
+                        <div class="findings-box">
+                            <div class="findings-header">
+                                <span>⚠️</span> DANH SÁCH LỖ HỔNG XÁC MINH (TRUE POSITIVES):
+                            </div>
+                            <div id="sastFindingsList" class="findings-list">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Diff / Patch Viewer -->
+                        <div class="patch-viewer-box">
+                            <div class="patch-header">
+                                <div class="patch-header-left">
+                                    <span>🛡️</span> BẢN VÁ AN TOÀN TỰ ĐỘNG (SAFE REMEDIATION CODE)
+                                </div>
+                                <div class="patch-header-actions">
+                                    <button id="btnCopyPatch" class="btn btn-secondary btn-sm">
+                                        <span>📋</span> Copy Bản Vá
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="patch-code-wrapper">
+                                <pre class="code-pre"><code id="sastPatchedCodeDisplay"></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB 5: TEAM & PROPOSAL ABOUT -->
         <main id="tab-about" class="tab-content">
             <div class="card-panel about-panel">
                 <div class="about-hero">
