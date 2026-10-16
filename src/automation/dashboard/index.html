@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTI-SENTINEL // Cyber Threat Intelligence AI Agent</title>
+    <meta name="description" content="Hệ thống tự động thu thập, phân tích tình báo mối đe dọa mạng và sinh quy tắc phòng thủ ứng dụng AI Agent">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Background Grid Effect -->
+    <div class="cyber-grid-overlay"></div>
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <div class="brand-icon">
+                <span class="shield-pulse"></span>
+                <span class="shield-core">🛡️</span>
+            </div>
+            <div class="brand-meta">
+                <div class="brand-title">CTI-SENTINEL <span class="badge-version">v1.0-DEMO</span></div>
+                <div class="brand-sub">Autonomous Cyber Threat Intelligence AI Agent System</div>
+            </div>
+        </div>
+
+        <div class="nav-center-status">
+            <span class="pulse-indicator"></span>
+            <span class="status-text">SOC AGENT ACTIVE</span>
+            <span class="divider">|</span>
+            <span class="hutech-tag">HUTECH 23DATA1 &bull; GVHD: ThS. Đinh Phương Nam</span>
+        </div>
+
+        <div class="nav-actions">
+            <button id="btnFetchLive" class="btn btn-secondary">
+                <span class="icon">🔄</span> Cào dữ liệu mới
+            </button>
+            <button id="btnQuickDemo" class="btn btn-primary glow-cyan">
+                <span class="icon">⚡</span> Chạy Demo Mẫu
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Stat KPI Bar -->
+        <section class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon">📡</div>
+                <div class="kpi-info">
+                    <span class="kpi-value" id="kpiArticles">0</span>
+                    <span class="kpi-label">Bài báo cáo CTI đã cào</span>
+                </div>
+                <div class="kpi-tag">CISA &bull; THN &bull; Bleeping</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">🎯</div>
+                <div class="kpi-info">
+                    <span class="kpi-value" id="kpiIOCs">0</span>
+                    <span class="kpi-label">Chỉ số IoCs bóc tách</span>
+                </div>
+                <div class="kpi-tag text-emerald">IP, Domain, Hash, CVE</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">🧠</div>
+                <div class="kpi-info">
+                    <span class="kpi-value" id="kpiReports">0</span>
+                    <span class="kpi-label">Chiến dịch đã phân tích</span>
+                </div>
+                <div class="kpi-tag text-purple">ReAct Agent Loop</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-icon">🛡️</div>
+                <div class="kpi-info">
+                    <span class="kpi-value text-cyan">4 Lớp</span>
+                    <span class="kpi-label">Bộ quy tắc phòng thủ</span>
+                </div>
+                <div class="kpi-tag text-amber">Sigma, YARA, FW, STIX</div>
+            </div>
+        </section>
+
+        <!-- Navigation Tabs -->
+        <nav class="tab-nav">
+            <button class="tab-btn active" data-tab="tab-feeds">
+                <span class="tab-icon">📡</span> Dữ liệu cào nguồn mở (Live Feeds)
+            </button>
+            <button class="tab-btn" data-tab="tab-analyzer">
+                <span class="tab-icon">🧠</span> Phòng thí nghiệm AI Agent (ReAct)
+            </button>
+            <button class="tab-btn" data-tab="tab-rules">
+                <span class="tab-icon">🛡️</span> Xưởng quy tắc phòng thủ (Rules Studio)
+            </button>
+            <button class="tab-btn" data-tab="tab-about">
+                <span class="tab-icon">👥</span> Thành viên & Đề cương dự án
+            </button>
+        </nav>
+
+        <!-- TAB 1: LIVE CTI FEEDS -->
+        <main id="tab-feeds" class="tab-content active">
+            <div class="panel-header">
+                <div>
+                    <h2>Danh mục bài viết & cảnh báo CTI thu thập tự động</h2>
+                    <p class="panel-desc">Dữ liệu nguồn mở TLP:CLEAR được cào định kỳ từ CISA KEV Catalog, The Hacker News và BleepingComputer.</p>
+                </div>
+                <div class="feed-filter-bar">
+                    <input type="text" id="feedSearchInput" placeholder="Tìm kiếm CVE, Ransomware, IP..." class="cyber-input">
+                    <select id="feedSourceSelect" class="cyber-select">
+                        <option value="ALL">Tất cả nguồn (All Sources)</option>
+                        <option value="CISA KEV">CISA KEV Catalog</option>
+                        <option value="The Hacker News">The Hacker News</option>
+                        <option value="BleepingComputer">BleepingComputer</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="feedsGrid" class="feeds-grid">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p>Đang tải dữ liệu tình báo từ SQLite...</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB 2: AI AGENT REASONING STUDIO -->
+        <main id="tab-analyzer" class="tab-content">
+            <div class="analyzer-grid">
+                <!-- Input Panel -->
+                <div class="card-panel input-panel">
+                    <div class="card-header">
+                        <h3>Dữ liệu đầu vào (Threat Advisory Input)</h3>
+                        <span class="badge badge-cyan">Input Text / Article</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tiêu đề chiến dịch đe dọa:</label>
+                        <input type="text" id="analyzeTitleInput" class="cyber-input" placeholder="Ví dụ: Chiến dịch Ransomware Akira nhắm vào hạ tầng VPN">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nội dung văn bản phân tích kỹ thuật (Technical Advisory):</label>
+                        <textarea id="analyzeTextInput" class="cyber-textarea" rows="12" placeholder="Dán nội dung bài báo, báo cáo bảo mật hoặc cảnh báo lỗ hổng vào đây..."></textarea>
+                    </div>
+
+                    <div class="action-row">
+                        <button id="btnRunAgent" class="btn btn-primary glow-cyan btn-block">
+                            <span class="icon">🚀</span> Kích hoạt AI Agent (ReAct Analysis)
+                        </button>
+                        <button id="btnLoadSample" class="btn btn-secondary">
+                            Nạp bài mẫu
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Reasoning Trace & Extracted Info -->
+                <div class="card-panel results-panel">
+                    <div class="card-header">
+                        <h3>Luồng suy luận AI Agent (ReAct Trace) & Trích xuất</h3>
+                        <span id="analysisStatusBadge" class="badge badge-gray">Chờ kích hoạt</span>
+                    </div>
+
+                    <!-- Step Tracker Animation -->
+                    <div class="react-timeline" id="reactTimeline">
+                        <div class="timeline-step step-1" data-step="1">
+                            <div class="step-dot">1</div>
+                            <div class="step-label">Tiếp nhận & Làm sạch</div>
+                        </div>
+                        <div class="timeline-step step-2" data-step="2">
+                            <div class="step-dot">2</div>
+                            <div class="step-label">Bóc tách IoCs</div>
+                        </div>
+                        <div class="timeline-step step-3" data-step="3">
+                            <div class="step-dot">3</div>
+                            <div class="step-label">Thẩm định VirusTotal</div>
+                        </div>
+                        <div class="timeline-step step-4" data-step="4">
+                            <div class="step-dot">4</div>
+                            <div class="step-label">Ánh xạ MITRE ATT&CK</div>
+                        </div>
+                        <div class="timeline-step step-5" data-step="5">
+                            <div class="step-dot">5</div>
+                            <div class="step-label">Sinh quy tắc phòng thủ</div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Box -->
+                    <div id="agentSummaryBox" class="agent-summary-box hidden">
+                        <div class="summary-title">Tóm tắt phân tích chiến dịch:</div>
+                        <p id="agentSummaryText" class="summary-text"></p>
+                    </div>
+
+                    <!-- Extracted IOCs Section -->
+                    <div class="sub-section">
+                        <h4>Chỉ số xâm nhập trích xuất & Thẩm định danh tiếng:</h4>
+                        <div id="iocsContainer" class="iocs-container">
+                            <div class="empty-hint">Chưa có dữ liệu. Hãy chọn một bài báo hoặc bấm "Kích hoạt AI Agent".</div>
+                        </div>
+                    </div>
+
+                    <!-- MITRE ATT&CK Techniques -->
+                    <div class="sub-section">
+                        <h4>Kỹ thuật tấn công ánh xạ (MITRE ATT&CK Enterprise):</h4>
+                        <div id="mitreContainer" class="mitre-container">
+                            <div class="empty-hint">Chưa có kỹ thuật được ánh xạ.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB 3: DEFENSIVE RULES STUDIO -->
+        <main id="tab-rules" class="tab-content">
+            <div class="panel-header">
+                <div>
+                    <h2>Xưởng sinh quy tắc phòng thủ tự động (Defensive Rules Studio)</h2>
+                    <p class="panel-desc">Các quy tắc được biên dịch tự động và xác thực cú pháp, sẵn sàng triển khai trên hạ tầng SIEM, Endpoint và Firewall.</p>
+                </div>
+                <div class="rule-download-actions">
+                    <button id="btnCopyRule" class="btn btn-secondary">
+                        <span class="icon">📋</span> Sao chép mã
+                    </button>
+                    <a id="btnDownloadRule" class="btn btn-primary glow-cyan" href="#" download>
+                        <span class="icon">⬇️</span> Tải tệp về máy
+                    </a>
+                </div>
+            </div>
+
+            <!-- Subtab Bar for Rules -->
+            <div class="rules-subtabs">
+                <button class="rule-subtab active" data-rule="sigma">
+                    <span class="icon">📜</span> Sigma Rule (.yml) <span class="badge-sub">Wazuh / SIEM</span>
+                </button>
+                <button class="rule-subtab" data-rule="yara">
+                    <span class="icon">🔬</span> YARA Rule (.yar) <span class="badge-sub">Endpoint Malware</span>
+                </button>
+                <button class="rule-subtab" data-rule="firewall">
+                    <span class="icon">🧱</span> Firewall Blocklist (.txt) <span class="badge-sub">iptables / pfSense</span>
+                </button>
+                <button class="rule-subtab" data-rule="stix">
+                    <span class="icon">🌐</span> OASIS STIX 2.1 (.json) <span class="badge-sub">MISP / OpenCTI</span>
+                </button>
+            </div>
+
+            <div class="code-viewer-panel">
+                <div class="code-meta-bar">
+                    <span id="currentRuleMeta">Định dạng: SigmaHQ Rule (YAML)</span>
+                    <span class="badge badge-emerald">Cú pháp hợp lệ (Syntax Verified)</span>
+                </div>
+                <pre class="code-pre"><code id="ruleCodeDisplay"># Chưa có quy tắc nào được tạo.
+# Vui lòng sang tab "Phòng thí nghiệm AI Agent" để phân tích một bài báo và sinh luật phòng thủ tự động.</code></pre>
+            </div>
+        </main>
+
+        <!-- TAB 4: TEAM & PROPOSAL ABOUT -->
+        <main id="tab-about" class="tab-content">
+            <div class="card-panel about-panel">
+                <div class="about-hero">
+                    <h2>Đồ Án Chuyên Ngành // Đại Học Công Nghệ TP.HCM (HUTECH)</h2>
+                    <p class="about-topic">
+                        <strong>Đề tài:</strong> Nghiên cứu và xây dựng hệ thống tự động thu thập, phân tích tình báo mối đe dọa mạng và sinh quy tắc phòng thủ ứng dụng AI Agent (CTI-Sentinel)
+                    </p>
+                    <div class="about-adviser">
+                        <strong>Giảng viên hướng dẫn:</strong> ThS. Đinh Phương Nam
+                    </div>
+                </div>
+
+                <div class="team-cards-grid">
+                    <div class="member-card">
+                        <div class="member-badge">Trưởng nhóm / Data & DevOps</div>
+                        <div class="member-avatar">⚙️</div>
+                        <div class="member-name">Nguyễn Nhật Lâm</div>
+                        <div class="member-id">MSSV: 2387700036 &bull; Lớp: 23DATA1</div>
+                        <div class="member-role">
+                            Phụ trách: Data Ingestion Pipeline (CISA KEV, RSS TheHackerNews, BleepingComputer), SQLite Caching & FastApi Web Dashboard.
+                        </div>
+                    </div>
+
+                    <div class="member-card">
+                        <div class="member-badge">AI Core & Reasoning Lead</div>
+                        <div class="member-avatar">👑</div>
+                        <div class="member-name">Nguyễn Phi Phúc</div>
+                        <div class="member-id">MSSV: 2387701131 &bull; Lớp: 23DATA1</div>
+                        <div class="member-role">
+                            Phụ trách: Bộ não AI Agent ReAct, Prompt Engineering, Engine ánh xạ ma trận MITRE ATT&CK và sinh luật Sigma/YARA.
+                        </div>
+                    </div>
+
+                    <div class="member-card">
+                        <div class="member-badge">Threat Intel & Security Lead</div>
+                        <div class="member-avatar">🛡️</div>
+                        <div class="member-name">Trần Minh Khang</div>
+                        <div class="member-id">MSSV: 2387700027 &bull; Lớp: 23DATA1</div>
+                        <div class="member-role">
+                            Phụ trách: Module thẩm định danh tiếng IoC (VirusTotal API, AbuseIPDB API), bộ lọc Whitelist hạ tầng và gói chuẩn OASIS STIX 2.1.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="proposal-doc-box">
+                    <div class="doc-icon">📄</div>
+                    <div class="doc-info">
+                        <h4>Tài liệu Đề cương chi tiết đồ án (Đã hoàn thiện)</h4>
+                        <p>File đề cương chuẩn định dạng của Thầy Đinh Phương Nam, phân công 10 tuần, bảo đảm 100% tính minh bạch và an toàn pháp lý.</p>
+                    </div>
+                    <div class="doc-action">
+                        <span class="file-tag">DeCuong_DeTai_HoanThien.docx</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Popup -->
+    <div id="toastNotification" class="cyber-toast hidden">
+        <span class="toast-icon">ℹ️</span>
+        <span id="toastMessage">Thông báo</span>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
