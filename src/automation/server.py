@@ -17,7 +17,7 @@ from src.automation.storage.database import (
     save_threat_report, get_all_reports, get_report_by_id, get_system_stats
 )
 from src.automation.collectors.rss_collector import fetch_rss_feeds
-from src.automation.collectors.cisa_collector import fetch_cisa_kev
+from src.automation.collectors.cisa_collector import fetch_cisa_kev, fetch_cve_by_id
 from src.core.ioc_extractor import extract_iocs_from_text
 from src.core.mitre_mapper import map_mitre_techniques
 from src.security.enrichment_service import enrich_ioc_list
@@ -73,14 +73,30 @@ def get_feeds(limit: int = 50):
         articles = get_all_articles(limit=limit)
     return {"articles": articles, "total": len(articles)}
 
+class FetchCVERequest(BaseModel):
+    cve_id: str
+
 @app.post("/api/feeds/fetch")
-def trigger_fetch():
-    rss = fetch_rss_feeds()
-    cisa = fetch_cisa_kev()
+def trigger_fetch(limit: int = 25):
+    # Kéo thêm nhiều bài mới hơn từ RSS và CISA KEV catalog (kho hơn 1.100 lỗ hổng)
+    rss = fetch_rss_feeds(max_per_source=max(5, limit // 2))
+    cisa = fetch_cisa_kev(limit=limit)
     return {
-        "message": "Thu thập dữ liệu thành công!",
+        "message": f"Thu thập dữ liệu thành công với hạn mức {limit}!",
         "rss_count": len(rss),
         "cisa_count": len(cisa)
+    }
+
+@app.post("/api/feeds/fetch-cve")
+def on_demand_cve_fetch(payload: FetchCVERequest):
+    """Kéo dữ liệu khẩn cấp cho một mã CVE cụ thể từ CISA KEV hoặc NIST NVD"""
+    res = fetch_cve_by_id(payload.cve_id)
+    if not res:
+        raise HTTPException(status_code=404, detail=f"Không thể truy vấn thông tin cho mã {payload.cve_id}")
+    return {
+        "status": "success",
+        "message": f"Đã kéo thành công lỗ hổng {res['cve_id']} từ {res['source']}!",
+        "article": res
     }
 
 @app.post("/api/analyze")

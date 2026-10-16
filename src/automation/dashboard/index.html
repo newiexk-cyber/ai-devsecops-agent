@@ -37,6 +37,14 @@
         </div>
 
         <div class="nav-actions">
+            <div class="fetch-limit-group">
+                <span class="limit-label">Hạn mức cào:</span>
+                <select id="fetchLimitSelect" class="cyber-select select-compact">
+                    <option value="15">15 bài</option>
+                    <option value="30" selected>30 bài</option>
+                    <option value="60">60 bài</option>
+                </select>
+            </div>
             <button id="btnFetchLive" class="btn btn-secondary">
                 <span class="icon">🔄</span> Cào dữ liệu mới
             </button>
@@ -117,6 +125,29 @@
                         <option value="The Hacker News">The Hacker News</option>
                         <option value="BleepingComputer">BleepingComputer</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- On-Demand Emergency CVE Lookup Bar -->
+            <div class="on-demand-cve-bar">
+                <div class="cve-bar-header">
+                    <span class="cve-icon">⚡</span>
+                    <span class="cve-title">KÉO LỖ HỔNG KHẨN CẤP THEO MÃ (ON-DEMAND CVE LOOKUP):</span>
+                    <span class="cve-desc">Nếu crawler chưa kịp quét tới, bạn có thể nhập mã CVE cụ thể để hệ thống kéo trực tiếp từ CISA/NIST NVD về máy ngay lập tức!</span>
+                </div>
+                <div class="cve-bar-body">
+                    <div class="cve-input-wrap">
+                        <input type="text" id="inputOnDemandCVE" placeholder="Nhập mã CVE (ví dụ: CVE-2024-21887)..." class="cyber-input cve-input">
+                        <button id="btnFetchSpecificCVE" class="btn btn-primary glow-cyan">
+                            <span class="icon">🎯</span> Kéo về ngay
+                        </button>
+                    </div>
+                    <div class="cve-quick-tags">
+                        <span class="quick-label">Mẫu kiểm thử nhanh:</span>
+                        <button class="cve-chip" data-cve="CVE-2024-21887">CVE-2024-21887 (Ivanti)</button>
+                        <button class="cve-chip" data-cve="CVE-2023-20269">CVE-2023-20269 (Cisco)</button>
+                        <button class="cve-chip" data-cve="CVE-2024-38856">CVE-2024-38856 (Apache OFBiz)</button>
+                    </div>
                 </div>
             </div>
 

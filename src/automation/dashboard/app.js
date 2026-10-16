@@ -342,11 +342,12 @@ function bindEvents() {
         });
     });
 
-    // Fetch Live Feeds Button
+    // Fetch Live Feeds Button with Limit
     document.getElementById('btnFetchLive').addEventListener('click', async () => {
-        showToast('Đang quét và thu thập dữ liệu mới từ RSS & CISA...', '🔄');
+        const limit = document.getElementById('fetchLimitSelect')?.value || 25;
+        showToast(`Đang quét và thu thập dữ liệu (Hạn mức: ${limit} bài)...`, '🔄');
         try {
-            const res = await fetch('/api/feeds/fetch', { method: 'POST' });
+            const res = await fetch(`/api/feeds/fetch?limit=${limit}`, { method: 'POST' });
             const data = await res.json();
             showToast(`Thu thập hoàn tất: ${data.rss_count} bài RSS & ${data.cisa_count} cảnh báo CISA!`, '✅');
             loadFeeds();
@@ -354,6 +355,64 @@ function bindEvents() {
         } catch (e) {
             showToast('Lỗi khi cào dữ liệu', '❌');
         }
+    });
+
+    // On-Demand Specific CVE Lookup
+    const inputCVE = document.getElementById('inputOnDemandCVE');
+    const btnFetchCVE = document.getElementById('btnFetchSpecificCVE');
+
+    const handleFetchSpecificCVE = async () => {
+        const cveId = inputCVE.value.trim().toUpperCase();
+        if (!cveId) {
+            showToast('Vui lòng nhập mã CVE (ví dụ: CVE-2024-21887)!', '⚠️');
+            return;
+        }
+
+        showToast(`Đang truy vấn khẩn cấp ${cveId} từ CISA KEV / NIST NVD...`, '🔍');
+        btnFetchCVE.disabled = true;
+        try {
+            const res = await fetch('/api/feeds/fetch-cve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cve_id: cveId })
+            });
+            const data = await res.json();
+            if (res.ok && data.status === 'success') {
+                showToast(data.message, '🎯');
+                inputCVE.value = '';
+                await loadFeeds();
+                loadSystemStatus();
+
+                // Highlight and auto-analyze the newly fetched CVE
+                if (data.article?.id) {
+                    analyzeArticle(data.article.id);
+                }
+            } else {
+                showToast(data.detail || 'Không tìm thấy thông tin cho mã CVE này', '❌');
+            }
+        } catch (e) {
+            showToast('Lỗi truy vấn CVE: ' + e.message, '❌');
+        } finally {
+            btnFetchCVE.disabled = false;
+        }
+    };
+
+    if (btnFetchCVE && inputCVE) {
+        btnFetchCVE.addEventListener('click', handleFetchSpecificCVE);
+        inputCVE.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleFetchSpecificCVE();
+        });
+    }
+
+    // Quick CVE chips
+    document.querySelectorAll('.cve-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const cve = chip.getAttribute('data-cve');
+            if (cve && inputCVE) {
+                inputCVE.value = cve;
+                handleFetchSpecificCVE();
+            }
+        });
     });
 
     // Quick Demo Button

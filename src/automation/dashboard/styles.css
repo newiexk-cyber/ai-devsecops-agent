@@ -412,6 +412,105 @@ body {
     line-height: 1.6;
 }
 
+/* Limit selector in Navbar */
+.fetch-limit-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    padding: 2px 10px;
+    border-radius: var(--radius-md);
+}
+.limit-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.select-compact {
+    padding: 6px 10px;
+    font-size: 12px;
+    background: transparent;
+    border: none;
+    color: var(--color-cyan);
+    font-weight: 700;
+}
+
+/* On-Demand Emergency CVE Bar */
+.on-demand-cve-bar {
+    background: linear-gradient(135deg, rgba(0, 240, 255, 0.05) 0%, rgba(139, 92, 246, 0.05) 100%);
+    border: 1px solid var(--border-cyan);
+    box-shadow: 0 4px 20px rgba(0, 240, 255, 0.08);
+    border-radius: var(--radius-lg);
+    padding: 16px 20px;
+    margin-bottom: 22px;
+}
+.cve-bar-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.cve-icon {
+    font-size: 18px;
+}
+.cve-title {
+    font-size: 12.5px;
+    font-weight: 800;
+    color: var(--color-cyan);
+    letter-spacing: 0.5px;
+}
+.cve-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.cve-bar-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.cve-input-wrap {
+    display: flex;
+    gap: 8px;
+    flex: 1;
+    min-width: 320px;
+}
+.cve-input {
+    flex: 1;
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+}
+.cve-quick-tags {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.quick-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+.cve-chip {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-secondary);
+    padding: 5px 10px;
+    border-radius: var(--radius-sm);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.cve-chip:hover {
+    border-color: var(--color-cyan);
+    color: var(--color-cyan);
+    background: rgba(0, 240, 255, 0.08);
+}
+
 /* Feeds Grid */
 .feeds-grid {
     display: grid;
