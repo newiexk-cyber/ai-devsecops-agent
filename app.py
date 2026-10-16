@@ -27,8 +27,8 @@ def print_banner():
     👨‍🏫 GVHD: ThS. Đinh Phương Nam
     👥 Nhóm: Nguyễn Nhật Lâm - Trần Minh Khang - Nguyễn Phi Phúc (23DATA1)
     =================================================================
-    🌐 GIAO DIỆN WEB DEMO ĐANG CHẠY TẠI: http://127.0.0.1:8000
-    📑 API SWAGGER DOCS TẠI: http://127.0.0.1:8000/docs
+    🌐 GIAO DIỆN WEB DEMO ĐANG CHẠY TẠI: http://127.0.0.1:8080
+    📑 API SWAGGER DOCS TẠI: http://127.0.0.1:8080/docs
     =================================================================
 """
     print(banner)
@@ -37,4 +37,4 @@ if __name__ == "__main__":
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
     print_banner()
-    uvicorn.run("src.automation.server:app", host="127.0.0.1", port=8000, reload=False, log_level="info")
+    uvicorn.run("src.automation.server:app", host="127.0.0.1", port=8080, reload=False, log_level="info")
