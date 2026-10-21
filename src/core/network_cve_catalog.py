@@ -369,6 +369,30 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
         vendor = "Apache"
         target_asset = "Apache OFBiz Enterprise ERP / Web Endpoint"
         tags.append("#Apache")
+    elif "check point" in lower_text or "checkpoint" in lower_text:
+        vendor = "Check Point"
+        target_asset = "Check Point Quantum Security Gateway"
+        tags.append("#CheckPoint")
+    elif "f5" in lower_text or "big-ip" in lower_text:
+        vendor = "F5 Networks"
+        target_asset = "F5 BIG-IP TMUI / Load Balancer"
+        tags.append("#F5_Networks")
+    elif "citrix" in lower_text or "netscaler" in lower_text:
+        vendor = "Citrix"
+        target_asset = "Citrix NetScaler ADC / Gateway"
+        tags.append("#Citrix")
+    elif "juniper" in lower_text or "junos" in lower_text:
+        vendor = "Juniper"
+        target_asset = "Juniper SRX Firewall / Junos OS"
+        tags.append("#Juniper")
+    elif "sophos" in lower_text:
+        vendor = "Sophos"
+        target_asset = "Sophos XG Firewall"
+        tags.append("#Sophos")
+    elif "tp-link" in lower_text or "tplink" in lower_text:
+        vendor = "TP-Link"
+        target_asset = "TP-Link Enterprise Router"
+        tags.append("#TPLink")
     elif "vpn" in lower_text:
         tags.append("#VPN_Gateway")
 
