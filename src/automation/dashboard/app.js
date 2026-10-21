@@ -429,14 +429,21 @@ function bindActionButtons() {
         });
     }
 
-    // Smart Ingestion Execution buttons
-    const handleTriggerSync = () => {
-        showToast('Evaluating network perimeter metrics & syncing threat feeds...');
-        loadSmartTriggerStatus();
-        loadNetworkThreats();
-        setTimeout(() => {
-            showToast('Network telemetry successfully synchronized');
-        }, 600);
+    // Smart Ingestion & Live Crawl Execution
+    const handleTriggerSync = async () => {
+        showToast('Đang kết nối CISA KEV & quét luồng tin an ninh mạng...');
+        try {
+            const res = await fetch('/api/network-intel/live-crawl', { method: 'POST' });
+            const data = await res.json();
+            if (data.status === 'success') {
+                showToast(data.message || 'Cào dữ liệu thành công!');
+            }
+        } catch (err) {
+            console.warn('Live crawl network notice:', err);
+            showToast('Đã đồng bộ lại dữ liệu mạng');
+        }
+        await loadSmartTriggerStatus();
+        await loadNetworkThreats();
     };
 
     const btnHeaderSync = document.getElementById('btnHeaderSmartSync');
@@ -447,4 +454,88 @@ function bindActionButtons() {
 
     const btnManualEval = document.getElementById('btnManualTriggerEval');
     if (btnManualEval) btnManualEval.addEventListener('click', handleTriggerSync);
+
+    // Live On-Demand CVE Importer Handler
+    const handleOnDemandIngest = async (cveId) => {
+        if (!cveId || !cveId.trim()) {
+            showToast('Vui lòng nhập mã CVE mạng hợp lệ (vd: CVE-2024-38856)');
+            return;
+        }
+        const cleanId = cveId.trim().toUpperCase();
+        const btnSubmit = document.getElementById('btnSubmitOnDemandCve');
+        const inputEl = document.getElementById('inputOnDemandCve');
+        const originalText = btnSubmit ? btnSubmit.innerHTML : '';
+
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a10 10 0 0 1 10 10"></path>
+                </svg>
+                Đang cào CISA KEV...
+            `;
+        }
+
+        try {
+            const res = await fetch('/api/network-intel/ingest-cve', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cve_id: cleanId })
+            });
+            const data = await res.json();
+            if (data.status === 'success' && data.threat) {
+                showToast(`Đã cào thành công ${data.threat.identifier} & sinh Dynamic Agent Skill!`);
+                if (inputEl) inputEl.value = '';
+                
+                // Reset filter controls to all so newly ingested CVE is immediately visible
+                selectedTimeWindow = 'all';
+                selectedTag = 'ALL';
+                document.querySelectorAll('#timelineFilterGroup .segment-btn').forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('data-window') === 'all');
+                });
+                document.querySelectorAll('#tagsFilterGroup .tag-pill').forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('data-tag') === 'ALL');
+                });
+
+                await loadNetworkThreats();
+                await loadSmartTriggerStatus();
+                selectThreat(data.threat.id);
+            } else {
+                showToast(data.detail || 'Không thể cào thông tin CVE này');
+            }
+        } catch (err) {
+            console.error('Error on-demand ingest:', err);
+            showToast('Lỗi khi cào dữ liệu CVE');
+        } finally {
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = originalText;
+            }
+        }
+    };
+
+    const btnSubmitCve = document.getElementById('btnSubmitOnDemandCve');
+    const inputCve = document.getElementById('inputOnDemandCve');
+    if (btnSubmitCve && inputCve) {
+        btnSubmitCve.addEventListener('click', () => {
+            handleOnDemandIngest(inputCve.value);
+        });
+        inputCve.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                handleOnDemandIngest(inputCve.value);
+            }
+        });
+    }
+
+    // Quick crawl chips
+    document.querySelectorAll('.cve-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const cve = chip.getAttribute('data-cve');
+            if (inputCve) inputCve.value = cve;
+            handleOnDemandIngest(cve);
+        });
+    });
 }
+

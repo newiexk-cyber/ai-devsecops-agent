@@ -363,6 +363,107 @@ body {
 }
 
 /* ==============================================================================
+   LIVE INGESTION & ON-DEMAND CVE IMPORTER BAR
+   ============================================================================== */
+.ingestion-control-bar {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.ingestion-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 360px;
+}
+.ingestion-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+.ingestion-badge {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    padding: 3px 6px;
+    border-radius: var(--radius-sm);
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: var(--color-cyan);
+    letter-spacing: 0.5px;
+}
+.ingestion-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+.ingestion-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+.ingestion-input {
+    flex: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    outline: none;
+    transition: var(--transition);
+}
+.ingestion-input:focus {
+    border-color: var(--color-cyan);
+    background: var(--bg-surface);
+}
+.ingestion-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.chips-label {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+.quick-cve-chips {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.cve-chip {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+    font-size: 10px;
+    font-family: var(--font-mono);
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.cve-chip:hover {
+    border-color: var(--color-cyan);
+    color: var(--color-cyan);
+    background: rgba(56, 189, 248, 0.08);
+}
+
+/* ==============================================================================
    FILTER TOOLBAR (SEGMENTED CONTROL + SEARCH)
    ============================================================================== */
 .filter-toolbar {
@@ -1182,3 +1283,12 @@ body {
 .hidden {
     display: none !important;
 }
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+.spin {
+    animation: spin 1s linear infinite;
+}
+

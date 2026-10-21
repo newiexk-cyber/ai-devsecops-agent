@@ -26,7 +26,8 @@ from src.core.rule_generator import (
 )
 from src.core.sast_analyzer import analyze_code, get_preset_samples
 from src.core.network_cve_catalog import (
-    get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger
+    get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger,
+    ingest_live_network_cve
 )
 from src.core.network_skill_generator import (
     generate_explainable_trust_card, generate_network_agent_skill, list_available_skills
@@ -334,6 +335,51 @@ def get_skills_library():
         "status": "success",
         "total_skills": len(skills),
         "skills": skills
+    }
+
+class IngestNetworkCVERequest(BaseModel):
+    cve_id: str
+
+@app.post("/api/network-intel/ingest-cve")
+def ingest_network_cve_endpoint(payload: IngestNetworkCVERequest):
+    """
+    Cào và phân tích khẩn cấp một CVE mạng theo thời gian thực (CISA KEV / NIST NVD).
+    Tự động sinh Thẻ Giải trình XAI và Kỹ năng Tác tử (Dynamic Agent Skill).
+    """
+    threat = ingest_live_network_cve(payload.cve_id)
+    if not threat:
+        raise HTTPException(status_code=404, detail="Không thể truy vấn hoặc xử lý CVE mạng này")
+    xai_trust = generate_explainable_trust_card(threat)
+    agent_skill = generate_network_agent_skill(threat)
+    return {
+        "status": "success",
+        "message": f"Đã cào và sinh kỹ năng thành công cho {threat['identifier']}!",
+        "threat": threat,
+        "xai_trust": xai_trust,
+        "agent_skill": agent_skill
+    }
+
+@app.post("/api/network-intel/live-crawl")
+def execute_live_crawl(limit: int = 10):
+    """
+    Kích hoạt tiến trình cào dữ liệu mối đe dọa mạng trực tiếp từ CISA KEV & Threat Feeds.
+    """
+    cisa_items = fetch_cisa_kev(limit=limit)
+    new_ingested = []
+    for item in cisa_items:
+        cve_id = item.get("cveID") or item.get("cve_id")
+        if cve_id:
+            try:
+                t = ingest_live_network_cve(cve_id)
+                new_ingested.append(t["identifier"])
+            except Exception:
+                pass
+    
+    return {
+        "status": "success",
+        "message": f"Hoàn tất cào trực tiếp {len(cisa_items)} bản tin từ CISA KEV!",
+        "crawled_count": len(cisa_items),
+        "ingested_network_cves": list(set(new_ingested))
     }
 
 # Phục vụ thư mục Dashboard tĩnh

@@ -111,6 +111,35 @@
                 </div>
             </div>
 
+            <!-- Live Ingestion & On-Demand CVE Importer Bar -->
+            <div class="ingestion-control-bar">
+                <div class="ingestion-left">
+                    <div class="ingestion-title-group">
+                        <span class="ingestion-badge">LIVE CTI INGESTION</span>
+                        <span class="ingestion-label">Crawl & Ingest Network CVE:</span>
+                    </div>
+                    <div class="ingestion-input-wrap">
+                        <input type="text" id="inputOnDemandCve" placeholder="Nhập mã CVE mạng (vd: CVE-2024-38856, CVE-2023-20269)..." class="ingestion-input" />
+                        <button id="btnSubmitOnDemandCve" class="btn btn-primary btn-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Ingest & Generate Skill
+                        </button>
+                    </div>
+                </div>
+                <div class="ingestion-right">
+                    <span class="chips-label">QUICK CRAWL:</span>
+                    <div class="quick-cve-chips">
+                        <button class="cve-chip" data-cve="CVE-2024-38856">CVE-2024-38856 (Apache OFBiz RCE)</button>
+                        <button class="cve-chip" data-cve="CVE-2023-20269">CVE-2023-20269 (Cisco ASA VPN)</button>
+                        <button class="cve-chip" data-cve="CVE-2024-21887">CVE-2024-21887 (Ivanti SSL-VPN)</button>
+                    </div>
+                </div>
+            </div>
+
             <!-- Control Filter Toolbar -->
             <div class="filter-toolbar">
                 <div class="timeline-control">

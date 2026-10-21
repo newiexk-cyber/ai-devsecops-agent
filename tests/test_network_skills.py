@@ -5,7 +5,8 @@ Chuyên sâu An toàn Mạng, Timeline Date, Smart Trigger, Explainable AI (XAI)
 """
 import pytest
 from src.core.network_cve_catalog import (
-    get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger
+    get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger,
+    ingest_live_network_cve
 )
 from src.core.network_skill_generator import (
     generate_explainable_trust_card, generate_network_agent_skill, list_available_skills
@@ -84,3 +85,18 @@ def test_list_available_skills():
     assert "network_virtual_patching" in skill_names
     assert "network_containment_and_isolation" in skill_names
     assert "active_network_exposure_probe" in skill_names
+
+def test_ingest_live_network_cve():
+    # Ingest a live network CVE
+    threat = ingest_live_network_cve("CVE-2024-38856")
+    assert threat is not None
+    assert threat["identifier"] == "CVE-2024-38856"
+    assert threat["threat_domain"] == "network"
+    assert threat["date_category"] in ["24h_emergency", "active_30d"]
+    assert "tags" in threat
+    assert any("CVE" in t or "Apache" in t or "Network" in t for t in threat["tags"])
+    
+    # Verify it was added to the catalog at the top
+    catalog = get_network_threat_catalog()
+    assert catalog[0]["identifier"] == "CVE-2024-38856"
+
