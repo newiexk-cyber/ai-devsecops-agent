@@ -3,595 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTI-SENTINEL // Cyber Threat Intelligence AI Agent</title>
-    <meta name="description" content="Hệ thống tự động thu thập, phân tích tình báo mối đe dọa mạng và sinh quy tắc phòng thủ ứng dụng AI Agent">
+    <title>Network Sentinel // Autonomous Threat Intelligence & Agent Skills Orchestrator</title>
+    <meta name="description" content="Hệ thống Tình báo Mạng và Sinh Kỹ năng Tác tử Phòng thủ Tự động hóa ứng dụng AI Agent">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <!-- Background Grid Effect -->
-    <div class="cyber-grid-overlay"></div>
-    <div class="glow-orb orb-1"></div>
-    <div class="glow-orb orb-2"></div>
-
-    <!-- Top Navigation Bar -->
-    <header class="navbar">
-        <div class="nav-brand">
-            <div class="brand-icon">
-                <span class="shield-pulse"></span>
-                <span class="shield-core">🛡️</span>
+    <!-- Top Global Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="brand-logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    <path d="M9 12l2 2 4-4"/>
+                </svg>
             </div>
-            <div class="brand-meta">
-                <div class="brand-title">CTI-SENTINEL <span class="badge-version">v1.0-DEMO</span></div>
-                <div class="brand-sub">Autonomous Cyber Threat Intelligence AI Agent System</div>
+            <div class="brand-info">
+                <div class="brand-name">NETWORK SENTINEL // CTI-SENTINEL <span class="version-tag">ENTERPRISE v2.0</span></div>
+                <div class="brand-desc">Autonomous Network Intelligence & Agent Skills Orchestrator</div>
             </div>
         </div>
 
-        <div class="nav-center-status">
-            <span class="pulse-indicator"></span>
-            <span class="status-text">SOC AGENT ACTIVE</span>
-            <span class="divider">|</span>
-            <span class="hutech-tag">HUTECH 23DATA1 &bull; GVHD: ThS. Đinh Phương Nam</span>
+        <div class="header-meta">
+            <div class="status-indicator">
+                <span class="status-dot online"></span>
+                <span class="status-label">DEFENSE AGENT READY</span>
+            </div>
+            <span class="meta-separator">/</span>
+            <div class="academic-tag">HUTECH 23DATA1 &bull; Advisor: ThS. Dinh Phuong Nam</div>
         </div>
 
-        <div class="nav-actions">
-            <div class="fetch-limit-group">
-                <span class="limit-label">Hạn mức cào:</span>
-                <select id="fetchLimitSelect" class="cyber-select select-compact">
-                    <option value="15">15 bài</option>
-                    <option value="30" selected>30 bài</option>
-                    <option value="60">60 bài</option>
-                </select>
-            </div>
-            <button id="btnFetchLive" class="btn btn-secondary">
-                <span class="icon">🔄</span> Cào dữ liệu mới
-            </button>
-            <button id="btnQuickDemo" class="btn btn-primary glow-cyan">
-                <span class="icon">⚡</span> Chạy Demo Mẫu
+        <div class="header-actions">
+            <button id="btnHeaderSmartSync" class="btn btn-outline-cyan btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"></polyline>
+                    <polyline points="1 20 1 14 7 14"></polyline>
+                    <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                </svg>
+                Sync Network Feeds
             </button>
         </div>
     </header>
 
-    <div class="main-container">
-        <!-- Stat KPI Bar -->
-        <section class="kpi-grid">
-            <div class="kpi-card">
-                <div class="kpi-icon">📡</div>
-                <div class="kpi-info">
-                    <span class="kpi-value" id="kpiArticles">0</span>
-                    <span class="kpi-label">Bài báo cáo CTI đã cào</span>
-                </div>
-                <div class="kpi-tag">CISA &bull; THN &bull; Bleeping</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-icon">🎯</div>
-                <div class="kpi-info">
-                    <span class="kpi-value" id="kpiIOCs">0</span>
-                    <span class="kpi-label">Chỉ số IoCs bóc tách</span>
-                </div>
-                <div class="kpi-tag text-emerald">IP, Domain, Hash, CVE</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-icon">🧠</div>
-                <div class="kpi-info">
-                    <span class="kpi-value" id="kpiReports">0</span>
-                    <span class="kpi-label">Chiến dịch đã phân tích</span>
-                </div>
-                <div class="kpi-tag text-purple">ReAct Agent Loop</div>
-            </div>
-
-            <div class="kpi-card">
-                <div class="kpi-icon">🛡️</div>
-                <div class="kpi-info">
-                    <span class="kpi-value text-cyan">4 Lớp</span>
-                    <span class="kpi-label">Bộ quy tắc phòng thủ</span>
-                </div>
-                <div class="kpi-tag text-amber">Sigma, YARA, FW, STIX</div>
-            </div>
-        </section>
-
-        <!-- Navigation Tabs -->
-        <nav class="tab-nav">
-            <button class="tab-btn active" data-tab="tab-network">
-                <span class="tab-icon">🌐</span> Tình Báo Mạng & Agent Skills
+    <div class="app-layout">
+        <!-- Main Tab Navigation -->
+        <nav class="primary-nav">
+            <button class="nav-tab active" data-tab="tab-network-intel">
+                <span class="tab-title">Network Intelligence & XAI</span>
+                <span class="tab-badge" id="navThreatCount">8</span>
             </button>
-            <button class="tab-btn" data-tab="tab-feeds">
-                <span class="tab-icon">📡</span> Dữ liệu nguồn mở (Live Feeds)
+            <button class="nav-tab" data-tab="tab-skills-library">
+                <span class="tab-title">Agent Skills Library</span>
+                <span class="tab-badge">4 Tools</span>
             </button>
-            <button class="tab-btn" data-tab="tab-analyzer">
-                <span class="tab-icon">🧠</span> Phòng thí nghiệm AI Agent (ReAct)
+            <button class="nav-tab" data-tab="tab-smart-triggers">
+                <span class="tab-title">Smart Ingestion Controller</span>
+                <span class="tab-badge text-emerald" id="navTriggerBadge">Active</span>
             </button>
-            <button class="tab-btn" data-tab="tab-rules">
-                <span class="tab-icon">🛡️</span> Xưởng quy tắc phòng thủ (Rules Studio)
-            </button>
-            <button class="tab-btn" data-tab="tab-sast">
-                <span class="tab-icon">💻</span> Rà soát mã nguồn (SAST Studio)
-            </button>
-            <button class="tab-btn" data-tab="tab-about">
-                <span class="tab-icon">👥</span> Thành viên & Đề cương dự án
+            <button class="nav-tab" data-tab="tab-team-architecture">
+                <span class="tab-title">System Architecture</span>
             </button>
         </nav>
 
-        <!-- TAB 1: NETWORK INTELLIGENCE & DYNAMIC AGENT SKILLS -->
-        <main id="tab-network" class="tab-content active">
-            <div class="panel-header">
-                <div>
-                    <h2>🌐 Trung Tâm Tình Báo An Toàn Mạng & Kỹ Năng Tác Tử (Network Agent Hub)</h2>
-                    <p class="panel-desc">Tập trung 100% vào thiết bị biên (Firewall, Router, VPN), dải IP C2 Botnet, phân loại Timeline Date, Explainable AI (XAI) và tự sinh Kỹ năng Agent (Tool Calling) linh hoạt thay thế rules tĩnh.</p>
+        <!-- =================================================================== -->
+        <!-- TAB 1: NETWORK INTELLIGENCE & EXPLAINABLE AI WORKBENCH -->
+        <!-- =================================================================== -->
+        <main id="tab-network-intel" class="tab-view active">
+            <!-- Metrics Summary Grid -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">CRITICAL NETWORK CVEs</div>
+                    <div class="metric-value text-crimson" id="kpiCriticalCve">5</div>
+                    <div class="metric-sub">Pre-Auth RCE & Gateway Exploits</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">ACTIVE C2 NODES (LAST 30D)</div>
+                    <div class="metric-value text-amber" id="kpiActiveC2">2</div>
+                    <div class="metric-sub">Verified Cobalt Strike / Botnets</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">SMART CRAWL URGENCY</div>
+                    <div class="metric-value text-cyan" id="kpiUrgencyScore">90/100</div>
+                    <div class="metric-sub">Immediate Ingestion Recommended</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-label">AVERAGE TRUST SCORE</div>
+                    <div class="metric-value text-emerald">96.8%</div>
+                    <div class="metric-sub">Multi-Source Verification Engine</div>
                 </div>
             </div>
 
-            <!-- Smart Crawl Trigger Bar -->
-            <div class="smart-trigger-bar" id="smartTriggerBar">
-                <div class="trigger-header">
-                    <div class="trigger-title-wrap">
-                        <span class="trigger-icon">⚡</span>
-                        <span class="trigger-title">BỘ KÍCH HOẠT THÔNG MINH (KHI NÀO NÊN CÀO?):</span>
-                    </div>
-                    <div class="trigger-urgency-badge" id="triggerUrgencyBadge">ĐANG ĐÁNH GIÁ...</div>
-                </div>
-                <div class="trigger-body">
-                    <div class="trigger-reason-text" id="triggerReasonText">
-                        Đang phân tích các chỉ thị khẩn cấp CISA KEV, đột biến IP Botnet và chu kỳ TTL an toàn mạng...
-                    </div>
-                    <div class="trigger-action-wrap">
-                        <button id="btnSmartCrawlTrigger" class="btn btn-primary glow-cyan btn-sm">
-                            <span>🔄</span> Kích Hoạt Cào Thông Minh Ngay
-                        </button>
+            <!-- Smart Ingestion Trigger Banner -->
+            <div class="smart-banner" id="smartTriggerBanner">
+                <div class="banner-left">
+                    <div class="banner-badge badge-critical" id="bannerUrgencyBadge">CRITICAL URGENCY (90/100)</div>
+                    <div class="banner-text">
+                        <strong class="banner-title">Smart Ingestion Evaluator:</strong>
+                        <span id="bannerReasonText">Phát hiện Chỉ thị Khẩn cấp CISA KEV ED 24-01 + 2 CVE mạng nghiêm trọng (CVSS 10.0) đang bị khai thác thực tế.</span>
                     </div>
                 </div>
-            </div>
-
-            <!-- Timeline Date Aging Filter -->
-            <div class="network-timeline-bar">
-                <div class="timeline-title">
-                    <span class="timeline-icon">📅</span>
-                    <span>LỌC THEO TUỔI THỌ & MỨC ĐỘ KHẨN (DATE AGING):</span>
-                </div>
-                <div class="timeline-pills">
-                    <button class="timeline-pill active" data-window="all">⚪ Tất Cả Mạng</button>
-                    <button class="timeline-pill pill-24h" data-window="24h_emergency">🔴 24h Khẩn Cấp (0-Day / Fresh)</button>
-                    <button class="timeline-pill pill-30d" data-window="active_30d">🟠 Dưới 30 Ngày (Active Threats)</button>
-                    <button class="timeline-pill pill-1y" data-window="trending_1y">🟡 1 Năm Đổ Lại (Trending 2024-2026)</button>
-                    <button class="timeline-pill pill-3y" data-window="historical_3y">🔵 1 - 3 Năm (Historical C2/Botnet)</button>
-                </div>
-            </div>
-
-            <!-- Network Multi-Tags Filter -->
-            <div class="network-tags-bar">
-                <span class="tags-label">🏷️ Thẻ Thiết Bị & Giao Thức:</span>
-                <div class="network-tags-chips">
-                    <button class="net-tag-chip active" data-tag="ALL">Tất cả</button>
-                    <button class="net-tag-chip" data-tag="#Cisco">#Cisco</button>
-                    <button class="net-tag-chip" data-tag="#Fortinet">#Fortinet</button>
-                    <button class="net-tag-chip" data-tag="#PaloAlto">#PaloAlto</button>
-                    <button class="net-tag-chip" data-tag="#Ivanti">#Ivanti</button>
-                    <button class="net-tag-chip" data-tag="#SonicWall">#SonicWall</button>
-                    <button class="net-tag-chip" data-tag="#MikroTik">#MikroTik</button>
-                    <button class="net-tag-chip" data-tag="#VPN_Gateway">#VPN_Gateway</button>
-                    <button class="net-tag-chip" data-tag="#PreAuth_RCE">#PreAuth_RCE</button>
-                    <button class="net-tag-chip" data-tag="#C2_Botnet">#C2_Botnet</button>
-                </div>
-            </div>
-
-            <!-- Network Threat Grid: Threats List Left, XAI & Agent Skills Right -->
-            <div class="network-workspace-grid">
-                <!-- Left: Threats List -->
-                <div class="network-threats-panel">
-                    <div class="panel-subhead">
-                        <span>📡 DANH MỤC LỖ HỔNG & IP C2 MẠNG</span>
-                        <span id="networkThreatsCount" class="count-badge">8 Mục</span>
-                    </div>
-                    <div id="networkThreatsList" class="network-threats-list">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <!-- Right: Explainable AI (XAI) & Agent Skills Studio -->
-                <div class="network-skill-studio-panel">
-                    <div id="netSkillEmptyState" class="net-skill-empty">
-                        <div class="empty-icon">🌐</div>
-                        <h3>Chọn một Lỗ hổng Mạng hoặc IP C2 ở bên trái</h3>
-                        <p>Hệ thống sẽ kích hoạt <strong>Explainable AI (XAI)</strong> để giải trình nguyên nhân, bằng chứng, điểm tin cậy và tự sinh <strong>Kỹ Năng Tác Tử (Agent Skill)</strong> cho các Agent phòng thủ khác tự gọi thực thi.</p>
-                        
-                        <div class="skill-paradigm-box">
-                            <h4>💡 Vì sao chuyển từ "Rules Cũ" sang "Agent Skills Mới"?</h4>
-                            <ul>
-                                <li><strong>Rules cũ (Sigma/YARA):</strong> Cứng nhắc, không tự thích ứng được khi mô hình mạng thay đổi.</li>
-                                <li><strong>Agent Skills mới:</strong> Đóng gói chuẩn <code>Tool Definition (JSON Schema)</code> kèm mã Python tự động, cho phép Agent tự quyết định tham số, kiểm tra trước (Dry-run) và Rollback an toàn!</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div id="netSkillActiveContent" class="net-skill-active-content hidden">
-                        <!-- XAI Trust Card -->
-                        <div class="xai-trust-card">
-                            <div class="xai-header">
-                                <div class="xai-title-wrap">
-                                    <span class="xai-icon">🧠</span>
-                                    <span class="xai-title">EXPLAINABLE AI (XAI) // PHÂN TÍCH GIẢI TRÌNH & ĐỘ TIN CẬY</span>
-                                </div>
-                                <div class="xai-trust-score" id="xaiTrustScoreBadge">96% TRUSTED</div>
-                            </div>
-
-                            <div class="xai-section">
-                                <div class="xai-section-title">📌 Chuỗi Lập Luận Suy Luận (Step-by-Step Reasoning Chain):</div>
-                                <div id="xaiReasoningChain" class="xai-reasoning-list"></div>
-                            </div>
-
-                            <div class="xai-section">
-                                <div class="xai-section-title">🔍 Bằng Chứng Xác Thực Đối Chiếu (Evidence Sources):</div>
-                                <div id="xaiEvidenceSources" class="xai-evidence-list"></div>
-                            </div>
-
-                            <div class="xai-section">
-                                <div class="xai-section-title">💥 Phạm Vi Ảnh Hưởng Mạng (Network Blast Radius):</div>
-                                <div id="xaiBlastRadius" class="xai-blast-radius-text"></div>
-                            </div>
-                        </div>
-
-                        <!-- Dynamic Agent Skill Card -->
-                        <div class="agent-skill-card">
-                            <div class="skill-header">
-                                <div class="skill-title-wrap">
-                                    <span class="skill-icon">⚙️</span>
-                                    <div>
-                                        <div class="skill-name" id="agentSkillName">network_virtual_patching</div>
-                                        <div class="skill-desc" id="agentSkillDesc">Kỹ năng phòng thủ mạng</div>
-                                    </div>
-                                </div>
-                                <div class="skill-actions">
-                                    <button id="btnCopySkillSchema" class="btn btn-secondary btn-sm">
-                                        <span>📋</span> Copy Tool Schema (JSON)
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="skill-subtabs">
-                                <button class="skill-subtab-btn active" data-view="schema">Tool Schema (OpenAI/LangChain)</button>
-                                <button class="skill-subtab-btn" data-view="code">Mã Thực Thi Tác Tử (Python)</button>
-                            </div>
-
-                            <div class="skill-code-wrapper">
-                                <pre id="skillSchemaView" class="skill-code-pre"><code id="skillSchemaDisplay"></code></pre>
-                                <pre id="skillCodeView" class="skill-code-pre hidden"><code id="skillCodeDisplay"></code></pre>
-                            </div>
-
-                            <div class="skill-footer-meta">
-                                <div class="skill-meta-item">
-                                    <strong>Thiết bị hỗ trợ:</strong> <span id="skillTargetDevices">Cisco, Fortinet, Palo Alto, pfSense</span>
-                                </div>
-                                <div class="skill-meta-item">
-                                    <strong>Bước xác minh:</strong> <span id="skillVerificationStep">...</span>
-                                </div>
-                                <div class="skill-meta-item">
-                                    <strong>Rollback Skill:</strong> <code id="skillRollback">...</code>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- TAB 2: LIVE CTI FEEDS (LEGACY) -->
-        <main id="tab-feeds" class="tab-content">
-            <div class="panel-header">
-                <div>
-                    <h2>Danh mục bài viết & cảnh báo CTI thu thập tự động</h2>
-                    <p class="panel-desc">Dữ liệu nguồn mở TLP:CLEAR được cào định kỳ từ CISA KEV Catalog, The Hacker News và BleepingComputer.</p>
-                </div>
-                <div class="feed-filter-bar">
-                    <input type="text" id="feedSearchInput" placeholder="Tìm kiếm CVE, Ransomware, IP..." class="cyber-input">
-                    <select id="feedSourceSelect" class="cyber-select">
-                        <option value="ALL">Tất cả nguồn (All Sources)</option>
-                        <option value="CISA KEV">CISA KEV Catalog</option>
-                        <option value="The Hacker News">The Hacker News</option>
-                        <option value="BleepingComputer">BleepingComputer</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- On-Demand Emergency CVE Lookup Bar -->
-            <div class="on-demand-cve-bar">
-                <div class="cve-bar-header">
-                    <span class="cve-icon">⚡</span>
-                    <span class="cve-title">KÉO LỖ HỔNG KHẨN CẤP THEO MÃ (ON-DEMAND CVE LOOKUP):</span>
-                    <span class="cve-desc">Nếu crawler chưa kịp quét tới, bạn có thể nhập mã CVE cụ thể để hệ thống kéo trực tiếp từ CISA/NIST NVD về máy ngay lập tức!</span>
-                </div>
-                <div class="cve-bar-body">
-                    <div class="cve-input-wrap">
-                        <input type="text" id="inputOnDemandCVE" placeholder="Nhập mã CVE (ví dụ: CVE-2024-21887)..." class="cyber-input cve-input">
-                        <button id="btnFetchSpecificCVE" class="btn btn-primary glow-cyan">
-                            <span class="icon">🎯</span> Kéo về ngay
-                        </button>
-                    </div>
-                    <div class="cve-quick-tags">
-                        <span class="quick-label">Mẫu kiểm thử nhanh:</span>
-                        <button class="cve-chip" data-cve="CVE-2024-21887">CVE-2024-21887 (Ivanti)</button>
-                        <button class="cve-chip" data-cve="CVE-2023-20269">CVE-2023-20269 (Cisco)</button>
-                        <button class="cve-chip" data-cve="CVE-2024-38856">CVE-2024-38856 (Apache OFBiz)</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="feedsGrid" class="feeds-grid">
-                <div class="loading-state">
-                    <div class="spinner"></div>
-                    <p>Đang tải dữ liệu tình báo từ SQLite...</p>
-                </div>
-            </div>
-        </main>
-
-        <!-- TAB 2: AI AGENT REASONING STUDIO -->
-        <main id="tab-analyzer" class="tab-content">
-            <div class="analyzer-grid">
-                <!-- Input Panel -->
-                <div class="card-panel input-panel">
-                    <div class="card-header">
-                        <h3>Dữ liệu đầu vào (Threat Advisory Input)</h3>
-                        <span class="badge badge-cyan">Input Text / Article</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Tiêu đề chiến dịch đe dọa:</label>
-                        <input type="text" id="analyzeTitleInput" class="cyber-input" placeholder="Ví dụ: Chiến dịch Ransomware Akira nhắm vào hạ tầng VPN">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Nội dung văn bản phân tích kỹ thuật (Technical Advisory):</label>
-                        <textarea id="analyzeTextInput" class="cyber-textarea" rows="12" placeholder="Dán nội dung bài báo, báo cáo bảo mật hoặc cảnh báo lỗ hổng vào đây..."></textarea>
-                    </div>
-
-                    <div class="action-row">
-                        <button id="btnRunAgent" class="btn btn-primary glow-cyan btn-block">
-                            <span class="icon">🚀</span> Kích hoạt AI Agent (ReAct Analysis)
-                        </button>
-                        <button id="btnLoadSample" class="btn btn-secondary">
-                            Nạp bài mẫu
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Live Reasoning Trace & Extracted Info -->
-                <div class="card-panel results-panel">
-                    <div class="card-header">
-                        <h3>Luồng suy luận AI Agent (ReAct Trace) & Trích xuất</h3>
-                        <span id="analysisStatusBadge" class="badge badge-gray">Chờ kích hoạt</span>
-                    </div>
-
-                    <!-- Step Tracker Animation -->
-                    <div class="react-timeline" id="reactTimeline">
-                        <div class="timeline-step step-1" data-step="1">
-                            <div class="step-dot">1</div>
-                            <div class="step-label">Tiếp nhận & Làm sạch</div>
-                        </div>
-                        <div class="timeline-step step-2" data-step="2">
-                            <div class="step-dot">2</div>
-                            <div class="step-label">Bóc tách IoCs</div>
-                        </div>
-                        <div class="timeline-step step-3" data-step="3">
-                            <div class="step-dot">3</div>
-                            <div class="step-label">Thẩm định VirusTotal</div>
-                        </div>
-                        <div class="timeline-step step-4" data-step="4">
-                            <div class="step-dot">4</div>
-                            <div class="step-label">Ánh xạ MITRE ATT&CK</div>
-                        </div>
-                        <div class="timeline-step step-5" data-step="5">
-                            <div class="step-dot">5</div>
-                            <div class="step-label">Sinh quy tắc phòng thủ</div>
-                        </div>
-                    </div>
-
-                    <!-- Summary Box -->
-                    <div id="agentSummaryBox" class="agent-summary-box hidden">
-                        <div class="summary-title">Tóm tắt phân tích chiến dịch:</div>
-                        <p id="agentSummaryText" class="summary-text"></p>
-                    </div>
-
-                    <!-- Extracted IOCs Section -->
-                    <div class="sub-section">
-                        <h4>Chỉ số xâm nhập trích xuất & Thẩm định danh tiếng:</h4>
-                        <div id="iocsContainer" class="iocs-container">
-                            <div class="empty-hint">Chưa có dữ liệu. Hãy chọn một bài báo hoặc bấm "Kích hoạt AI Agent".</div>
-                        </div>
-                    </div>
-
-                    <!-- MITRE ATT&CK Techniques -->
-                    <div class="sub-section">
-                        <h4>Kỹ thuật tấn công ánh xạ (MITRE ATT&CK Enterprise):</h4>
-                        <div id="mitreContainer" class="mitre-container">
-                            <div class="empty-hint">Chưa có kỹ thuật được ánh xạ.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-
-        <!-- TAB 3: DEFENSIVE RULES STUDIO -->
-        <main id="tab-rules" class="tab-content">
-            <div class="panel-header">
-                <div>
-                    <h2>Xưởng sinh quy tắc phòng thủ tự động (Defensive Rules Studio)</h2>
-                    <p class="panel-desc">Các quy tắc được biên dịch tự động và xác thực cú pháp, sẵn sàng triển khai trên hạ tầng SIEM, Endpoint và Firewall.</p>
-                </div>
-                <div class="rule-download-actions">
-                    <button id="btnCopyRule" class="btn btn-secondary">
-                        <span class="icon">📋</span> Sao chép mã
+                <div class="banner-right">
+                    <button id="btnSmartTriggerAction" class="btn btn-primary btn-sm">
+                        Execute Smart Ingestion
                     </button>
-                    <a id="btnDownloadRule" class="btn btn-primary glow-cyan" href="#" download>
-                        <span class="icon">⬇️</span> Tải tệp về máy
-                    </a>
                 </div>
             </div>
 
-            <!-- Subtab Bar for Rules -->
-            <div class="rules-subtabs">
-                <button class="rule-subtab active" data-rule="sigma">
-                    <span class="icon">📜</span> Sigma Rule (.yml) <span class="badge-sub">Wazuh / SIEM</span>
-                </button>
-                <button class="rule-subtab" data-rule="yara">
-                    <span class="icon">🔬</span> YARA Rule (.yar) <span class="badge-sub">Endpoint Malware</span>
-                </button>
-                <button class="rule-subtab" data-rule="firewall">
-                    <span class="icon">🧱</span> Firewall Blocklist (.txt) <span class="badge-sub">iptables / pfSense</span>
-                </button>
-                <button class="rule-subtab" data-rule="stix">
-                    <span class="icon">🌐</span> OASIS STIX 2.1 (.json) <span class="badge-sub">MISP / OpenCTI</span>
-                </button>
-            </div>
-
-            <div class="code-viewer-panel">
-                <div class="code-meta-bar">
-                    <span id="currentRuleMeta">Định dạng: SigmaHQ Rule (YAML)</span>
-                    <span class="badge badge-emerald">Cú pháp hợp lệ (Syntax Verified)</span>
+            <!-- Control Filter Toolbar -->
+            <div class="filter-toolbar">
+                <div class="timeline-control">
+                    <span class="filter-label">TIMELINE:</span>
+                    <div class="segmented-control" id="timelineFilterGroup">
+                        <button class="segment-btn active" data-window="all">All Data</button>
+                        <button class="segment-btn btn-segment-emergency" data-window="24h_emergency">24h Emergency</button>
+                        <button class="segment-btn btn-segment-active" data-window="active_30d">Active 30 Days</button>
+                        <button class="segment-btn" data-window="trending_1y">Past 1 Year</button>
+                        <button class="segment-btn" data-window="historical_3y">1 - 3 Years</button>
+                    </div>
                 </div>
-                <pre class="code-pre"><code id="ruleCodeDisplay"># Chưa có quy tắc nào được tạo.
-# Vui lòng sang tab "Phòng thí nghiệm AI Agent" để phân tích một bài báo và sinh luật phòng thủ tự động.</code></pre>
-            </div>
-        </main>
 
-        <!-- TAB: SAST CODE AUDITOR & AUTO-PATCH -->
-        <main id="tab-sast" class="tab-content">
-            <div class="panel-header">
-                <div>
-                    <h2>💻 Phòng Rà Soát Mã Nguồn & Tự Động Vá Lỗi (AI SAST Auditor)</h2>
-                    <p class="panel-desc">Gửi đoạn mã nguồn của bạn (C#, Python, JavaScript, PHP, SQL) để AI Agent phân tích luồng dữ liệu (Taint Analysis), phát hiện lỗ hổng OWASP Top 10/CWE và tự động sinh bản vá an toàn.</p>
+                <div class="search-control">
+                    <input type="text" id="networkSearchInput" placeholder="Filter by CVE, IP, Vendor (Cisco, Fortinet...)" class="search-input">
                 </div>
             </div>
 
-            <!-- Quick Vulnerability Presets Bar -->
-            <div class="sast-preset-bar">
-                <div class="preset-title">
-                    <span class="preset-icon">🎯</span>
-                    <span>MẪU CODE KIỂM THỬ NHANH (BẤM ĐỂ NẠP NGAY):</span>
-                </div>
-                <div class="preset-chips">
-                    <button class="sast-preset-chip" data-preset="csharp_sqli">🔴 C# SQL Injection (Raw Query)</button>
-                    <button class="sast-preset-chip" data-preset="csharp_xss">🟠 C# Stored XSS (@Html.Raw)</button>
-                    <button class="sast-preset-chip" data-preset="python_cmdi">🔴 Python Command Injection</button>
-                    <button class="sast-preset-chip" data-preset="nodejs_secret">🟡 Node.js Hardcoded JWT Secret</button>
-                    <button class="sast-preset-chip" data-preset="csharp_pathtraversal">🟠 C# Path Traversal</button>
+            <!-- Network Tags Row -->
+            <div class="tags-filter-bar">
+                <span class="tags-title">TAGS:</span>
+                <div class="tags-list" id="tagsFilterGroup">
+                    <button class="tag-pill active" data-tag="ALL">All Targets</button>
+                    <button class="tag-pill" data-tag="#Cisco">Cisco</button>
+                    <button class="tag-pill" data-tag="#Fortinet">Fortinet</button>
+                    <button class="tag-pill" data-tag="#PaloAlto">Palo Alto</button>
+                    <button class="tag-pill" data-tag="#Ivanti">Ivanti</button>
+                    <button class="tag-pill" data-tag="#SonicWall">SonicWall</button>
+                    <button class="tag-pill" data-tag="#MikroTik">MikroTik</button>
+                    <button class="tag-pill" data-tag="#VPN_Gateway">VPN Gateway</button>
+                    <button class="tag-pill" data-tag="#PreAuth_RCE">Pre-Auth RCE</button>
+                    <button class="tag-pill" data-tag="#C2_Botnet">C2 Botnet</button>
                 </div>
             </div>
 
-            <!-- Main Workspace: Editor Left, Analysis & Patch Right -->
-            <div class="sast-grid">
-                <!-- Left: Code Input & Editor Controls -->
-                <div class="sast-editor-card">
-                    <div class="editor-header">
-                        <div class="editor-header-left">
-                            <span class="editor-dot red"></span>
-                            <span class="editor-dot yellow"></span>
-                            <span class="editor-dot green"></span>
-                            <span class="editor-filename" id="sastFilename">Snippet.cs</span>
-                        </div>
-                        <div class="editor-header-right">
-                            <label for="sastLangSelect" class="lang-label">Ngôn ngữ:</label>
-                            <select id="sastLangSelect" class="cyber-select select-compact">
-                                <option value="csharp" selected>C# (ASP.NET Core)</option>
-                                <option value="python">Python</option>
-                                <option value="javascript">JavaScript / Node.js</option>
-                                <option value="php">PHP</option>
-                                <option value="sql">SQL</option>
-                            </select>
-                        </div>
+            <!-- 2-Column Master-Detail Workbench -->
+            <div class="workbench-grid">
+                <!-- Left: Threats Feed Column -->
+                <div class="threats-column">
+                    <div class="column-header">
+                        <span class="column-title">NETWORK THREAT TELEMETRY</span>
+                        <span class="column-counter" id="lblThreatCounter">8 records</span>
                     </div>
-                    <div class="editor-body">
-                        <textarea id="sastCodeInput" class="code-textarea" placeholder="// Dán đoạn mã nguồn của bạn vào đây (hoặc chọn 1 mẫu thử nghiệm ở trên)...
-// Ví dụ: Đoạn code C# Controller, Repository, Python script, Express route..."></textarea>
-                    </div>
-                    <div class="editor-footer">
-                        <button id="btnSastClear" class="btn btn-secondary">
-                            <span>🧹</span> Xóa trắng
-                        </button>
-                        <button id="btnSastScan" class="btn btn-primary glow-cyan">
-                            <span>🤖</span> AI Scan & Sinh Bản Vá (ReAct)
-                        </button>
+                    <div class="threats-card-list" id="threatCardList">
+                        <!-- Rendered dynamically -->
                     </div>
                 </div>
 
-                <!-- Right: AI Agent Analysis & Patch Results -->
-                <div class="sast-result-card">
-                    <div id="sastEmptyState" class="sast-empty-state">
-                        <div class="empty-icon">🛡️</div>
-                        <h3>Chưa có mã nguồn nào được quét</h3>
-                        <p>Nhập mã nguồn hoặc chọn một trong các mẫu kiểm thử ở thanh phía trên, sau đó bấm <strong>"AI Scan & Sinh Bản Vá"</strong>.</p>
-                        
-                        <div class="sast-benchmark-guide">
-                            <h4>📚 Bạn có thể lấy mã nguồn có lỗi ở đâu để kiểm thử?</h4>
-                            <ul>
-                                <li><strong>Mẫu bài tập trên lớp:</strong> Các bài thực hành C# ASP.NET Core MVC, Node.js nối chuỗi SQL hoặc viết API nhận <code>id</code> chưa validate.</li>
-                                <li><strong>OWASP Benchmark:</strong> Bộ kiểm thử chuẩn quốc tế với hàng ngàn mẫu kiểm tra lỗi cho Java và C#.</li>
-                                <li><strong>Vulncode-DB (vulncode-db.com):</strong> Kho mã nguồn thực tế ghi nhận các bản vá lỗ hổng CVE trong thế giới thực.</li>
-                                <li><strong>OWASP Juice Shop & NodeGoat:</strong> Ứng dụng mã nguồn mở cố tình chứa các lỗi OWASP Top 10 phổ biến.</li>
-                            </ul>
+                <!-- Right: Explainable AI & Agent Skill Studio -->
+                <div class="details-column">
+                    <div id="detailsEmptyState" class="details-empty">
+                        <div class="empty-icon-wrap">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <line x1="12" y1="16" x2="12" y2="12"></line>
+                                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                        </div>
+                        <h3>Select a Network Threat to Inspect</h3>
+                        <p>Choose any CVE or C2 IP entry from the left telemetry feed to inspect the <strong>Explainable AI (XAI) Trust Report</strong> and generate an executable <strong>Dynamic Agent Skill</strong>.</p>
+                        <div class="empty-tip-box">
+                            <div class="tip-title">Core Paradigm Shift: Dynamic Agent Skills vs Static Rules</div>
+                            <div class="tip-desc">
+                                Traditional rigid rules (Sigma, YARA text strings) break when target network topologies differ. 
+                                Dynamic Agent Skills generate functional Tool Definitions adhering to OpenAI/LangChain JSON Schemas, allowing downstream autonomous agents to adjust parameters, perform dry-run preflights, and safely isolate network assets.
+                            </div>
                         </div>
                     </div>
 
-                    <div id="sastLoadingState" class="sast-loading-state hidden">
-                        <div class="cyber-spinner"></div>
-                        <h4>AI Agent đang rà soát mã nguồn & phân tích luồng dữ liệu...</h4>
-                        <div class="sast-scan-steps">
-                            <div class="scan-step-item active">🔍 Bước 1: Quét cú pháp & Taint Analysis</div>
-                            <div class="scan-step-item">🧠 Bước 2: Lọc cảnh báo ảo (False Positive Elimination)</div>
-                            <div class="scan-step-item">🛡️ Bước 3: Tự động tổng hợp bản vá an toàn (Safe Patch Synthesis)</div>
-                        </div>
-                    </div>
-
-                    <div id="sastResultContent" class="sast-result-content hidden">
-                        <!-- Summary Risk Badge -->
-                        <div class="sast-summary-header">
-                            <div class="summary-badge-group">
-                                <span id="sastRiskBadge" class="badge-risk critical">CRITICAL</span>
-                                <span class="summary-text" id="sastSummaryText">Phát hiện 1 lỗ hổng nghiêm trọng</span>
-                            </div>
-                            <div class="severity-mini-pills">
-                                <span class="pill pill-crit" id="pillCrit">0 Critical</span>
-                                <span class="pill pill-high" id="pillHigh">0 High</span>
-                                <span class="pill pill-med" id="pillMed">0 Med</span>
-                            </div>
-                        </div>
-
-                        <!-- Agent ReAct Trace Card -->
-                        <div class="agent-trace-box">
-                            <div class="trace-header">
-                                <span>🧠</span> CHU TRÌNH SUY LUẬN AI AGENT (REACT TRACE):
-                            </div>
-                            <div id="sastTraceList" class="trace-list">
-                                <!-- Populated dynamically -->
-                            </div>
-                        </div>
-
-                        <!-- Vulnerabilities List -->
-                        <div class="findings-box">
-                            <div class="findings-header">
-                                <span>⚠️</span> DANH SÁCH LỖ HỔNG XÁC MINH (TRUE POSITIVES):
-                            </div>
-                            <div id="sastFindingsList" class="findings-list">
-                                <!-- Populated dynamically -->
-                            </div>
-                        </div>
-
-                        <!-- Diff / Patch Viewer -->
-                        <div class="patch-viewer-box">
-                            <div class="patch-header">
-                                <div class="patch-header-left">
-                                    <span>🛡️</span> BẢN VÁ AN TOÀN TỰ ĐỘNG (SAFE REMEDIATION CODE)
+                    <div id="detailsActiveContent" class="details-content hidden">
+                        <!-- Threat Overview Header -->
+                        <div class="threat-overview-card">
+                            <div class="overview-top">
+                                <div class="overview-badges">
+                                    <span class="badge" id="ovSeverityBadge">CRITICAL</span>
+                                    <span class="badge badge-date" id="ovDateBadge">24H EMERGENCY</span>
+                                    <span class="badge badge-vendor" id="ovVendorBadge">IVANTI</span>
                                 </div>
-                                <div class="patch-header-actions">
-                                    <button id="btnCopyPatch" class="btn btn-secondary btn-sm">
-                                        <span>📋</span> Copy Bản Vá
+                                <div class="overview-id" id="ovIdentifier">CVE-2024-21887</div>
+                            </div>
+                            <div class="overview-title" id="ovTitle">Ivanti Connect Secure / Policy Secure Gateway Pre-Auth RCE</div>
+                            <div class="overview-meta-row">
+                                <span class="meta-item"><strong>Target Asset:</strong> <span id="ovTargetAsset">Ivanti Connect Secure SSL-VPN Gateway</span></span>
+                                <span class="meta-item"><strong>Protocol:</strong> <span id="ovProtocol">HTTPS (Port 443)</span></span>
+                                <span class="meta-item"><strong>CVSS Base:</strong> <span id="ovCvss" class="text-crimson">9.1</span></span>
+                            </div>
+                            <div class="overview-tags" id="ovTagsList"></div>
+                        </div>
+
+                        <!-- 1. Explainable AI (XAI) Trust Report -->
+                        <div class="xai-report-card">
+                            <div class="card-section-header">
+                                <div class="section-title">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                                    </svg>
+                                    EXPLAINABLE AI (XAI) // TRUST & REASONING REPORT
+                                </div>
+                                <div class="trust-badge" id="xaiTrustBadge">99% TRUST CONFIDENCE</div>
+                            </div>
+
+                            <div class="xai-block">
+                                <div class="block-label">STEP-BY-STEP REASONING CHAIN:</div>
+                                <div class="reasoning-steps" id="xaiStepsList"></div>
+                            </div>
+
+                            <div class="xai-block">
+                                <div class="block-label">VERIFIED EVIDENCE CITATIONS:</div>
+                                <div class="evidence-tags" id="xaiEvidenceList"></div>
+                            </div>
+
+                            <div class="xai-block">
+                                <div class="block-label">ESTIMATED NETWORK BLAST RADIUS:</div>
+                                <div class="blast-radius-box" id="xaiBlastRadiusBox"></div>
+                            </div>
+                        </div>
+
+                        <!-- 2. Dynamic Agent Skill Generator Card -->
+                        <div class="skill-generator-card">
+                            <div class="card-section-header">
+                                <div class="section-title text-emerald">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                    DYNAMIC AGENT SKILL // EXECUTABLE TOOL DEFINITION
+                                </div>
+                                <div class="skill-header-actions">
+                                    <button id="btnCopyToolSchema" class="btn btn-outline-cyan btn-xs">
+                                        Copy Tool Schema (JSON)
                                     </button>
                                 </div>
                             </div>
-                            <div class="patch-code-wrapper">
-                                <pre class="code-pre"><code id="sastPatchedCodeDisplay"></code></pre>
+
+                            <div class="skill-identity-bar">
+                                <div class="skill-meta-group">
+                                    <span class="skill-name-label" id="lblSkillName">network_virtual_patching</span>
+                                    <span class="skill-type-tag">Autonomous Function Tool</span>
+                                </div>
+                                <div class="skill-targets" id="lblTargetDevices">Supports: Fortinet, Cisco ASA, Palo Alto, pfSense</div>
+                            </div>
+
+                            <div class="code-view-tabs">
+                                <button class="code-tab-btn active" data-target="schemaView">OpenAI / LangChain Tool Schema</button>
+                                <button class="code-tab-btn" data-target="pythonView">Python Action Implementation</button>
+                            </div>
+
+                            <div class="code-container">
+                                <pre id="schemaView" class="code-pre active"><code id="codeSchemaDisplay" class="language-json"></code></pre>
+                                <pre id="pythonView" class="code-pre"><code id="codePythonDisplay" class="language-python"></code></pre>
+                            </div>
+
+                            <div class="skill-properties-footer">
+                                <div class="prop-item">
+                                    <span class="prop-label">Preflight Verification:</span>
+                                    <span class="prop-val" id="lblVerificationStep">Probe device endpoint to verify blocked state without traffic outage</span>
+                                </div>
+                                <div class="prop-item">
+                                    <span class="prop-label">Rollback Skill:</span>
+                                    <span class="prop-val text-cyan" id="lblRollbackSkill">network_virtual_patch_rollback</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -599,69 +280,136 @@
             </div>
         </main>
 
-        <!-- TAB 5: TEAM & PROPOSAL ABOUT -->
-        <main id="tab-about" class="tab-content">
-            <div class="card-panel about-panel">
-                <div class="about-hero">
-                    <h2>Đồ Án Chuyên Ngành // Đại Học Công Nghệ TP.HCM (HUTECH)</h2>
-                    <p class="about-topic">
-                        <strong>Đề tài:</strong> Nghiên cứu và xây dựng hệ thống tự động thu thập, phân tích tình báo mối đe dọa mạng và sinh quy tắc phòng thủ ứng dụng AI Agent (CTI-Sentinel)
-                    </p>
-                    <div class="about-adviser">
-                        <strong>Giảng viên hướng dẫn:</strong> ThS. Đinh Phương Nam
+        <!-- =================================================================== -->
+        <!-- TAB 2: AGENT SKILLS LIBRARY -->
+        <!-- =================================================================== -->
+        <main id="tab-skills-library" class="tab-view">
+            <div class="section-hero">
+                <h2>Autonomous Defense Agent Skills Catalog</h2>
+                <p>Curated, modular action tools exportable directly to downstream AI Agents (SOC Triage Agents, Firewall Orchestrators, Incident Responders).</p>
+            </div>
+
+            <div class="skills-catalog-grid" id="skillsCatalogGrid">
+                <!-- Populated dynamically -->
+            </div>
+        </main>
+
+        <!-- =================================================================== -->
+        <!-- TAB 3: SMART INGESTION CONTROLLER -->
+        <!-- =================================================================== -->
+        <main id="tab-smart-triggers" class="tab-view">
+            <div class="section-hero">
+                <h2>Adaptive Threat Ingestion Engine</h2>
+                <p>Heuristic decision framework answering "When to crawl" based on network urgency metrics, preventing telemetry pollution.</p>
+            </div>
+
+            <div class="trigger-matrix-grid">
+                <div class="trigger-rule-card">
+                    <div class="rule-top">
+                        <span class="rule-priority high">URGENCY WEIGHT +50</span>
+                        <span class="rule-name">CISA KEV Network Directives</span>
+                    </div>
+                    <div class="rule-desc">Triggers immediate crawl when CISA publishes a confirmed active exploited vulnerability impacting VPNs, Firewalls, or Routers.</div>
+                    <div class="rule-status text-emerald">Condition: Active Watcher Enabled</div>
+                </div>
+
+                <div class="trigger-rule-card">
+                    <div class="rule-top">
+                        <span class="rule-priority high">URGENCY WEIGHT +40</span>
+                        <span class="rule-name">Threat Surge / CVSS 9.0+ Burst</span>
+                    </div>
+                    <div class="rule-desc">Triggers on-demand ingestion when multiple unauthenticated RCE exploits are weaponized within a 24-hour window.</div>
+                    <div class="rule-status text-emerald">Condition: Threshold Active (&ge; 2 High-Sev Events)</div>
+                </div>
+
+                <div class="trigger-rule-card">
+                    <div class="rule-top">
+                        <span class="rule-priority medium">URGENCY WEIGHT +25</span>
+                        <span class="rule-name">TTL Expiration & Liveness Check</span>
+                    </div>
+                    <div class="rule-desc">Scheduled 6-hour pruning cycle verifying whether Botnet C2 nodes remain online or have expired to mitigate IoC decay.</div>
+                    <div class="rule-status text-cyan">Condition: Running Every 6 Hours</div>
+                </div>
+            </div>
+
+            <div class="trigger-log-panel">
+                <div class="panel-header-clean">
+                    <span class="panel-title">RECENT SMART TRIGGER DECISIONS</span>
+                    <button id="btnManualTriggerEval" class="btn btn-outline-cyan btn-sm">Re-Evaluate Now</button>
+                </div>
+                <div class="trigger-log-list" id="triggerLogList">
+                    <div class="log-entry">
+                        <span class="log-time">2026-10-21 14:00:00</span>
+                        <span class="log-badge badge-critical">CRITICAL (90/100)</span>
+                        <span class="log-text">CISA KEV ED 24-01 + 2 Critical CVEs (CVSS 10.0) active on Internet. Triggered on-demand ingestion.</span>
+                    </div>
+                    <div class="log-entry">
+                        <span class="log-time">2026-10-21 08:00:00</span>
+                        <span class="log-badge badge-medium">MEDIUM (30/100)</span>
+                        <span class="log-text">Routine 6h TTL check verified 2 active ThreatFox C2 IPs. Telemetry up to date.</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- =================================================================== -->
+        <!-- TAB 4: SYSTEM ARCHITECTURE & TEAM -->
+        <!-- =================================================================== -->
+        <main id="tab-team-architecture" class="tab-view">
+            <div class="section-hero">
+                <h2>Project Specification & Team Overview</h2>
+                <p>Nghiên cứu và xây dựng hệ thống tự động thu thập, phân tích tình báo mối đe dọa mạng và sinh kỹ năng phòng thủ ứng dụng AI Agent (Network Sentinel).</p>
+                <div class="academic-advisor-row">
+                    <strong>Giảng viên hướng dẫn:</strong> ThS. Đinh Phương Nam &bull; Đại học Công nghệ TP.HCM (HUTECH) &bull; Khoa CNTT
+                </div>
+            </div>
+
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="card-role">Nhóm trưởng / Data & DevOps Lead</div>
+                    <div class="member-name">Nguyễn Nhật Lâm</div>
+                    <div class="member-meta">MSSV: 2387700036 &bull; Lớp: 23DATA1</div>
+                    <div class="member-task">
+                        Phụ trách: Data Ingestion Pipeline, Smart Trigger Engine, SQLite Database & FastApi REST Endpoints.
                     </div>
                 </div>
 
-                <div class="team-cards-grid">
-                    <div class="member-card">
-                        <div class="member-badge">Trưởng nhóm / Data & DevOps</div>
-                        <div class="member-avatar">⚙️</div>
-                        <div class="member-name">Nguyễn Nhật Lâm</div>
-                        <div class="member-id">MSSV: 2387700036 &bull; Lớp: 23DATA1</div>
-                        <div class="member-role">
-                            Phụ trách: Data Ingestion Pipeline (CISA KEV, RSS TheHackerNews, BleepingComputer), SQLite Caching & FastApi Web Dashboard.
-                        </div>
-                    </div>
-
-                    <div class="member-card">
-                        <div class="member-badge">AI Core & Reasoning Lead</div>
-                        <div class="member-avatar">👑</div>
-                        <div class="member-name">Nguyễn Phi Phúc</div>
-                        <div class="member-id">MSSV: 2387701131 &bull; Lớp: 23DATA1</div>
-                        <div class="member-role">
-                            Phụ trách: Bộ não AI Agent ReAct, Prompt Engineering, Engine ánh xạ ma trận MITRE ATT&CK và sinh luật Sigma/YARA.
-                        </div>
-                    </div>
-
-                    <div class="member-card">
-                        <div class="member-badge">Threat Intel & Security Lead</div>
-                        <div class="member-avatar">🛡️</div>
-                        <div class="member-name">Trần Minh Khang</div>
-                        <div class="member-id">MSSV: 2387700027 &bull; Lớp: 23DATA1</div>
-                        <div class="member-role">
-                            Phụ trách: Module thẩm định danh tiếng IoC (VirusTotal API, AbuseIPDB API), bộ lọc Whitelist hạ tầng và gói chuẩn OASIS STIX 2.1.
-                        </div>
+                <div class="team-card">
+                    <div class="card-role">AI Core & Reasoning Lead</div>
+                    <div class="member-name">Nguyễn Phi Phúc</div>
+                    <div class="member-meta">MSSV: 2387701131 &bull; Lớp: 23DATA1</div>
+                    <div class="member-task">
+                        Phụ trách: Explainable AI (XAI) Trust Engine, Chuỗi suy luận (Reasoning Chain) & Sinh Dynamic Agent Skills.
                     </div>
                 </div>
 
-                <div class="proposal-doc-box">
-                    <div class="doc-icon">📄</div>
-                    <div class="doc-info">
-                        <h4>Tài liệu Đề cương chi tiết đồ án (Đã hoàn thiện)</h4>
-                        <p>File đề cương chuẩn định dạng của Thầy Đinh Phương Nam, phân công 10 tuần, bảo đảm 100% tính minh bạch và an toàn pháp lý.</p>
+                <div class="team-card">
+                    <div class="card-role">Threat Intel & Security Lead</div>
+                    <div class="member-name">Trần Minh Khang</div>
+                    <div class="member-meta">MSSV: 2387700027 &bull; Lớp: 23DATA1</div>
+                    <div class="member-task">
+                        Phụ trách: Phân loại Timeline Date Aging (24h/30d/1y/3y), Hệ thống Multi-Tagging và Thẩm định ThreatFox C2 IP.
                     </div>
-                    <div class="doc-action">
-                        <span class="file-tag">DeCuong_DeTai_HoanThien.docx</span>
-                    </div>
+                </div>
+            </div>
+
+            <div class="architecture-doc-card">
+                <div class="arch-doc-header">
+                    <h4>Technical Architecture & Documentation</h4>
+                    <span class="doc-badge">SPEC-2026-10-21-NETWORK-SKILLS</span>
+                </div>
+                <p>Mô hình chuyển đổi loại bỏ hoàn toàn các bộ rule tĩnh đóng khung (Sigma/YARA), tập trung 100% vào hạ tầng an toàn mạng và đóng gói thành Kỹ năng Tác tử (Tool Calling) cho hệ sinh thái AI Agent.</p>
+                <div class="doc-files-row">
+                    <span class="file-chip">docs/superpowers/specs/2026-10-21-network-skills-architecture.md</span>
+                    <span class="file-chip">docs/superpowers/plans/2026-10-21-network-skills-implementation.md</span>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- Toast Notification Popup -->
-    <div id="toastNotification" class="cyber-toast hidden">
-        <span class="toast-icon">ℹ️</span>
-        <span id="toastMessage">Thông báo</span>
+    <!-- Minimalist Toast Alert -->
+    <div id="appToast" class="app-toast hidden">
+        <span id="toastText">System Notification</span>
     </div>
 
     <script src="/static/app.js"></script>
