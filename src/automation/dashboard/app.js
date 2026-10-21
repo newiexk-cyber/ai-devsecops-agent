@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadFeeds();
     bindEvents();
     initSastStudio();
+    initNetworkAgentHub();
 });
 
 // Toast notification
@@ -675,4 +676,302 @@ function renderSastResult(data) {
         patchDisplay.textContent = currentPatchedCode;
     }
 }
+
+// ==========================================================================
+// 7. NETWORK SENTINEL: SMART TRIGGER, XAI & AGENT SKILLS HUB
+// ==========================================================================
+let currentNetworkThreats = [];
+let selectedTimeWindow = 'all';
+let selectedTag = 'ALL';
+let currentSkillData = null;
+
+async function initNetworkAgentHub() {
+    loadSmartTriggerStatus();
+    loadNetworkThreats();
+    bindNetworkHubEvents();
+}
+
+async function loadSmartTriggerStatus() {
+    const badge = document.getElementById('triggerUrgencyBadge');
+    const reasonText = document.getElementById('triggerReasonText');
+
+    try {
+        const res = await fetch('/api/network-intel/trigger-status');
+        const data = await res.json();
+        if (data.status === 'success' && data.trigger) {
+            const tr = data.trigger;
+            if (badge) {
+                badge.textContent = `MỨC ĐỘ: ${tr.urgency_level} (${tr.urgency_score}/100)`;
+                badge.className = 'trigger-urgency-badge';
+                if (tr.urgency_level === 'CRITICAL') badge.classList.add('urgency-critical');
+                else if (tr.urgency_level === 'HIGH') badge.classList.add('urgency-high');
+                else badge.classList.add('urgency-low');
+            }
+            if (reasonText) {
+                reasonText.textContent = tr.reason;
+            }
+        }
+    } catch (err) {
+        console.warn('Lỗi kiểm tra Smart Trigger:', err);
+    }
+}
+
+async function loadNetworkThreats() {
+    const listEl = document.getElementById('networkThreatsList');
+    const countEl = document.getElementById('networkThreatsCount');
+
+    let url = '/api/network-intel/feeds?';
+    if (selectedTimeWindow && selectedTimeWindow !== 'all') {
+        url += `time_window=${selectedTimeWindow}&`;
+    }
+    if (selectedTag && selectedTag !== 'ALL') {
+        url += `tag=${encodeURIComponent(selectedTag)}&`;
+    }
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.status === 'success') {
+            currentNetworkThreats = data.threats || [];
+            if (countEl) countEl.textContent = `${currentNetworkThreats.length} Mục`;
+            renderNetworkThreats(currentNetworkThreats);
+        }
+    } catch (err) {
+        console.error('Lỗi nạp danh mục mối đe dọa mạng:', err);
+    }
+}
+
+function renderNetworkThreats(threats) {
+    const listEl = document.getElementById('networkThreatsList');
+    if (!listEl) return;
+
+    if (!threats || threats.length === 0) {
+        listEl.innerHTML = `
+            <div style="text-align: center; padding: 40px 10px; color: var(--text-muted); font-size: 13px;">
+                Không tìm thấy mối đe dọa mạng nào phù hợp với bộ lọc này.
+            </div>
+        `;
+        return;
+    }
+
+    const dateLabels = {
+        '24h_emergency': '24h Emergency',
+        'active_30d': 'Active 30d',
+        'trending_1y': 'Trending 1y',
+        'historical_3y': 'Historical 3y'
+    };
+
+    listEl.innerHTML = threats.map(t => {
+        const isEmer = t.date_category === '24h_emergency';
+        return `
+            <div class="net-threat-card" data-threat-id="${t.id}" onclick="selectNetworkThreat('${t.id}')">
+                <div class="net-card-top">
+                    <div class="net-card-badges">
+                        <span class="net-sev-pill ${t.severity_color || 'crimson'}">${escapeHtml(t.severity)}</span>
+                        <span class="net-date-badge ${isEmer ? 'emergency' : ''}">
+                            ${isEmer ? '🔥 ' : ''}${dateLabels[t.date_category] || t.date_category}
+                        </span>
+                    </div>
+                    <span class="net-card-id">${escapeHtml(t.identifier)}</span>
+                </div>
+                <div class="net-card-title">${escapeHtml(t.title)}</div>
+                <div class="net-card-asset">🎯 Mục tiêu: ${escapeHtml(t.target_asset)}</div>
+                <div class="net-card-desc">${escapeHtml(t.description)}</div>
+                <div class="net-card-tags">
+                    ${(t.tags || []).map(tg => `<span class="net-card-tag">${escapeHtml(tg)}</span>`).join('')}
+                </div>
+                <div class="net-card-footer">
+                    <span style="font-size: 11px; color: var(--text-muted);">
+                        📡 Giao thức: ${escapeHtml(t.protocol || 'TCP/IP')}
+                    </span>
+                    <button class="btn btn-secondary btn-sm" style="padding: 4px 10px; font-size: 11px;">
+                        <span>🧠</span> Xem XAI & Skill &rarr;
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+async function selectNetworkThreat(threatId) {
+    // Highlight active card
+    document.querySelectorAll('.net-threat-card').forEach(c => {
+        if (c.getAttribute('data-threat-id') === threatId) {
+            c.classList.add('active');
+        } else {
+            c.classList.remove('active');
+        }
+    });
+
+    const emptyState = document.getElementById('netSkillEmptyState');
+    const activeContent = document.getElementById('netSkillActiveContent');
+
+    showToast('AI Agent đang sinh XAI Trust Card & Dynamic Skill...', '🧠');
+
+    try {
+        const res = await fetch('/api/network-intel/generate-skill', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ threat_id: threatId })
+        });
+
+        const data = await res.json();
+        if (data.status === 'success') {
+            currentSkillData = data;
+            renderNetworkSkillStudio(data);
+            if (emptyState) emptyState.classList.add('hidden');
+            if (activeContent) activeContent.classList.remove('hidden');
+        }
+    } catch (err) {
+        console.error('Lỗi khi sinh XAI & Skill:', err);
+        showToast('Không thể kết nối đến Skill Engine', '❌');
+    }
+}
+
+function renderNetworkSkillStudio(data) {
+    const xai = data.xai_trust || {};
+    const skill = data.agent_skill || {};
+
+    // 1. XAI Trust Card
+    const scoreBadge = document.getElementById('xaiTrustScoreBadge');
+    if (scoreBadge) {
+        scoreBadge.textContent = `🛡️ ${xai.trust_score}% TRUSTED (${xai.trust_level})`;
+    }
+
+    const reasoningEl = document.getElementById('xaiReasoningChain');
+    if (reasoningEl && xai.reasoning_chain) {
+        reasoningEl.innerHTML = xai.reasoning_chain.map(step => `
+            <div class="xai-step-item">${escapeHtml(step)}</div>
+        `).join('');
+    }
+
+    const evidenceEl = document.getElementById('xaiEvidenceSources');
+    if (evidenceEl && xai.evidence_sources) {
+        evidenceEl.innerHTML = xai.evidence_sources.map(src => `
+            <div class="xai-evidence-entry">🔗 ${escapeHtml(src)}</div>
+        `).join('');
+    }
+
+    const blastRadiusEl = document.getElementById('xaiBlastRadius');
+    if (blastRadiusEl) {
+        blastRadiusEl.textContent = xai.network_blast_radius || 'Toàn bộ hạ tầng mạng liên quan.';
+    }
+
+    // 2. Dynamic Agent Skill
+    const skillNameEl = document.getElementById('agentSkillName');
+    const skillDescEl = document.getElementById('agentSkillDesc');
+    const schemaDisplay = document.getElementById('skillSchemaDisplay');
+    const codeDisplay = document.getElementById('skillCodeDisplay');
+    const targetDevicesEl = document.getElementById('skillTargetDevices');
+    const verifStepEl = document.getElementById('skillVerificationStep');
+    const rollbackEl = document.getElementById('skillRollback');
+
+    if (skillNameEl) skillNameEl.textContent = skill.skill_name || 'custom_network_skill';
+    if (skillDescEl) skillDescEl.textContent = skill.description || '';
+    
+    // Format JSON Tool Schema
+    const toolDefinitionSchema = {
+        type: "function",
+        function: {
+            name: skill.skill_name,
+            description: skill.description,
+            parameters: skill.parameters
+        }
+    };
+
+    if (schemaDisplay) {
+        schemaDisplay.textContent = JSON.stringify(toolDefinitionSchema, null, 2);
+    }
+    if (codeDisplay) {
+        codeDisplay.textContent = skill.execution_code || '';
+    }
+    if (targetDevicesEl) {
+        targetDevicesEl.textContent = (skill.target_devices || []).join(', ');
+    }
+    if (verifStepEl) {
+        verifStepEl.textContent = skill.verification_step || '';
+    }
+    if (rollbackEl) {
+        rollbackEl.textContent = skill.rollback_skill || 'None';
+    }
+}
+
+function bindNetworkHubEvents() {
+    // Timeline Pills click
+    document.querySelectorAll('.timeline-pill').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.timeline-pill').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedTimeWindow = btn.getAttribute('data-window');
+            loadNetworkThreats();
+        });
+    });
+
+    // Tag chips click
+    document.querySelectorAll('.net-tag-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.net-tag-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            selectedTag = chip.getAttribute('data-tag');
+            loadNetworkThreats();
+        });
+    });
+
+    // Smart Crawl Trigger Button
+    const btnSmartCrawl = document.getElementById('btnSmartCrawlTrigger');
+    if (btnSmartCrawl) {
+        btnSmartCrawl.addEventListener('click', () => {
+            showToast('Smart Trigger đang đánh giá các dải IP và CVE mạng mới...', '⚡');
+            loadSmartTriggerStatus();
+            loadNetworkThreats();
+            setTimeout(() => {
+                showToast('Đã đồng bộ dữ liệu hạ tầng mạng mới nhất!', '✅');
+            }, 800);
+        });
+    }
+
+    // Skill Subtabs (Schema vs Python code)
+    document.querySelectorAll('.skill-subtab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.skill-subtab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const view = btn.getAttribute('data-view');
+            const schemaView = document.getElementById('skillSchemaView');
+            const codeView = document.getElementById('skillCodeView');
+
+            if (view === 'schema') {
+                if (schemaView) schemaView.classList.remove('hidden');
+                if (codeView) codeView.classList.add('hidden');
+            } else {
+                if (schemaView) schemaView.classList.add('hidden');
+                if (codeView) codeView.classList.remove('hidden');
+            }
+        });
+    });
+
+    // Copy Tool Schema button
+    const btnCopySchema = document.getElementById('btnCopySkillSchema');
+    if (btnCopySchema) {
+        btnCopySchema.addEventListener('click', () => {
+            if (!currentSkillData || !currentSkillData.agent_skill) {
+                showToast('Chưa có Kỹ năng Tác tử để copy!', '⚠️');
+                return;
+            }
+            const toolDefinitionSchema = {
+                type: "function",
+                function: {
+                    name: currentSkillData.agent_skill.skill_name,
+                    description: currentSkillData.agent_skill.description,
+                    parameters: currentSkillData.agent_skill.parameters
+                }
+            };
+            navigator.clipboard.writeText(JSON.stringify(toolDefinitionSchema, null, 2)).then(() => {
+                showToast('Đã copy Agent Skill Schema (JSON) vào bộ nhớ tạm!', '📋');
+            }).catch(() => {
+                showToast('Lỗi khi copy Skill!', '❌');
+            });
+        });
+    }
+}
+
 

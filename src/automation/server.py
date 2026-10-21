@@ -25,6 +25,12 @@ from src.core.rule_generator import (
     generate_sigma_rule, generate_yara_rule, generate_firewall_blocklist, generate_stix_bundle
 )
 from src.core.sast_analyzer import analyze_code, get_preset_samples
+from src.core.network_cve_catalog import (
+    get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger
+)
+from src.core.network_skill_generator import (
+    generate_explainable_trust_card, generate_network_agent_skill, list_available_skills
+)
 
 # Khởi tạo DB khi khởi động
 init_database()
@@ -235,6 +241,100 @@ def get_sast_presets():
     """
     presets = get_preset_samples()
     return {"status": "success", "presets": presets}
+
+# ==============================================================================
+# NETWORK INTELLIGENCE & DYNAMIC AGENT SKILLS API
+# ==============================================================================
+class NetworkSkillRequest(BaseModel):
+    threat_id: Optional[str] = None
+    identifier: Optional[str] = None
+
+@app.get("/api/network-intel/feeds")
+def get_network_intel_feeds(
+    time_window: Optional[str] = None,
+    tag: Optional[str] = None,
+    severity: Optional[str] = None,
+    threat_type: Optional[str] = None
+):
+    """
+    Lấy danh mục tình báo an toàn mạng (Network-Only Threats)
+    Hỗ trợ lọc theo Timeline Date (24h_emergency, active_30d, trending_1y, historical_3y)
+    và Thẻ Tags phân màu.
+    """
+    threats = filter_network_threats(
+        time_window=time_window,
+        tag=tag,
+        severity=severity,
+        threat_type=threat_type
+    )
+    return {
+        "status": "success",
+        "total": len(threats),
+        "threats": threats
+    }
+
+@app.get("/api/network-intel/trigger-status")
+def get_smart_trigger_status():
+    """
+    Trả về đánh giá của Bộ Kích Hoạt Thông Minh: Khi nào nên cào?
+    Đo đạc độ khẩn cấp dựa trên CVE mạng mới, IP C2 bùng phát và thời gian sống (TTL).
+    """
+    # Đếm số sự kiện khẩn cấp
+    catalog = get_network_threat_catalog()
+    crit_count = sum(1 for t in catalog if t.get("severity") == "CRITICAL" and t.get("date_category") == "24h_emergency")
+    has_cisa = any("#CISA_KEV" in t.get("tags", []) for t in catalog)
+    
+    evaluation = evaluate_smart_crawl_trigger(
+        high_severity_events=crit_count,
+        cisa_network_update=has_cisa,
+        hours_since_last_crawl=2.5,
+        surge_detected=(crit_count >= 1)
+    )
+    return {
+        "status": "success",
+        "trigger": evaluation
+    }
+
+@app.post("/api/network-intel/generate-skill")
+def generate_skill_for_network_threat(payload: NetworkSkillRequest):
+    """
+    Sinh Thẻ Giải trình XAI (Explainable AI Trust Card) và
+    Kỹ năng Tác tử động (Dynamic Agent Skill) cho một mối đe dọa mạng.
+    """
+    catalog = get_network_threat_catalog()
+    threat = None
+    
+    if payload.threat_id:
+        threat = next((t for t in catalog if t["id"] == payload.threat_id), None)
+    elif payload.identifier:
+        threat = next((t for t in catalog if t["identifier"].lower() == payload.identifier.lower()), None)
+        
+    if not threat:
+        # Nếu không tìm thấy trong catalog mẫu, dùng phần tử đầu tiên làm mẫu
+        threat = catalog[0]
+        
+    xai_trust = generate_explainable_trust_card(threat)
+    agent_skill = generate_network_agent_skill(threat)
+    
+    return {
+        "status": "success",
+        "threat": threat,
+        "xai_trust": xai_trust,
+        "agent_skill": agent_skill
+    }
+
+@app.get("/api/network-intel/skills-library")
+def get_skills_library():
+    """
+    Trả về danh mục các Kỹ năng Tác tử mạng (Agent Skills) có sẵn
+    để các Agent phòng thủ khác có thể nạp vào hệ thống.
+    """
+    skills = list_available_skills()
+    return {
+        "status": "success",
+        "total_skills": len(skills),
+        "skills": skills
+    }
 
 # Phục vụ thư mục Dashboard tĩnh
 dashboard_dir = os.path.join(os.path.dirname(__file__), "dashboard")

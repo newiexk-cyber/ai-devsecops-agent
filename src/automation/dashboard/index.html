@@ -96,8 +96,11 @@
 
         <!-- Navigation Tabs -->
         <nav class="tab-nav">
-            <button class="tab-btn active" data-tab="tab-feeds">
-                <span class="tab-icon">📡</span> Dữ liệu cào nguồn mở (Live Feeds)
+            <button class="tab-btn active" data-tab="tab-network">
+                <span class="tab-icon">🌐</span> Tình Báo Mạng & Agent Skills
+            </button>
+            <button class="tab-btn" data-tab="tab-feeds">
+                <span class="tab-icon">📡</span> Dữ liệu nguồn mở (Live Feeds)
             </button>
             <button class="tab-btn" data-tab="tab-analyzer">
                 <span class="tab-icon">🧠</span> Phòng thí nghiệm AI Agent (ReAct)
@@ -113,8 +116,170 @@
             </button>
         </nav>
 
-        <!-- TAB 1: LIVE CTI FEEDS -->
-        <main id="tab-feeds" class="tab-content active">
+        <!-- TAB 1: NETWORK INTELLIGENCE & DYNAMIC AGENT SKILLS -->
+        <main id="tab-network" class="tab-content active">
+            <div class="panel-header">
+                <div>
+                    <h2>🌐 Trung Tâm Tình Báo An Toàn Mạng & Kỹ Năng Tác Tử (Network Agent Hub)</h2>
+                    <p class="panel-desc">Tập trung 100% vào thiết bị biên (Firewall, Router, VPN), dải IP C2 Botnet, phân loại Timeline Date, Explainable AI (XAI) và tự sinh Kỹ năng Agent (Tool Calling) linh hoạt thay thế rules tĩnh.</p>
+                </div>
+            </div>
+
+            <!-- Smart Crawl Trigger Bar -->
+            <div class="smart-trigger-bar" id="smartTriggerBar">
+                <div class="trigger-header">
+                    <div class="trigger-title-wrap">
+                        <span class="trigger-icon">⚡</span>
+                        <span class="trigger-title">BỘ KÍCH HOẠT THÔNG MINH (KHI NÀO NÊN CÀO?):</span>
+                    </div>
+                    <div class="trigger-urgency-badge" id="triggerUrgencyBadge">ĐANG ĐÁNH GIÁ...</div>
+                </div>
+                <div class="trigger-body">
+                    <div class="trigger-reason-text" id="triggerReasonText">
+                        Đang phân tích các chỉ thị khẩn cấp CISA KEV, đột biến IP Botnet và chu kỳ TTL an toàn mạng...
+                    </div>
+                    <div class="trigger-action-wrap">
+                        <button id="btnSmartCrawlTrigger" class="btn btn-primary glow-cyan btn-sm">
+                            <span>🔄</span> Kích Hoạt Cào Thông Minh Ngay
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Date Aging Filter -->
+            <div class="network-timeline-bar">
+                <div class="timeline-title">
+                    <span class="timeline-icon">📅</span>
+                    <span>LỌC THEO TUỔI THỌ & MỨC ĐỘ KHẨN (DATE AGING):</span>
+                </div>
+                <div class="timeline-pills">
+                    <button class="timeline-pill active" data-window="all">⚪ Tất Cả Mạng</button>
+                    <button class="timeline-pill pill-24h" data-window="24h_emergency">🔴 24h Khẩn Cấp (0-Day / Fresh)</button>
+                    <button class="timeline-pill pill-30d" data-window="active_30d">🟠 Dưới 30 Ngày (Active Threats)</button>
+                    <button class="timeline-pill pill-1y" data-window="trending_1y">🟡 1 Năm Đổ Lại (Trending 2024-2026)</button>
+                    <button class="timeline-pill pill-3y" data-window="historical_3y">🔵 1 - 3 Năm (Historical C2/Botnet)</button>
+                </div>
+            </div>
+
+            <!-- Network Multi-Tags Filter -->
+            <div class="network-tags-bar">
+                <span class="tags-label">🏷️ Thẻ Thiết Bị & Giao Thức:</span>
+                <div class="network-tags-chips">
+                    <button class="net-tag-chip active" data-tag="ALL">Tất cả</button>
+                    <button class="net-tag-chip" data-tag="#Cisco">#Cisco</button>
+                    <button class="net-tag-chip" data-tag="#Fortinet">#Fortinet</button>
+                    <button class="net-tag-chip" data-tag="#PaloAlto">#PaloAlto</button>
+                    <button class="net-tag-chip" data-tag="#Ivanti">#Ivanti</button>
+                    <button class="net-tag-chip" data-tag="#SonicWall">#SonicWall</button>
+                    <button class="net-tag-chip" data-tag="#MikroTik">#MikroTik</button>
+                    <button class="net-tag-chip" data-tag="#VPN_Gateway">#VPN_Gateway</button>
+                    <button class="net-tag-chip" data-tag="#PreAuth_RCE">#PreAuth_RCE</button>
+                    <button class="net-tag-chip" data-tag="#C2_Botnet">#C2_Botnet</button>
+                </div>
+            </div>
+
+            <!-- Network Threat Grid: Threats List Left, XAI & Agent Skills Right -->
+            <div class="network-workspace-grid">
+                <!-- Left: Threats List -->
+                <div class="network-threats-panel">
+                    <div class="panel-subhead">
+                        <span>📡 DANH MỤC LỖ HỔNG & IP C2 MẠNG</span>
+                        <span id="networkThreatsCount" class="count-badge">8 Mục</span>
+                    </div>
+                    <div id="networkThreatsList" class="network-threats-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right: Explainable AI (XAI) & Agent Skills Studio -->
+                <div class="network-skill-studio-panel">
+                    <div id="netSkillEmptyState" class="net-skill-empty">
+                        <div class="empty-icon">🌐</div>
+                        <h3>Chọn một Lỗ hổng Mạng hoặc IP C2 ở bên trái</h3>
+                        <p>Hệ thống sẽ kích hoạt <strong>Explainable AI (XAI)</strong> để giải trình nguyên nhân, bằng chứng, điểm tin cậy và tự sinh <strong>Kỹ Năng Tác Tử (Agent Skill)</strong> cho các Agent phòng thủ khác tự gọi thực thi.</p>
+                        
+                        <div class="skill-paradigm-box">
+                            <h4>💡 Vì sao chuyển từ "Rules Cũ" sang "Agent Skills Mới"?</h4>
+                            <ul>
+                                <li><strong>Rules cũ (Sigma/YARA):</strong> Cứng nhắc, không tự thích ứng được khi mô hình mạng thay đổi.</li>
+                                <li><strong>Agent Skills mới:</strong> Đóng gói chuẩn <code>Tool Definition (JSON Schema)</code> kèm mã Python tự động, cho phép Agent tự quyết định tham số, kiểm tra trước (Dry-run) và Rollback an toàn!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div id="netSkillActiveContent" class="net-skill-active-content hidden">
+                        <!-- XAI Trust Card -->
+                        <div class="xai-trust-card">
+                            <div class="xai-header">
+                                <div class="xai-title-wrap">
+                                    <span class="xai-icon">🧠</span>
+                                    <span class="xai-title">EXPLAINABLE AI (XAI) // PHÂN TÍCH GIẢI TRÌNH & ĐỘ TIN CẬY</span>
+                                </div>
+                                <div class="xai-trust-score" id="xaiTrustScoreBadge">96% TRUSTED</div>
+                            </div>
+
+                            <div class="xai-section">
+                                <div class="xai-section-title">📌 Chuỗi Lập Luận Suy Luận (Step-by-Step Reasoning Chain):</div>
+                                <div id="xaiReasoningChain" class="xai-reasoning-list"></div>
+                            </div>
+
+                            <div class="xai-section">
+                                <div class="xai-section-title">🔍 Bằng Chứng Xác Thực Đối Chiếu (Evidence Sources):</div>
+                                <div id="xaiEvidenceSources" class="xai-evidence-list"></div>
+                            </div>
+
+                            <div class="xai-section">
+                                <div class="xai-section-title">💥 Phạm Vi Ảnh Hưởng Mạng (Network Blast Radius):</div>
+                                <div id="xaiBlastRadius" class="xai-blast-radius-text"></div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Agent Skill Card -->
+                        <div class="agent-skill-card">
+                            <div class="skill-header">
+                                <div class="skill-title-wrap">
+                                    <span class="skill-icon">⚙️</span>
+                                    <div>
+                                        <div class="skill-name" id="agentSkillName">network_virtual_patching</div>
+                                        <div class="skill-desc" id="agentSkillDesc">Kỹ năng phòng thủ mạng</div>
+                                    </div>
+                                </div>
+                                <div class="skill-actions">
+                                    <button id="btnCopySkillSchema" class="btn btn-secondary btn-sm">
+                                        <span>📋</span> Copy Tool Schema (JSON)
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="skill-subtabs">
+                                <button class="skill-subtab-btn active" data-view="schema">Tool Schema (OpenAI/LangChain)</button>
+                                <button class="skill-subtab-btn" data-view="code">Mã Thực Thi Tác Tử (Python)</button>
+                            </div>
+
+                            <div class="skill-code-wrapper">
+                                <pre id="skillSchemaView" class="skill-code-pre"><code id="skillSchemaDisplay"></code></pre>
+                                <pre id="skillCodeView" class="skill-code-pre hidden"><code id="skillCodeDisplay"></code></pre>
+                            </div>
+
+                            <div class="skill-footer-meta">
+                                <div class="skill-meta-item">
+                                    <strong>Thiết bị hỗ trợ:</strong> <span id="skillTargetDevices">Cisco, Fortinet, Palo Alto, pfSense</span>
+                                </div>
+                                <div class="skill-meta-item">
+                                    <strong>Bước xác minh:</strong> <span id="skillVerificationStep">...</span>
+                                </div>
+                                <div class="skill-meta-item">
+                                    <strong>Rollback Skill:</strong> <code id="skillRollback">...</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB 2: LIVE CTI FEEDS (LEGACY) -->
+        <main id="tab-feeds" class="tab-content">
             <div class="panel-header">
                 <div>
                     <h2>Danh mục bài viết & cảnh báo CTI thu thập tự động</h2>
