@@ -749,6 +749,22 @@ body {
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
+.card-date-meta {
+    margin-top: 8px;
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.card-date-meta svg {
+    stroke: var(--color-cyan);
+    opacity: 0.8;
+}
+.card-date-meta strong {
+    color: #e2e8f0;
+}
 
 /* ==============================================================================
    DETAILS COLUMN (XAI & SKILL GENERATOR)

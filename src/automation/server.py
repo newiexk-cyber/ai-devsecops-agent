@@ -360,7 +360,7 @@ def ingest_network_cve_endpoint(payload: IngestNetworkCVERequest):
     }
 
 @app.post("/api/network-intel/live-crawl")
-def execute_live_crawl(limit: int = 10):
+def execute_live_crawl(limit: int = 35):
     """
     Kích hoạt tiến trình cào dữ liệu mối đe dọa mạng trực tiếp từ CISA KEV & Threat Feeds.
     """
@@ -368,21 +368,21 @@ def execute_live_crawl(limit: int = 10):
     return res
 
 @app.post("/api/crawler/cisa-kev")
-def crawl_cisa_kev_endpoint(limit: int = 10):
+def crawl_cisa_kev_endpoint(limit: int = 35):
     """
     Chủ động cào các Web CVE & Lỗ hổng Mạng trực tiếp từ CISA KEV Catalog.
     """
     return crawl_whitelist_sources(source_type="cisa_kev", limit=limit)
 
 @app.post("/api/crawler/whitelist-rss")
-def crawl_whitelist_rss_endpoint(limit: int = 10):
+def crawl_whitelist_rss_endpoint(limit: int = 35):
     """
     Chủ động cào từ các trang tin an ninh mạng uy tín trong Whitelist (The Hacker News, BleepingComputer).
     """
     return crawl_whitelist_sources(source_type="whitelist_rss", limit=limit)
 
 @app.post("/api/crawler/sync-all")
-def crawl_all_whitelist_endpoint(limit: int = 15):
+def crawl_all_whitelist_endpoint(limit: int = 35):
     """
     Chủ động cào toàn diện từ toàn bộ các nguồn trong Whitelist.
     """

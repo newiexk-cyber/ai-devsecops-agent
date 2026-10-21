@@ -186,6 +186,15 @@ function renderThreatCardList(threats) {
                 <div class="card-title-text">${escapeHtml(t.title)}</div>
                 <div class="card-asset-text">${escapeHtml(t.target_asset)}</div>
                 <div class="card-desc-text">${escapeHtml(t.description)}</div>
+                <div class="card-date-meta">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>Ngày công bố: <strong>${escapeHtml(t.published_date || t.last_seen || 'N/A')}</strong></span>
+                </div>
             </div>
         `;
     }).join('');
@@ -261,6 +270,9 @@ function renderThreatDetailsView(data) {
 
     const cvssEl = document.getElementById('ovCvss');
     if (cvssEl) cvssEl.textContent = threat.cvss_score || 'N/A';
+
+    const pubDateEl = document.getElementById('ovPublishedDate');
+    if (pubDateEl) pubDateEl.textContent = threat.published_date || threat.last_seen || 'N/A';
 
     const tagsList = document.getElementById('ovTagsList');
     if (tagsList && threat.tags) {

@@ -431,7 +431,7 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
     NETWORK_CATALOG.insert(0, new_threat)
     return new_threat
 
-def crawl_whitelist_sources(source_type: str = "all", limit: int = 10) -> Dict[str, Any]:
+def crawl_whitelist_sources(source_type: str = "all", limit: int = 35) -> Dict[str, Any]:
     """
     Chủ động cào các lỗ hổng mạng & Web CVE từ CISA KEV Catalog và các nguồn tin an ninh mạng Whitelist:
     - source_type = 'cisa_kev': Cào từ CISA KEV Catalog (Known Exploited Vulnerabilities)
@@ -490,13 +490,21 @@ def crawl_whitelist_sources(source_type: str = "all", limit: int = 10) -> Dict[s
                     pass
         source_details.append(f"Whitelist RSS Feeds ({len(rss_items)} articles scanned)")
 
+    new_count = len(set(ingested_cves))
+    if new_count > 0:
+        msg = f"Đã cào thành công {crawled_count} bản ghi từ {', '.join(source_details)} và cập nhật {new_count} Web/Network CVE mới vào hệ thống!"
+    else:
+        msg = f"Đã quét qua {crawled_count} bản ghi từ {', '.join(source_details)}. Toàn bộ dữ liệu hiện tại đã là mới nhất (Up-to-Date), không có bài viết cũ bị trùng lặp!"
+
     return {
         "status": "success",
         "source_type": source_type,
         "crawled_count": crawled_count,
+        "new_cve_count": new_count,
         "ingested_cves": list(set(ingested_cves)),
         "sources_scanned": source_details,
-        "message": f"Đã chủ động cào thành công {crawled_count} bản ghi từ {', '.join(source_details)} và đưa {len(set(ingested_cves))} Web/Network CVE vào hệ thống tác tử!"
+        "message": msg
     }
+
 
 

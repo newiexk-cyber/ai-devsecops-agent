@@ -33,7 +33,7 @@ BUNDLED_CISA_VULNS = [
     }
 ]
 
-def fetch_cisa_kev(limit: int = 5) -> List[Dict[str, Any]]:
+def fetch_cisa_kev(limit: int = 35) -> List[Dict[str, Any]]:
     """Cập nhật dữ liệu từ CISA KEV Catalog và nạp vào SQLite"""
     collected = []
     
