@@ -27,7 +27,7 @@ from src.core.rule_generator import (
 from src.core.sast_analyzer import analyze_code, get_preset_samples
 from src.core.network_cve_catalog import (
     get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger,
-    ingest_live_network_cve
+    ingest_live_network_cve, crawl_whitelist_sources
 )
 from src.core.network_skill_generator import (
     generate_explainable_trust_card, generate_network_agent_skill, list_available_skills
@@ -364,23 +364,78 @@ def execute_live_crawl(limit: int = 10):
     """
     Kích hoạt tiến trình cào dữ liệu mối đe dọa mạng trực tiếp từ CISA KEV & Threat Feeds.
     """
-    cisa_items = fetch_cisa_kev(limit=limit)
-    new_ingested = []
-    for item in cisa_items:
-        cve_id = item.get("cveID") or item.get("cve_id")
-        if cve_id:
-            try:
-                t = ingest_live_network_cve(cve_id)
-                new_ingested.append(t["identifier"])
-            except Exception:
-                pass
-    
+    res = crawl_whitelist_sources(source_type="all", limit=limit)
+    return res
+
+@app.post("/api/crawler/cisa-kev")
+def crawl_cisa_kev_endpoint(limit: int = 10):
+    """
+    Chủ động cào các Web CVE & Lỗ hổng Mạng trực tiếp từ CISA KEV Catalog.
+    """
+    return crawl_whitelist_sources(source_type="cisa_kev", limit=limit)
+
+@app.post("/api/crawler/whitelist-rss")
+def crawl_whitelist_rss_endpoint(limit: int = 10):
+    """
+    Chủ động cào từ các trang tin an ninh mạng uy tín trong Whitelist (The Hacker News, BleepingComputer).
+    """
+    return crawl_whitelist_sources(source_type="whitelist_rss", limit=limit)
+
+@app.post("/api/crawler/sync-all")
+def crawl_all_whitelist_endpoint(limit: int = 15):
+    """
+    Chủ động cào toàn diện từ toàn bộ các nguồn trong Whitelist.
+    """
+    return crawl_whitelist_sources(source_type="all", limit=limit)
+
+@app.get("/api/crawler/whitelist")
+def get_whitelist_sources_endpoint():
+    """
+    Trả về danh sách các nguồn an ninh mạng đã được kiểm duyệt và đưa vào Whitelist.
+    """
     return {
         "status": "success",
-        "message": f"Hoàn tất cào trực tiếp {len(cisa_items)} bản tin từ CISA KEV!",
-        "crawled_count": len(cisa_items),
-        "ingested_network_cves": list(set(new_ingested))
+        "total_sources": 4,
+        "sources": [
+            {
+                "id": "cisa_kev",
+                "name": "CISA KEV Catalog",
+                "domain": "cisa.gov",
+                "category": "Known Exploited Vulnerabilities",
+                "status": "ONLINE",
+                "trust_weight": 99,
+                "description": "Danh mục chính thức từ Cơ quan An ninh Mạng và Cơ sở Hạ tầng Mỹ ghi nhận các lỗ hổng đang bị khai thác thực tế."
+            },
+            {
+                "id": "the_hacker_news",
+                "name": "The Hacker News",
+                "domain": "thehackernews.com",
+                "category": "Threat Intelligence Journalism",
+                "status": "ONLINE",
+                "trust_weight": 95,
+                "description": "Kênh tin tức an ninh mạng toàn cầu cập nhật các chiến dịch 0-Day và Web/Network CVE mới nhất."
+            },
+            {
+                "id": "bleeping_computer",
+                "name": "BleepingComputer",
+                "domain": "bleepingcomputer.com",
+                "category": "Cyber Threat & Ransomware",
+                "status": "ONLINE",
+                "trust_weight": 95,
+                "description": "Chuyên trang phân tích kỹ thuật về các cuộc tấn công khai thác VPN Gateway, Firewall và mã độc tống tiền."
+            },
+            {
+                "id": "nist_nvd",
+                "name": "NIST NVD API v2",
+                "domain": "nvd.nist.gov",
+                "category": "National Vulnerability Database",
+                "status": "ONLINE",
+                "trust_weight": 98,
+                "description": "Cơ sở dữ liệu quốc gia Mỹ lưu trữ toàn bộ chỉ số CVSS v3.1 và vector tấn công chuẩn hóa."
+            }
+        ]
     }
+
 
 # Phục vụ thư mục Dashboard tĩnh
 dashboard_dir = os.path.join(os.path.dirname(__file__), "dashboard")

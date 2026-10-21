@@ -6,7 +6,7 @@ Chuyên sâu An toàn Mạng, Timeline Date, Smart Trigger, Explainable AI (XAI)
 import pytest
 from src.core.network_cve_catalog import (
     get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger,
-    ingest_live_network_cve
+    ingest_live_network_cve, crawl_whitelist_sources
 )
 from src.core.network_skill_generator import (
     generate_explainable_trust_card, generate_network_agent_skill, list_available_skills
@@ -99,4 +99,18 @@ def test_ingest_live_network_cve():
     # Verify it was added to the catalog at the top
     catalog = get_network_threat_catalog()
     assert catalog[0]["identifier"] == "CVE-2024-38856"
+
+def test_crawl_whitelist_sources_cisa_kev():
+    result = crawl_whitelist_sources(source_type="cisa_kev", limit=5)
+    assert result["status"] == "success"
+    assert "crawled_count" in result
+    assert result["crawled_count"] >= 1
+    assert "ingested_cves" in result
+
+def test_crawl_whitelist_sources_rss():
+    result = crawl_whitelist_sources(source_type="whitelist_rss", limit=5)
+    assert result["status"] == "success"
+    assert "crawled_count" in result
+    assert result["crawled_count"] >= 1
+
 

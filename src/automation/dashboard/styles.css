@@ -363,54 +363,112 @@ body {
 }
 
 /* ==============================================================================
-   LIVE INGESTION & ON-DEMAND CVE IMPORTER BAR
+   ACTIVE WHITELIST THREAT CRAWLER & INGESTION HUB
    ============================================================================== */
-.ingestion-control-bar {
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid var(--border-subtle);
+.crawler-hub-panel {
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid rgba(56, 189, 248, 0.25);
     border-radius: var(--radius-md);
-    padding: 10px 16px;
-    margin-bottom: 16px;
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.crawler-hub-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 10px;
+}
+.hub-title-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.hub-badge {
+    font-size: 10px;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: var(--radius-sm);
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    color: var(--color-cyan);
+    letter-spacing: 0.5px;
+}
+.hub-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #fff;
+}
+.whitelist-pills {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.whitelist-source-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(30, 41, 59, 0.6);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 3px 8px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+}
+.chip-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-emerald);
+    box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.crawler-actions-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
     flex-wrap: wrap;
 }
-.ingestion-left {
+.crawler-btn-group {
     display: flex;
     align-items: center;
-    gap: 14px;
-    flex: 1;
-    min-width: 360px;
+    gap: 10px;
+    flex-wrap: wrap;
 }
-.ingestion-title-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    white-space: nowrap;
-}
-.ingestion-badge {
-    font-size: 10px;
-    font-family: var(--font-mono);
-    font-weight: 700;
-    padding: 3px 6px;
-    border-radius: var(--radius-sm);
-    background: rgba(56, 189, 248, 0.12);
-    border: 1px solid rgba(56, 189, 248, 0.3);
-    color: var(--color-cyan);
-    letter-spacing: 0.5px;
-}
-.ingestion-label {
+.btn-crawl-cisa {
+    background: #0284c7;
+    color: #fff;
+    border: 1px solid #38bdf8;
+    padding: 6px 14px;
     font-size: 11px;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-weight: 700;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: var(--transition);
 }
-.ingestion-input-wrap {
+.btn-crawl-cisa:hover {
+    background: #0369a1;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.3);
+}
+
+.crawler-ondemand-field {
     display: flex;
     align-items: center;
     gap: 8px;
     flex: 1;
+    max-width: 440px;
 }
 .ingestion-input {
     flex: 1;
@@ -428,10 +486,13 @@ body {
     border-color: var(--color-cyan);
     background: var(--bg-surface);
 }
-.ingestion-right {
+
+.crawler-quick-chips {
     display: flex;
     align-items: center;
     gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 4px;
 }
 .chips-label {
     font-size: 10px;
@@ -439,12 +500,6 @@ body {
     font-weight: 700;
     color: var(--text-muted);
     letter-spacing: 0.5px;
-}
-.quick-cve-chips {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    flex-wrap: wrap;
 }
 .cve-chip {
     background: rgba(30, 41, 59, 0.8);

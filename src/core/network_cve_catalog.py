@@ -431,3 +431,72 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
     NETWORK_CATALOG.insert(0, new_threat)
     return new_threat
 
+def crawl_whitelist_sources(source_type: str = "all", limit: int = 10) -> Dict[str, Any]:
+    """
+    Chủ động cào các lỗ hổng mạng & Web CVE từ CISA KEV Catalog và các nguồn tin an ninh mạng Whitelist:
+    - source_type = 'cisa_kev': Cào từ CISA KEV Catalog (Known Exploited Vulnerabilities)
+    - source_type = 'whitelist_rss': Cào từ các trang tin an ninh mạng trong whitelist (The Hacker News, BleepingComputer)
+    - source_type = 'all': Cào toàn bộ nguồn trong whitelist
+    """
+    import re
+    from src.automation.collectors.cisa_collector import fetch_cisa_kev
+    from src.automation.collectors.rss_collector import fetch_rss_feeds
+
+    ingested_cves = []
+    crawled_count = 0
+    source_details = []
+
+    # Danh sách từ khóa lọc các lỗ hổng Web & Network CVE
+    web_network_keywords = [
+        "web", "http", "https", "vpn", "gateway", "firewall", "router",
+        "rce", "remote code execution", "command injection", "sql injection",
+        "cross-site", "traversal", "proxy", "api", "ssl", "tls", "server",
+        "cisco", "fortinet", "palo alto", "ivanti", "sonicwall", "check point",
+        "f5", "citrix", "apache", "nginx", "atlassian", "confluence", "pan-os", "fortios"
+    ]
+
+    # 1. Cào từ CISA KEV nếu được yêu cầu
+    if source_type in ["cisa_kev", "all"]:
+        cisa_items = fetch_cisa_kev(limit=limit)
+        crawled_count += len(cisa_items)
+        for item in cisa_items:
+            cve_id = item.get("cveID") or item.get("cve_id")
+            name = (item.get("vulnerabilityName", "") + " " + item.get("shortDescription", "") + " " + item.get("product", "")).lower()
+            
+            # Lọc các bài liên quan đến Web & Network CVE
+            is_web_network = any(kw in name for kw in web_network_keywords)
+            if cve_id and is_web_network:
+                try:
+                    threat = ingest_live_network_cve(cve_id)
+                    ingested_cves.append(threat["identifier"])
+                except Exception:
+                    pass
+        source_details.append(f"CISA KEV Catalog ({len(cisa_items)} CVEs scanned)")
+
+    # 2. Cào từ RSS Whitelist (The Hacker News, BleepingComputer) nếu được yêu cầu
+    if source_type in ["whitelist_rss", "all"]:
+        rss_items = fetch_rss_feeds(max_per_source=max(3, limit // 2))
+        crawled_count += len(rss_items)
+        for art in rss_items:
+            content = art.get("raw_content", "") or art.get("title", "")
+            # Trích xuất các mã CVE được đề cập trong bài viết
+            cve_matches = re.findall(r"CVE-\d{4}-\d{4,7}", content, re.IGNORECASE)
+            for cve in cve_matches:
+                clean_cve = cve.upper()
+                try:
+                    threat = ingest_live_network_cve(clean_cve)
+                    ingested_cves.append(threat["identifier"])
+                except Exception:
+                    pass
+        source_details.append(f"Whitelist RSS Feeds ({len(rss_items)} articles scanned)")
+
+    return {
+        "status": "success",
+        "source_type": source_type,
+        "crawled_count": crawled_count,
+        "ingested_cves": list(set(ingested_cves)),
+        "sources_scanned": source_details,
+        "message": f"Đã chủ động cào thành công {crawled_count} bản ghi từ {', '.join(source_details)} và đưa {len(set(ingested_cves))} Web/Network CVE vào hệ thống tác tử!"
+    }
+
+

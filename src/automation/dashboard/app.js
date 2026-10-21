@@ -429,21 +429,82 @@ function bindActionButtons() {
         });
     }
 
-    // Smart Ingestion & Live Crawl Execution
-    const handleTriggerSync = async () => {
-        showToast('Đang kết nối CISA KEV & quét luồng tin an ninh mạng...');
+    // Generic Active Crawl Trigger Helper
+    const executeActiveCrawl = async (endpoint, btnElement, loadingText) => {
+        const originalHtml = btnElement ? btnElement.innerHTML : '';
+        if (btnElement) {
+            btnElement.disabled = true;
+            btnElement.innerHTML = `
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="spin">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 2a10 10 0 0 1 10 10"></path>
+                </svg>
+                ${loadingText}...
+            `;
+        }
+
         try {
-            const res = await fetch('/api/network-intel/live-crawl', { method: 'POST' });
+            showToast(`${loadingText}...`);
+            const res = await fetch(endpoint, { method: 'POST' });
             const data = await res.json();
             if (data.status === 'success') {
                 showToast(data.message || 'Cào dữ liệu thành công!');
+                // Reset filter to All so newly crawled threats appear immediately
+                selectedTimeWindow = 'all';
+                selectedTag = 'ALL';
+                document.querySelectorAll('#timelineFilterGroup .segment-btn').forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('data-window') === 'all');
+                });
+                document.querySelectorAll('#tagsFilterGroup .tag-pill').forEach(b => {
+                    b.classList.toggle('active', b.getAttribute('data-tag') === 'ALL');
+                });
+
+                await loadSmartTriggerStatus();
+                await loadNetworkThreats();
+                if (allNetworkThreats.length > 0) {
+                    selectThreat(allNetworkThreats[0].id);
+                }
+            } else {
+                showToast(data.detail || 'Lỗi khi kết nối nguồn cào');
             }
         } catch (err) {
-            console.warn('Live crawl network notice:', err);
-            showToast('Đã đồng bộ lại dữ liệu mạng');
+            console.error('Crawler error:', err);
+            showToast('Lỗi kết nối tới nguồn tin an ninh mạng');
+        } finally {
+            if (btnElement) {
+                btnElement.disabled = false;
+                btnElement.innerHTML = originalHtml;
+            }
         }
-        await loadSmartTriggerStatus();
-        await loadNetworkThreats();
+    };
+
+    // 1. Button: Cào CISA KEV (Web & Network CVEs)
+    const btnCrawlCisa = document.getElementById('btnCrawlCisaKev');
+    if (btnCrawlCisa) {
+        btnCrawlCisa.addEventListener('click', () => {
+            executeActiveCrawl('/api/crawler/cisa-kev', btnCrawlCisa, 'Đang cào CISA KEV Catalog');
+        });
+    }
+
+    // 2. Button: Cào Whitelist Feeds (The Hacker News & BleepingComputer)
+    const btnCrawlRss = document.getElementById('btnCrawlWhitelistRss');
+    if (btnCrawlRss) {
+        btnCrawlRss.addEventListener('click', () => {
+            executeActiveCrawl('/api/crawler/whitelist-rss', btnCrawlRss, 'Đang cào The Hacker News & BleepingComputer');
+        });
+    }
+
+    // 3. Button: Cào Toàn Bộ Nguồn Whitelist (Sync All)
+    const btnCrawlAll = document.getElementById('btnCrawlAllWhitelist');
+    if (btnCrawlAll) {
+        btnCrawlAll.addEventListener('click', () => {
+            executeActiveCrawl('/api/crawler/sync-all', btnCrawlAll, 'Đang cào toàn bộ Whitelist Sources');
+        });
+    }
+
+    // Header & Smart Banner Quick Sync buttons
+    const handleTriggerSync = () => {
+        executeActiveCrawl('/api/crawler/sync-all', null, 'Đang đồng bộ telemetry từ Whitelist');
     };
 
     const btnHeaderSync = document.getElementById('btnHeaderSmartSync');
@@ -455,10 +516,10 @@ function bindActionButtons() {
     const btnManualEval = document.getElementById('btnManualTriggerEval');
     if (btnManualEval) btnManualEval.addEventListener('click', handleTriggerSync);
 
-    // Live On-Demand CVE Importer Handler
+    // 4. On-Demand Direct CVE Ingestion Handler
     const handleOnDemandIngest = async (cveId) => {
         if (!cveId || !cveId.trim()) {
-            showToast('Vui lòng nhập mã CVE mạng hợp lệ (vd: CVE-2024-38856)');
+            showToast('Vui lòng nhập mã CVE mạng hợp lệ (vd: CVE-2024-24919)');
             return;
         }
         const cleanId = cveId.trim().toUpperCase();
@@ -473,7 +534,7 @@ function bindActionButtons() {
                     <circle cx="12" cy="12" r="10"></circle>
                     <path d="M12 2a10 10 0 0 1 10 10"></path>
                 </svg>
-                Đang cào CISA KEV...
+                Kéo về...
             `;
         }
 
@@ -488,7 +549,6 @@ function bindActionButtons() {
                 showToast(`Đã cào thành công ${data.threat.identifier} & sinh Dynamic Agent Skill!`);
                 if (inputEl) inputEl.value = '';
                 
-                // Reset filter controls to all so newly ingested CVE is immediately visible
                 selectedTimeWindow = 'all';
                 selectedTag = 'ALL';
                 document.querySelectorAll('#timelineFilterGroup .segment-btn').forEach(b => {
@@ -538,4 +598,5 @@ function bindActionButtons() {
         });
     });
 }
+
 

@@ -111,32 +111,74 @@
                 </div>
             </div>
 
-            <!-- Live Ingestion & On-Demand CVE Importer Bar -->
-            <div class="ingestion-control-bar">
-                <div class="ingestion-left">
-                    <div class="ingestion-title-group">
-                        <span class="ingestion-badge">LIVE CTI INGESTION</span>
-                        <span class="ingestion-label">Crawl & Ingest Network CVE:</span>
+            <!-- Active Whitelist Threat Crawler & Live Ingestion Hub -->
+            <div class="crawler-hub-panel">
+                <div class="crawler-hub-header">
+                    <div class="hub-title-group">
+                        <span class="hub-badge">ACTIVE CTI CRAWLER</span>
+                        <span class="hub-title">Chủ Động Cào Bài Viết & Web/Network CVE Từ Whitelist Sources</span>
                     </div>
-                    <div class="ingestion-input-wrap">
-                        <input type="text" id="inputOnDemandCve" placeholder="Nhập mã CVE mạng (vd: CVE-2024-38856, CVE-2023-20269)..." class="ingestion-input" />
-                        <button id="btnSubmitOnDemandCve" class="btn btn-primary btn-sm">
+                    <div class="whitelist-pills" id="whitelistPills">
+                        <span class="whitelist-source-chip" title="Cơ quan An ninh Mạng Mỹ">
+                            <span class="chip-status-dot online"></span>CISA KEV Catalog
+                        </span>
+                        <span class="whitelist-source-chip" title="Tin tức An ninh Mạng Toàn cầu">
+                            <span class="chip-status-dot online"></span>The Hacker News
+                        </span>
+                        <span class="whitelist-source-chip" title="Phân tích Khai thác VPN/Ransomware">
+                            <span class="chip-status-dot online"></span>BleepingComputer
+                        </span>
+                        <span class="whitelist-source-chip" title="Cơ sở Dữ liệu Quốc gia NVD API v2">
+                            <span class="chip-status-dot online"></span>NIST NVD
+                        </span>
+                    </div>
+                </div>
+
+                <div class="crawler-actions-row">
+                    <!-- Action Buttons -->
+                    <div class="crawler-btn-group">
+                        <button id="btnCrawlCisaKev" class="btn btn-crawl-cisa">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"></polyline>
+                                <polyline points="1 20 1 14 7 14"></polyline>
+                                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                            </svg>
+                            Cào CISA KEV (Web & Network CVEs)
+                        </button>
+                        <button id="btnCrawlWhitelistRss" class="btn btn-outline-cyan btn-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 11a9 9 0 0 1 9 9"></path>
+                                <path d="M4 4a16 16 0 0 1 16 16"></path>
+                                <circle cx="5" cy="19" r="1"></circle>
+                            </svg>
+                            Cào Whitelist Feeds (The Hacker News & BleepingComputer)
+                        </button>
+                        <button id="btnCrawlAllWhitelist" class="btn btn-primary btn-sm">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
                                 <line x1="12" y1="15" x2="12" y2="3"></line>
                             </svg>
-                            Ingest & Generate Skill
+                            Cào Toàn Bộ Nguồn Whitelist
+                        </button>
+                    </div>
+
+                    <!-- Direct CVE Ingestion Field -->
+                    <div class="crawler-ondemand-field">
+                        <input type="text" id="inputOnDemandCve" placeholder="Hoặc cào đích danh mã CVE (vd: CVE-2024-24919, CVE-2023-3519)..." class="ingestion-input" />
+                        <button id="btnSubmitOnDemandCve" class="btn btn-outline-cyan btn-sm">
+                            Kéo Về
                         </button>
                     </div>
                 </div>
-                <div class="ingestion-right">
-                    <span class="chips-label">QUICK CRAWL:</span>
-                    <div class="quick-cve-chips">
-                        <button class="cve-chip" data-cve="CVE-2024-38856">CVE-2024-38856 (Apache OFBiz RCE)</button>
-                        <button class="cve-chip" data-cve="CVE-2023-20269">CVE-2023-20269 (Cisco ASA VPN)</button>
-                        <button class="cve-chip" data-cve="CVE-2024-21887">CVE-2024-21887 (Ivanti SSL-VPN)</button>
-                    </div>
+
+                <!-- Quick crawl chips -->
+                <div class="crawler-quick-chips">
+                    <span class="chips-label">GỢI Ý CÀO NHANH:</span>
+                    <button class="cve-chip" data-cve="CVE-2024-38856">CVE-2024-38856 (Apache OFBiz RCE)</button>
+                    <button class="cve-chip" data-cve="CVE-2024-24919">CVE-2024-24919 (Check Point Quantum Gateway)</button>
+                    <button class="cve-chip" data-cve="CVE-2023-3519">CVE-2023-3519 (Citrix NetScaler Gateway RCE)</button>
+                    <button class="cve-chip" data-cve="CVE-2023-20269">CVE-2023-20269 (Cisco ASA VPN)</button>
                 </div>
             </div>
 
