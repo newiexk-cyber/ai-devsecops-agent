@@ -185,11 +185,11 @@ function renderThreatCardList(threats) {
         const isActive = t.id === activeThreatId ? 'active' : '';
 
         return `
-            <div class="threat-feed-card ${isActive}" data-id="${t.id}" onclick="selectThreat('${t.id}')">
+            <div class="threat-feed-card ${isActive}" data-id="${escapeHtml(t.id)}">
                 <div class="card-row-top">
                     <div class="card-badges">
                         <span class="badge ${isCrit ? 'badge-crimson' : 'badge-amber'}">${escapeHtml(t.severity)}</span>
-                        <span class="badge ${isEmer ? 'badge-emergency' : 'badge-date'}">${dateLabels[t.date_category] || t.date_category}</span>
+                        <span class="badge ${isEmer ? 'badge-emergency' : 'badge-date'}">${dateLabels[t.date_category] || escapeHtml(t.date_category)}</span>
                     </div>
                     <span class="card-id-text">${escapeHtml(t.identifier)}</span>
                 </div>
@@ -401,10 +401,10 @@ async function loadSkillsCatalog() {
                     </div>
                     <div class="catalog-skill-desc">${escapeHtml(sk.summary)}</div>
                     <div class="catalog-targets-row">
-                        <strong>Target Infrastructure:</strong> ${(sk.target_types || []).join(', ')}
+                        <strong>Target Infrastructure:</strong> ${(sk.target_types || []).map(escapeHtml).join(', ')}
                     </div>
                     <div class="catalog-targets-row" style="margin-top: 4px; color: var(--color-cyan);">
-                        <strong>Supported Models:</strong> ${(sk.supported_models || ['OpenAI GPT-4o', 'Claude 3.5', 'Gemini 2.0', 'LangChain']).join(', ')}
+                        <strong>Supported Models:</strong> ${(sk.supported_models || ['OpenAI GPT-4o', 'Claude 3.5', 'Gemini 2.0', 'LangChain']).map(escapeHtml).join(', ')}
                     </div>
                 </div>
             `).join('');
@@ -418,6 +418,18 @@ async function loadSkillsCatalog() {
 // 6. FILTER CONTROLS & EVENT BINDINGS
 // ==============================================================================
 function initFilterControls() {
+    // Card list event delegation (prevents inline handler XSS)
+    const cardList = document.getElementById('threatCardList');
+    if (cardList) {
+        cardList.addEventListener('click', (e) => {
+            const card = e.target.closest('.threat-feed-card');
+            if (card) {
+                const threatId = card.getAttribute('data-id');
+                if (threatId) selectThreat(threatId);
+            }
+        });
+    }
+
     // Timeline segmented buttons
     const timelineButtons = document.querySelectorAll('#timelineFilterGroup .segment-btn');
     timelineButtons.forEach(btn => {
