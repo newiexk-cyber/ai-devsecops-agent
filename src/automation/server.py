@@ -72,7 +72,7 @@ async def add_security_headers(request: Request, call_next):
         "default-src 'self' 'unsafe-inline' https:; "
         "img-src 'self' data: https:; "
         "font-src 'self' https: data:; "
-        "connect-src 'self' http://127.0.0.1:8080 http://localhost:8080 https:;"
+        "connect-src 'self' http: https: ws:;"
     )
     return response
 

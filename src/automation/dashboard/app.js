@@ -105,13 +105,15 @@ async function loadNetworkThreats() {
     const emptyState = document.getElementById('detailsEmptyState');
     const content = document.getElementById('detailsActiveContent');
 
-    let url = '/api/network-intel/feeds?';
+    const params = new URLSearchParams();
     if (selectedTimeWindow && selectedTimeWindow !== 'all') {
-        url += `time_window=${selectedTimeWindow}&`;
+        params.append('time_window', selectedTimeWindow);
     }
     if (selectedTag && selectedTag !== 'ALL') {
-        url += `tag=${encodeURIComponent(selectedTag)}&`;
+        params.append('tag', selectedTag);
     }
+    const queryString = params.toString();
+    const url = '/api/network-intel/feeds' + (queryString ? '?' + queryString : '');
 
     try {
         const res = await fetch(url);
@@ -163,7 +165,16 @@ function renderThreatCardList(threats) {
     const cardList = document.getElementById('threatCardList');
     if (!cardList) return;
 
-    if (!threats || threats.length === 0) {
+    // Khử trùng lặp phòng vệ trên giao diện (Frontend Deduplication)
+    const seen = new Set();
+    const uniqueThreats = (threats || []).filter(t => {
+        const key = (t.identifier || t.id || '').toUpperCase();
+        if (!key || seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+
+    if (uniqueThreats.length === 0) {
         cardList.innerHTML = `
             <div style="padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 12px;">
                 No network threats found matching the current timeline and tag filters.
@@ -179,7 +190,7 @@ function renderThreatCardList(threats) {
         'historical_3y': '1-3Y BASE'
     };
 
-    cardList.innerHTML = threats.map(t => {
+    cardList.innerHTML = uniqueThreats.map(t => {
         const isEmer = t.date_category === '24h_emergency';
         const isCrit = t.severity === 'CRITICAL';
         const isActive = t.id === activeThreatId ? 'active' : '';

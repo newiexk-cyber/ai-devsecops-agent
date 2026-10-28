@@ -6,7 +6,7 @@ Truy vấn danh mục lỗ hổng bị khai thác thực tế (Known Exploited V
 import os
 import re
 import httpx
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from src.automation.storage.database import save_raw_article
 
 CISA_KEV_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
@@ -35,10 +35,38 @@ BUNDLED_CISA_VULNS = [
     }
 ]
 
+import time
+
+_CACHED_CISA_KEV: Optional[List[Dict[str, Any]]] = None
+_CACHED_CISA_KEV_TIME: float = 0.0
+
+def get_cached_cisa_kev_data() -> List[Dict[str, Any]]:
+    """Tải và lưu đệm danh mục CISA KEV (TTL 15 phút) nhằm tránh nghẽn mạng và timeout."""
+    global _CACHED_CISA_KEV, _CACHED_CISA_KEV_TIME
+    now = time.time()
+    if _CACHED_CISA_KEV is not None and (now - _CACHED_CISA_KEV_TIME) < 900:
+        return _CACHED_CISA_KEV
+
+    try:
+        with httpx.Client(timeout=6.0) as client:
+            resp = client.get(CISA_KEV_URL)
+            if resp.status_code == 200:
+                data = resp.json()
+                _CACHED_CISA_KEV = data.get("vulnerabilities", [])
+                _CACHED_CISA_KEV_TIME = now
+                return _CACHED_CISA_KEV
+    except Exception:
+        pass
+
+    if _CACHED_CISA_KEV is not None:
+        return _CACHED_CISA_KEV
+    return BUNDLED_CISA_VULNS
+
 def fetch_cisa_kev(limit: int = 35) -> List[Dict[str, Any]]:
-    """Cập nhật dữ liệu từ CISA KEV Catalog và nạp vào SQLite"""
+    """Cập nhật dữ liệu từ CISA KEV Catalog và nạp vào SQLite."""
     collected = []
-    
+    vulns = get_cached_cisa_kev_data()
+
     # Nạp dữ liệu mẫu trước
     for item in BUNDLED_CISA_VULNS:
         content = (
@@ -57,40 +85,35 @@ def fetch_cisa_kev(limit: int = 35) -> List[Dict[str, Any]]:
             published_date=item["dateAdded"]
         )
         collected.append(item)
-        
-    # Thử gọi API CISA KEV trực tuyến nếu có mạng
-    try:
-        with httpx.Client(timeout=5.0) as client:
-            resp = client.get(CISA_KEV_URL)
-            if resp.status_code == 200:
-                data = resp.json()
-                vulns = data.get("vulnerabilities", [])[:limit]
-                for item in vulns:
-                    content = (
-                        f"Vulnerability: {item.get('vulnerabilityName')} ({item.get('cveID')})\n"
-                        f"Vendor/Product: {item.get('vendorProject')} - {item.get('product')}\n"
-                        f"Description: {item.get('shortDescription')}\n"
-                        f"Required Action: {item.get('requiredAction')}\n"
-                        f"Remediation Due Date: {item.get('dueDate')}"
-                    )
-                    url = f"https://www.cisa.gov/known-exploited-vulnerabilities-catalog#{item.get('cveID')}"
-                    save_raw_article(
-                        source_name="CISA KEV",
-                        source_url=url,
-                        title=f"CISA KEV Alert: {item.get('cveID')} - {item.get('vulnerabilityName')}",
-                        raw_content=content,
-                        published_date=item.get("dateAdded")
-                    )
-                    collected.append(item)
-    except Exception:
-        pass
-        
+
+    for item in vulns[:limit]:
+        cve_id = item.get("cveID") or item.get("cve_id")
+        if not cve_id:
+            continue
+        vuln_name = item.get("vulnerabilityName", "Vulnerability")
+        content = (
+            f"Vulnerability: {vuln_name} ({cve_id})\n"
+            f"Vendor/Product: {item.get('vendorProject', 'Unknown')} - {item.get('product', 'Unknown')}\n"
+            f"Description: {item.get('shortDescription', '')}\n"
+            f"Required Action: {item.get('requiredAction', '')}\n"
+            f"Remediation Due Date: {item.get('dueDate', '')}"
+        )
+        url = f"https://www.cisa.gov/known-exploited-vulnerabilities-catalog#{cve_id}"
+        save_raw_article(
+            source_name="CISA KEV",
+            source_url=url,
+            title=f"CISA KEV Alert: {cve_id} - {vuln_name}",
+            raw_content=content,
+            published_date=item.get("dateAdded")
+        )
+        collected.append(item)
+
     return collected
 
 def fetch_cve_by_id(cve_id: str) -> Dict[str, Any]:
     """
     Kéo lỗ hổng khẩn cấp theo mã CVE (On-Demand Fetching):
-    1. Tra cứu trong CISA KEV Catalog
+    1. Tra cứu siêu tốc trong bộ đệm CISA KEV Catalog
     2. Nếu không có, tra cứu trực tiếp sang Cơ sở dữ liệu quốc gia NIST NVD API
     3. Lưu ngay vào SQLite và trả về kết quả
     """
@@ -101,46 +124,41 @@ def fetch_cve_by_id(cve_id: str) -> Dict[str, Any]:
     # Kiểm tra định dạng chuẩn CVE nghiêm ngặt (P0 Data Integrity)
     if not re.match(r"^CVE-\d{4}-\d{4,}$", clean_cve):
         raise ValueError(f"Định dạng mã CVE không hợp lệ: '{clean_cve}'. Chuẩn bắt buộc: CVE-YYYY-NNNN+")
-        
-    # 1. Thử tìm trong CISA KEV Catalog trước
-    try:
-        with httpx.Client(timeout=4.0) as client:
-            resp = client.get(CISA_KEV_URL)
-            if resp.status_code == 200:
-                data = resp.json()
-                for item in data.get("vulnerabilities", []):
-                    if item.get("cveID", "").upper() == clean_cve:
-                        content = (
-                            f"Vulnerability: {item.get('vulnerabilityName')} ({item.get('cveID')})\n"
-                            f"Vendor/Product: {item.get('vendorProject')} - {item.get('product')}\n"
-                            f"Description: {item.get('shortDescription')}\n"
-                            f"Required Action: {item.get('requiredAction')}\n"
-                            f"Remediation Due Date: {item.get('dueDate')}\n\n"
-                            f"Status: Actively Exploited in the Wild (Confirmed by CISA)"
-                        )
-                        url = f"https://www.cisa.gov/known-exploited-vulnerabilities-catalog#{clean_cve}"
-                        art_id = save_raw_article(
-                            source_name="CISA KEV",
-                            source_url=url,
-                            title=f"CISA KEV Alert: {clean_cve} - {item.get('vulnerabilityName')}",
-                            raw_content=content,
-                            published_date=item.get("dateAdded")
-                        )
-                        return {
-                            "status": "success",
-                            "id": art_id,
-                            "cve_id": clean_cve,
-                            "source": "CISA KEV Catalog",
-                            "is_kev": True,
-                            "is_verified": True,
-                            "date_added_to_kev": item.get("dateAdded"),
-                            "published_date": item.get("dateAdded"),
-                            "title": f"CISA KEV Alert: {clean_cve} - {item.get('vulnerabilityName')}",
-                            "content": content,
-                            "url": url
-                        }
-    except Exception:
-        pass
+
+    # 1. Tra cứu trong CISA KEV Catalog (dùng in-memory cache)
+    vulns = get_cached_cisa_kev_data()
+    for item in vulns:
+        if (item.get("cveID") or item.get("cve_id") or "").strip().upper() == clean_cve:
+            vuln_name = item.get("vulnerabilityName", "Known Exploited Vulnerability")
+            content = (
+                f"Vulnerability: {vuln_name} ({clean_cve})\n"
+                f"Vendor/Product: {item.get('vendorProject', 'Vendor')} - {item.get('product', 'Product')}\n"
+                f"Description: {item.get('shortDescription', '')}\n"
+                f"Required Action: {item.get('requiredAction', 'Patch immediately')}\n"
+                f"Remediation Due Date: {item.get('dueDate', 'N/A')}\n\n"
+                f"Status: Actively Exploited in the Wild (Confirmed by CISA)"
+            )
+            url = f"https://www.cisa.gov/known-exploited-vulnerabilities-catalog#{clean_cve}"
+            art_id = save_raw_article(
+                source_name="CISA KEV",
+                source_url=url,
+                title=f"CISA KEV Alert: {clean_cve} - {vuln_name}",
+                raw_content=content,
+                published_date=item.get("dateAdded")
+            )
+            return {
+                "status": "success",
+                "id": art_id,
+                "cve_id": clean_cve,
+                "source": "CISA KEV Catalog",
+                "is_kev": True,
+                "is_verified": True,
+                "date_added_to_kev": item.get("dateAdded"),
+                "published_date": item.get("dateAdded"),
+                "title": f"CISA KEV Alert: {clean_cve} - {vuln_name}",
+                "content": content,
+                "url": url
+            }
 
     # 2. Thử tìm trên NIST NVD API v2
     nvd_url = f"https://services.nvd.nist.gov/rest/json/cves/2.0?cveId={clean_cve}"

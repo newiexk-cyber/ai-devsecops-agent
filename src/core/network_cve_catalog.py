@@ -294,8 +294,15 @@ NETWORK_CATALOG: List[Dict[str, Any]] = [
 ]
 
 def get_network_threat_catalog() -> List[Dict[str, Any]]:
-    """Trả về toàn bộ danh mục mối đe dọa mạng."""
-    return NETWORK_CATALOG
+    """Trả về toàn bộ danh mục mối đe dọa mạng (đã được khử trùng lặp an toàn theo identifier)."""
+    seen_identifiers = set()
+    deduped: List[Dict[str, Any]] = []
+    for item in NETWORK_CATALOG:
+        ident = (item.get("identifier") or item.get("id") or "").strip().upper()
+        if ident and ident not in seen_identifiers:
+            seen_identifiers.add(ident)
+            deduped.append(item)
+    return deduped
 
 def filter_network_threats(
     time_window: Optional[str] = None,
@@ -312,8 +319,9 @@ def filter_network_threats(
     """
     results = []
     clean_window = (time_window or "").strip().lower()
+    catalog = get_network_threat_catalog()
 
-    for item in NETWORK_CATALOG:
+    for item in catalog:
         # Lọc time window
         if clean_window and clean_window != "all":
             if item.get("date_category") != clean_window:
@@ -522,7 +530,12 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
         "blast_radius": f"Hạ tầng biên và các dịch vụ mạng liên quan tới {target_asset}."
     }
 
-    # Đưa lên đầu danh mục để hiển thị ưu tiên
+    # Khử trùng lặp triệt để: Xóa mọi bản ghi cũ có cùng identifier hoặc id trước khi đưa bản mới nhất lên đầu
+    NETWORK_CATALOG[:] = [
+        t for t in NETWORK_CATALOG
+        if t.get("identifier", "").strip().upper() != clean_id.strip().upper()
+        and t.get("id") != new_threat["id"]
+    ]
     NETWORK_CATALOG.insert(0, new_threat)
     return new_threat
 
@@ -540,6 +553,7 @@ def crawl_whitelist_sources(source_type: str = "all", limit: int = 35) -> Dict[s
     ingested_cves = []
     crawled_count = 0
     source_details = []
+    seen_in_run = set()
 
     # Danh sách từ khóa lọc các lỗ hổng Web & Network CVE
     web_network_keywords = [
@@ -557,15 +571,18 @@ def crawl_whitelist_sources(source_type: str = "all", limit: int = 35) -> Dict[s
         for item in cisa_items:
             cve_id = item.get("cveID") or item.get("cve_id")
             name = (item.get("vulnerabilityName", "") + " " + item.get("shortDescription", "") + " " + item.get("product", "")).lower()
-            
+
             # Lọc các bài liên quan đến Web & Network CVE
             is_web_network = any(kw in name for kw in web_network_keywords)
             if cve_id and is_web_network:
-                try:
-                    threat = ingest_live_network_cve(cve_id)
-                    ingested_cves.append(threat["identifier"])
-                except Exception:
-                    pass
+                clean_cve = cve_id.strip().upper()
+                if clean_cve not in seen_in_run:
+                    seen_in_run.add(clean_cve)
+                    try:
+                        threat = ingest_live_network_cve(clean_cve)
+                        ingested_cves.append(threat["identifier"])
+                    except Exception:
+                        pass
         source_details.append(f"CISA KEV Catalog ({len(cisa_items)} CVEs scanned)")
 
     # 2. Cào từ RSS Whitelist (The Hacker News, BleepingComputer) nếu được yêu cầu
@@ -577,12 +594,14 @@ def crawl_whitelist_sources(source_type: str = "all", limit: int = 35) -> Dict[s
             # Trích xuất các mã CVE được đề cập trong bài viết
             cve_matches = re.findall(r"CVE-\d{4}-\d{4,7}", content, re.IGNORECASE)
             for cve in cve_matches:
-                clean_cve = cve.upper()
-                try:
-                    threat = ingest_live_network_cve(clean_cve)
-                    ingested_cves.append(threat["identifier"])
-                except Exception:
-                    pass
+                clean_cve = cve.strip().upper()
+                if clean_cve not in seen_in_run:
+                    seen_in_run.add(clean_cve)
+                    try:
+                        threat = ingest_live_network_cve(clean_cve)
+                        ingested_cves.append(threat["identifier"])
+                    except Exception:
+                        pass
         source_details.append(f"Whitelist RSS Feeds ({len(rss_items)} articles scanned)")
 
     new_count = len(set(ingested_cves))
