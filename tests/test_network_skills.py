@@ -26,15 +26,23 @@ def test_network_threat_catalog_contains_network_only():
 def test_filter_by_timeline_date():
     # Lọc 24h khẩn cấp
     threats_24h = filter_network_threats(time_window="24h_emergency")
+    assert len(threats_24h) >= 1
     assert all(t["date_category"] == "24h_emergency" for t in threats_24h)
 
     # Lọc 30 ngày
     threats_30d = filter_network_threats(time_window="active_30d")
-    assert all(t["date_category"] in ["24h_emergency", "active_30d"] for t in threats_30d)
+    assert len(threats_30d) >= 1
+    assert all(t["date_category"] == "active_30d" for t in threats_30d)
 
-    # Lọc 3 năm
+    # Lọc 1 năm
+    threats_1y = filter_network_threats(time_window="trending_1y")
+    assert len(threats_1y) >= 1
+    assert all(t["date_category"] == "trending_1y" for t in threats_1y)
+
+    # Lọc 3 năm (historical)
     threats_3y = filter_network_threats(time_window="historical_3y")
-    assert len(threats_3y) >= len(threats_30d)
+    assert len(threats_3y) >= 1
+    assert all(t["date_category"] == "historical_3y" for t in threats_3y)
 
 def test_smart_crawl_trigger_evaluation():
     # Khi có 0-Day mới hoặc bùng nổ tấn công -> Nên cào ngay
@@ -72,8 +80,15 @@ def test_dynamic_agent_skill_generation():
     
     assert "skill_name" in skill
     assert "description" in skill
+    assert "system_prompt" in skill
     assert "parameters" in skill
     assert skill["parameters"]["type"] == "object"
+    assert "model_schemas" in skill
+    assert "openai" in skill["model_schemas"]
+    assert "anthropic" in skill["model_schemas"]
+    assert "gemini" in skill["model_schemas"]
+    assert "langchain" in skill["model_schemas"]
+    assert "execution_code" in skill["model_schemas"]
     assert "execution_code" in skill
     assert "rollback_skill" in skill
     assert "target_devices" in skill
@@ -92,7 +107,7 @@ def test_ingest_live_network_cve():
     assert threat is not None
     assert threat["identifier"] == "CVE-2024-38856"
     assert threat["threat_domain"] == "network"
-    assert threat["date_category"] in ["24h_emergency", "active_30d"]
+    assert threat["date_category"] in ["24h_emergency", "active_30d", "trending_1y", "historical_3y"]
     assert "tags" in threat
     assert any("CVE" in t or "Apache" in t or "Network" in t for t in threat["tags"])
     

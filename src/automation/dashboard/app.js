@@ -7,6 +7,7 @@ let allNetworkThreats = [];
 let activeThreatId = null;
 let selectedTimeWindow = 'all';
 let selectedTag = 'ALL';
+let selectedModelType = 'openai';
 let currentActiveSkill = null;
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -101,6 +102,8 @@ async function loadNetworkThreats() {
     const navCount = document.getElementById('navThreatCount');
     const kpiCrit = document.getElementById('kpiCriticalCve');
     const kpiC2 = document.getElementById('kpiActiveC2');
+    const emptyState = document.getElementById('detailsEmptyState');
+    const content = document.getElementById('detailsActiveContent');
 
     let url = '/api/network-intel/feeds?';
     if (selectedTimeWindow && selectedTimeWindow !== 'all') {
@@ -139,9 +142,16 @@ async function loadNetworkThreats() {
 
             renderThreatCardList(filtered);
 
-            // Auto-select first threat if none selected
-            if (filtered.length > 0 && !activeThreatId) {
-                selectThreat(filtered[0].id);
+            // Auto-selection handling: ensure active item is within filtered set
+            const activeStillPresent = filtered.some(t => t.id === activeThreatId);
+            if (filtered.length > 0) {
+                if (!activeStillPresent) {
+                    selectThreat(filtered[0].id);
+                }
+            } else {
+                activeThreatId = null;
+                if (emptyState) emptyState.classList.remove('hidden');
+                if (content) content.classList.add('hidden');
             }
         }
     } catch (err) {
@@ -313,29 +323,63 @@ function renderThreatDetailsView(data) {
         targetDevicesEl.textContent = `Supports: ${skill.target_devices.join(', ')}`;
     }
 
-    const schemaDisplay = document.getElementById('codeSchemaDisplay');
-    if (schemaDisplay) {
-        const toolDefinition = {
-            type: "function",
-            function: {
-                name: skill.skill_name,
-                description: skill.description,
-                parameters: skill.parameters
-            }
-        };
-        schemaDisplay.textContent = JSON.stringify(toolDefinition, null, 2);
+    const promptEl = document.getElementById('lblAgentSystemPrompt');
+    if (promptEl) {
+        promptEl.textContent = skill.system_prompt || (
+            `Autonomous Defense Agent Guide for ${threat.identifier || 'Threat'}:\n` +
+            `1. Preflight check: Always validate target CIDR with dry_run=True.\n` +
+            `2. Enforce mitigation policy on perimeter devices.\n` +
+            `3. Fail-safe rollback timer enabled automatically.`
+        );
     }
 
-    const pythonDisplay = document.getElementById('codePythonDisplay');
-    if (pythonDisplay) {
-        pythonDisplay.textContent = skill.execution_code || '# No execution code generated';
-    }
+    renderModelSchema(selectedModelType);
 
     const verifEl = document.getElementById('lblVerificationStep');
     if (verifEl) verifEl.textContent = skill.verification_step || 'Preflight probe';
 
     const rollbackEl = document.getElementById('lblRollbackSkill');
     if (rollbackEl) rollbackEl.textContent = skill.rollback_skill || 'None';
+}
+
+function renderModelSchema(modelType) {
+    selectedModelType = modelType;
+    const schemaDisplay = document.getElementById('codeSchemaDisplay');
+    if (!schemaDisplay || !currentActiveSkill || !currentActiveSkill.agent_skill) return;
+
+    const skill = currentActiveSkill.agent_skill;
+    const models = skill.model_schemas || {};
+
+    if (modelType === 'openai') {
+        const def = models.openai || {
+            type: "function",
+            function: {
+                name: skill.skill_name,
+                description: skill.description,
+                parameters: skill.parameters,
+                strict: true
+            }
+        };
+        schemaDisplay.textContent = JSON.stringify(def, null, 2);
+    } else if (modelType === 'claude') {
+        const def = models.anthropic || {
+            name: skill.skill_name,
+            description: skill.description,
+            input_schema: skill.parameters
+        };
+        schemaDisplay.textContent = JSON.stringify(def, null, 2);
+    } else if (modelType === 'gemini') {
+        const def = models.gemini || {
+            name: skill.skill_name,
+            description: skill.description,
+            parameters: skill.parameters
+        };
+        schemaDisplay.textContent = JSON.stringify(def, null, 2);
+    } else if (modelType === 'langchain') {
+        schemaDisplay.textContent = models.langchain || "# LangChain Tool not generated";
+    } else if (modelType === 'python') {
+        schemaDisplay.textContent = skill.execution_code || models.execution_code || "# No execution script generated";
+    }
 }
 
 // ==============================================================================
@@ -358,6 +402,9 @@ async function loadSkillsCatalog() {
                     <div class="catalog-skill-desc">${escapeHtml(sk.summary)}</div>
                     <div class="catalog-targets-row">
                         <strong>Target Infrastructure:</strong> ${(sk.target_types || []).join(', ')}
+                    </div>
+                    <div class="catalog-targets-row" style="margin-top: 4px; color: var(--color-cyan);">
+                        <strong>Supported Models:</strong> ${(sk.supported_models || ['OpenAI GPT-4o', 'Claude 3.5', 'Gemini 2.0', 'LangChain']).join(', ')}
                     </div>
                 </div>
             `).join('');
@@ -401,42 +448,49 @@ function initFilterControls() {
         });
     }
 
-    // Code container view toggle (Schema vs Python code)
-    const codeTabButtons = document.querySelectorAll('.code-tab-btn');
-    codeTabButtons.forEach(btn => {
+    // Model Architecture Switcher Tabs (OpenAI, Claude, Gemini, LangChain, Python)
+    const modelButtons = document.querySelectorAll('#modelSwitcherTabs .model-tab-btn');
+    modelButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            codeTabButtons.forEach(b => b.classList.remove('active'));
+            modelButtons.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-
-            const target = btn.getAttribute('data-target');
-            document.querySelectorAll('.code-pre').forEach(pre => pre.classList.remove('active'));
-            const targetPre = document.getElementById(target);
-            if (targetPre) targetPre.classList.add('active');
+            const model = btn.getAttribute('data-model');
+            renderModelSchema(model);
         });
     });
 }
 
 function bindActionButtons() {
-    // Copy Tool Schema Button
+    // Copy Active Tool Schema / Code Button
     const btnCopySchema = document.getElementById('btnCopyToolSchema');
     if (btnCopySchema) {
         btnCopySchema.addEventListener('click', () => {
-            if (!currentActiveSkill || !currentActiveSkill.agent_skill) {
-                showToast('No active Agent Skill loaded to copy');
+            const schemaDisplay = document.getElementById('codeSchemaDisplay');
+            if (!schemaDisplay || !schemaDisplay.textContent) {
+                showToast('No schema content available to copy');
                 return;
             }
-            const toolDef = {
-                type: "function",
-                function: {
-                    name: currentActiveSkill.agent_skill.skill_name,
-                    description: currentActiveSkill.agent_skill.description,
-                    parameters: currentActiveSkill.agent_skill.parameters
-                }
-            };
-            navigator.clipboard.writeText(JSON.stringify(toolDef, null, 2)).then(() => {
-                showToast('Agent Skill JSON Schema copied to clipboard');
+            navigator.clipboard.writeText(schemaDisplay.textContent).then(() => {
+                showToast(`Copied ${selectedModelType.toUpperCase()} definition to clipboard`);
             }).catch(() => {
-                showToast('Failed to copy schema');
+                showToast('Failed to copy to clipboard');
+            });
+        });
+    }
+
+    // Copy Agent System Instruction Button
+    const btnCopyPrompt = document.getElementById('btnCopyPrompt');
+    if (btnCopyPrompt) {
+        btnCopyPrompt.addEventListener('click', () => {
+            const promptEl = document.getElementById('lblAgentSystemPrompt');
+            if (!promptEl || !promptEl.textContent) {
+                showToast('No agent prompt available to copy');
+                return;
+            }
+            navigator.clipboard.writeText(promptEl.textContent).then(() => {
+                showToast('Agent System Instruction copied to clipboard');
+            }).catch(() => {
+                showToast('Failed to copy prompt');
             });
         });
     }

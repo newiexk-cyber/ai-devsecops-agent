@@ -321,19 +321,41 @@
                             <div class="skill-identity-bar">
                                 <div class="skill-meta-group">
                                     <span class="skill-name-label" id="lblSkillName">network_virtual_patching</span>
-                                    <span class="skill-type-tag">Autonomous Function Tool</span>
+                                    <span class="skill-type-tag">Autonomous Agent Skill</span>
                                 </div>
                                 <div class="skill-targets" id="lblTargetDevices">Supports: Fortinet, Cisco ASA, Palo Alto, pfSense</div>
                             </div>
 
-                            <div class="code-view-tabs">
-                                <button class="code-tab-btn active" data-target="schemaView">OpenAI / LangChain Tool Schema</button>
-                                <button class="code-tab-btn" data-target="pythonView">Python Action Implementation</button>
+                            <!-- Agent Persona & Safety Guardrails -->
+                            <div class="agent-prompt-box">
+                                <div class="agent-prompt-header">
+                                    <span class="agent-prompt-tag">AGENT SYSTEM INSTRUCTION &amp; SAFETY GUARDRAILS</span>
+                                    <button id="btnCopyPrompt" class="btn btn-outline-cyan btn-xs">Copy Agent Instruction</button>
+                                </div>
+                                <div class="agent-prompt-text" id="lblAgentSystemPrompt"></div>
+                            </div>
+
+                            <!-- Multi-Model Architecture Switcher -->
+                            <div class="model-switcher-tabs" id="modelSwitcherTabs">
+                                <button class="model-tab-btn active" data-model="openai">
+                                    <span class="model-dot openai"></span>OpenAI (GPT-4o)
+                                </button>
+                                <button class="model-tab-btn" data-model="claude">
+                                    <span class="model-dot claude"></span>Anthropic Claude
+                                </button>
+                                <button class="model-tab-btn" data-model="gemini">
+                                    <span class="model-dot gemini"></span>Google Gemini
+                                </button>
+                                <button class="model-tab-btn" data-model="langchain">
+                                    <span class="model-dot langchain"></span>LangChain (@tool)
+                                </button>
+                                <button class="model-tab-btn" data-model="python">
+                                    <span class="model-dot python"></span>Python Action Script
+                                </button>
                             </div>
 
                             <div class="code-container">
                                 <pre id="schemaView" class="code-pre active"><code id="codeSchemaDisplay" class="language-json"></code></pre>
-                                <pre id="pythonView" class="code-pre"><code id="codePythonDisplay" class="language-python"></code></pre>
                             </div>
 
                             <div class="skill-properties-footer">

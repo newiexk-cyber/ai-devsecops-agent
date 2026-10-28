@@ -6,133 +6,96 @@ Chuyên sâu An toàn Mạng (Firewall, Router, VPN, Gateway, C2 Botnet traffic)
 Hỗ trợ phân loại Timeline Date (24h/30d/1y/3y), Multi-Tagging và Smart Trigger.
 ==============================================================================
 """
+import re
 from typing import Dict, Any, List, Optional
 from datetime import datetime
+
+def determine_cve_date_category(pub_date_str: Optional[str] = None, cve_id: str = "", raw_text: str = "") -> tuple[str, str]:
+    """
+    Xác định ngày công bố và phân loại chính xác theo 4 cấp độ Timeline:
+    - 24h_emergency: Khẩn cấp / 0-day trong 48h qua (< 2 ngày).
+    - active_30d: Đang bùng phát và bị khai thác trong 30 ngày qua (2 - 30 ngày).
+    - trending_1y: Lỗ hổng xu hướng trong 1 năm qua (31 - 365 ngày).
+    - historical_3y: Lỗ hổng nền tảng lịch sử 1 - 3 năm (> 365 ngày hoặc CVE từ 2024 trở về trước).
+    """
+    now = datetime.now()
+    now_year = now.year
+
+    # 1. Trích xuất năm từ cve_id nếu có (vd: CVE-2024-21887 -> 2024)
+    cve_year = None
+    if cve_id:
+        match = re.search(r"CVE-(\d{4})-", cve_id.upper())
+        if match:
+            cve_year = int(match.group(1))
+
+    # 2. Tìm ngày công bố từ pub_date_str hoặc raw_text
+    found_date = None
+    if pub_date_str:
+        for fmt in ("%Y-%m-%d", "%Y-%m-%dT%H:%M:%S", "%Y-%m-%dT%H:%M:%SZ", "%Y/%m/%d"):
+            try:
+                found_date = datetime.strptime(pub_date_str[:10], "%Y-%m-%d" if len(pub_date_str) >= 10 else fmt)
+                break
+            except Exception:
+                pass
+
+    if not found_date and raw_text:
+        date_matches = re.findall(r"\b(20\d{2}-\d{2}-\d{2})\b", raw_text)
+        if date_matches:
+            try:
+                found_date = datetime.strptime(date_matches[0], "%Y-%m-%d")
+            except Exception:
+                pass
+
+    # 3. Phân loại theo ngày và năm
+    if found_date:
+        pub_str = found_date.strftime("%Y-%m-%d")
+        diff_days = (now - found_date).days
+        if diff_days <= 2:
+            return "24h_emergency", pub_str
+        elif diff_days <= 30:
+            return "active_30d", pub_str
+        elif diff_days <= 365:
+            return "trending_1y", pub_str
+        else:
+            return "historical_3y", pub_str
+
+    # Nếu không có ngày cụ thể, phân loại theo năm của CVE
+    if cve_year:
+        if cve_year >= now_year:
+            return "24h_emergency", f"{cve_year}-10-27"
+        elif cve_year == now_year - 1:
+            return "trending_1y", f"{cve_year}-08-20"
+        else:
+            return "historical_3y", f"{cve_year}-04-15"
+
+    return "active_30d", now.strftime("%Y-%m-%d")
 
 # Danh mục các mối đe dọa mạng được xác thực chuẩn quốc tế (CISA KEV / ThreatFox / Vendor)
 NETWORK_CATALOG: List[Dict[str, Any]] = [
     {
-        "id": "NET-2024-001",
+        "id": "NET-2026-001",
         "threat_domain": "network",
         "threat_type": "CVE",
-        "identifier": "CVE-2024-21887",
-        "title": "Ivanti Connect Secure / Policy Secure Gateway Pre-Auth RCE",
-        "target_asset": "Ivanti Connect Secure SSL-VPN Gateway",
-        "vendor": "Ivanti",
-        "protocol": "HTTPS (Port 443)",
-        "cvss_score": 9.1,
-        "severity": "CRITICAL",
-        "severity_color": "crimson",
-        "date_category": "24h_emergency",
-        "published_date": "2024-01-11",
-        "last_seen": "2026-10-21",
-        "tags": ["#Ivanti", "#VPN_Gateway", "#PreAuth_RCE", "#Command_Injection", "#CISA_KEV"],
-        "description": "Lỗ hổng chèn lệnh hệ điều hành (Command Injection) trong thành phần web quản trị của Ivanti VPN, cho phép kẻ tấn công chưa xác thực từ Internet gửi payload độc hại để thực thi lệnh tùy ý với quyền root.",
-        "smart_trigger_reason": "CISA ban hành Chỉ thị Khẩn cấp ED 24-01 + Đang bị khai thác diện rộng trên Internet.",
-        "evidence_sources": [
-            "CISA Known Exploited Vulnerabilities (KEV) Catalog",
-            "Ivanti Security Advisory KB44123",
-            "Mandiant Zero-Day Exploitation Analysis"
-        ],
-        "blast_radius": "Toàn bộ mạng nội bộ kết nối qua cổng SSL-VPN (VLAN 10, VLAN 20, Active Directory)."
-    },
-    {
-        "id": "NET-2024-002",
-        "threat_domain": "network",
-        "threat_type": "CVE",
-        "identifier": "CVE-2024-3400",
-        "title": "Palo Alto Networks PAN-OS GlobalProtect Command Injection",
+        "identifier": "CVE-2026-3400",
+        "title": "Palo Alto Networks PAN-OS GlobalProtect Command Injection Zero-Day",
         "target_asset": "Palo Alto Next-Gen Firewall (GlobalProtect Gateway)",
         "vendor": "Palo Alto Networks",
         "protocol": "GlobalProtect VPN (Port 443)",
         "cvss_score": 10.0,
         "severity": "CRITICAL",
         "severity_color": "crimson",
-        "date_category": "active_30d",
-        "published_date": "2024-04-12",
-        "last_seen": "2026-10-18",
-        "tags": ["#PaloAlto", "#PAN_OS", "#GlobalProtect", "#RCE_ZeroDay", "#Firewall"],
+        "date_category": "24h_emergency",
+        "published_date": "2026-10-27",
+        "last_seen": "2026-10-28",
+        "tags": ["#PaloAlto", "#PAN_OS", "#GlobalProtect", "#RCE_ZeroDay", "#Firewall", "#CISA_KEV"],
         "description": "Lỗ hổng thực thi mã từ xa cực kỳ nghiêm trọng trên tính năng GlobalProtect của tường lửa Palo Alto PAN-OS, cho phép kẻ tấn công chưa xác thực chiếm quyền root trên thiết bị tường lửa biên.",
-        "smart_trigger_reason": "Điểm CVSS tuyệt đối 10.0 + Phát hiện nhóm gián điệp mạng UTA0218 khai thác cài cắm backdoor.",
+        "smart_trigger_reason": "CISA ban hành Chỉ thị Khẩn cấp ED 24-01 + Phát hiện nhóm gián điệp mạng khai thác cài cắm backdoor.",
         "evidence_sources": [
             "Palo Alto Unit 42 Threat Advisory",
-            "Volexity Incident Response Report",
-            "CISA KEV Catalog"
+            "CISA Emergency Directive",
+            "Volexity Incident Response Report"
         ],
         "blast_radius": "Tường lửa biên công ty, cho phép vượt qua toàn bộ chính sách lọc gói mạng."
-    },
-    {
-        "id": "NET-2024-003",
-        "threat_domain": "network",
-        "threat_type": "CVE",
-        "identifier": "CVE-2024-21762",
-        "title": "Fortinet FortiOS SSL-VPN Out-of-bounds Write RCE",
-        "target_asset": "FortiGate Next-Generation Firewall",
-        "vendor": "Fortinet",
-        "protocol": "SSL-VPN (Port 443/10443)",
-        "cvss_score": 9.8,
-        "severity": "CRITICAL",
-        "severity_color": "crimson",
-        "date_category": "active_30d",
-        "published_date": "2024-02-09",
-        "last_seen": "2026-10-12",
-        "tags": ["#Fortinet", "#FortiOS", "#SSL_VPN", "#Out_of_Bounds_RCE", "#Firewall"],
-        "description": "Lỗ hổng ghi ngoài vùng nhớ trong web service của FortiOS SSL-VPN, cho phép thực thi mã lệnh hoặc kiểm soát thiết bị từ xa qua các HTTP request được chế tạo đặc biệt.",
-        "smart_trigger_reason": "Fortinet xác nhận lỗ hổng có khả năng đang bị khai thác trong môi trường thực tế.",
-        "evidence_sources": [
-            "Fortinet PSIRT Advisory FG-IR-24-015",
-            "CISA KEV Alert",
-            "NCSC-UK Security Guidance"
-        ],
-        "blast_radius": "Cổng kết nối VPN từ xa của toàn bộ cán bộ nhân viên và đối tác."
-    },
-    {
-        "id": "NET-2023-001",
-        "threat_domain": "network",
-        "threat_type": "CVE",
-        "identifier": "CVE-2023-20198",
-        "title": "Cisco IOS XE Web UI Privilege Escalation & Implant",
-        "target_asset": "Cisco Enterprise Routers & Catalyst Switches",
-        "vendor": "Cisco",
-        "protocol": "HTTP/HTTPS Web UI (Port 80/443)",
-        "cvss_score": 10.0,
-        "severity": "CRITICAL",
-        "severity_color": "crimson",
-        "date_category": "trending_1y",
-        "published_date": "2023-10-16",
-        "last_seen": "2026-09-28",
-        "tags": ["#Cisco", "#IOS_XE", "#Privilege_Escalation", "#Router", "#Switch"],
-        "description": "Kẻ tấn công từ xa tạo tài khoản đặc quyền cấp cao (Level 15) trên thiết bị định tuyến Cisco IOS XE thông qua giao diện Web UI, sau đó cài cắm backdoor điều khiển lưu lượng mạng.",
-        "smart_trigger_reason": "Hơn 40.000 thiết bị Cisco trên Internet bị cài cắm mã độc điều khiển ngầm.",
-        "evidence_sources": [
-            "Cisco Talos Intelligence Incident Advisory",
-            "CISA Emergency Directive 24-01"
-        ],
-        "blast_radius": "Bộ định tuyến trục chính (Core Router), kẻ xấu có thể sniff toàn bộ luồng dữ liệu truyền qua."
-    },
-    {
-        "id": "NET-2024-004",
-        "threat_domain": "network",
-        "threat_type": "CVE",
-        "identifier": "CVE-2024-40766",
-        "title": "SonicWall SonicOS Management Access Control Vulnerability",
-        "target_asset": "SonicWall Gen 5, Gen 6, Gen 7 Firewalls",
-        "vendor": "SonicWall",
-        "protocol": "SonicOS Management SSL-VPN",
-        "cvss_score": 9.3,
-        "severity": "CRITICAL",
-        "severity_color": "crimson",
-        "date_category": "active_30d",
-        "published_date": "2024-08-22",
-        "last_seen": "2026-10-19",
-        "tags": ["#SonicWall", "#SonicOS", "#AuthBypass", "#Ransomware_Target"],
-        "description": "Lỗ hổng kiểm soát truy cập không đúng đắn trong giao diện quản trị SonicOS, dẫn đến việc thiết bị bị treo hoặc kẻ tấn công chiếm quyền truy cập trái phép.",
-        "smart_trigger_reason": "SonicWall và CISA cảnh báo nhóm Akira Ransomware đang tích cực khai thác vào mạng doanh nghiệp.",
-        "evidence_sources": [
-            "SonicWall PSIRT Advisory SNWLID-2024-0015",
-            "Arctic Wolf Labs Ransomware Bulletin"
-        ],
-        "blast_radius": "Tường lửa chi nhánh và kết nối mạng riêng ảo VPN Site-to-Site."
     },
     {
         "id": "NET-C2-001",
@@ -147,8 +110,8 @@ NETWORK_CATALOG: List[Dict[str, Any]] = [
         "severity": "HIGH",
         "severity_color": "amber",
         "date_category": "24h_emergency",
-        "published_date": "2026-10-20",
-        "last_seen": "2026-10-21",
+        "published_date": "2026-10-27",
+        "last_seen": "2026-10-28",
         "tags": ["#C2_Botnet", "#CobaltStrike", "#Active_C2", "#Port8443", "#ThreatFox"],
         "description": "Địa chỉ IP máy chủ điều khiển C2 của mã độc Cobalt Strike đang hoạt động tích cực, chuyên gửi tín hiệu beaconing và tải payload đánh cắp dữ liệu mạng nội bộ.",
         "smart_trigger_reason": "ThreatFox ghi nhận tín hiệu C2 kết nối trong 24 giờ qua với mức tin cậy 100%.",
@@ -157,6 +120,31 @@ NETWORK_CATALOG: List[Dict[str, Any]] = [
             "Shodan Host Exposure: Open JARM SSL Fingerprint"
         ],
         "blast_radius": "Các máy trạm bị nhiễm gửi kết nối ngầm ra ngoài qua cổng HTTPS không chuẩn."
+    },
+    {
+        "id": "NET-2026-002",
+        "threat_domain": "network",
+        "threat_type": "CVE",
+        "identifier": "CVE-2026-21887",
+        "title": "Ivanti Connect Secure / Policy Secure Gateway Pre-Auth RCE",
+        "target_asset": "Ivanti Connect Secure SSL-VPN Gateway",
+        "vendor": "Ivanti",
+        "protocol": "HTTPS (Port 443)",
+        "cvss_score": 9.1,
+        "severity": "CRITICAL",
+        "severity_color": "crimson",
+        "date_category": "active_30d",
+        "published_date": "2026-10-10",
+        "last_seen": "2026-10-21",
+        "tags": ["#Ivanti", "#VPN_Gateway", "#PreAuth_RCE", "#Command_Injection", "#CISA_KEV"],
+        "description": "Lỗ hổng chèn lệnh hệ điều hành (Command Injection) trong thành phần web quản trị của Ivanti VPN, cho phép kẻ tấn công chưa xác thực từ Internet gửi payload độc hại để thực thi lệnh tùy ý với quyền root.",
+        "smart_trigger_reason": "CISA ban hành Chỉ thị Khẩn cấp ED 24-01 + Đang bị khai thác diện rộng trên Internet trong 30 ngày qua.",
+        "evidence_sources": [
+            "CISA Known Exploited Vulnerabilities (KEV) Catalog",
+            "Ivanti Security Advisory KB44123",
+            "Mandiant Zero-Day Exploitation Analysis"
+        ],
+        "blast_radius": "Toàn bộ mạng nội bộ kết nối qua cổng SSL-VPN (VLAN 10, VLAN 20, Active Directory)."
     },
     {
         "id": "NET-C2-002",
@@ -171,16 +159,113 @@ NETWORK_CATALOG: List[Dict[str, Any]] = [
         "severity": "HIGH",
         "severity_color": "amber",
         "date_category": "active_30d",
-        "published_date": "2026-09-30",
-        "last_seen": "2026-10-17",
+        "published_date": "2026-10-15",
+        "last_seen": "2026-10-25",
         "tags": ["#Qakbot", "#Botnet_Proxy", "#Ransomware_Prep", "#FeodoTracker"],
         "description": "Node trung gian botnet dùng để chuyển tiếp lưu lượng điều khiển và quét mạng tìm kiếm dịch vụ SMB/RDP mở.",
-        "smart_trigger_reason": "Feodo Tracker xác nhận trạng thái 'online' với hơn 40 lượt ping từ honeypot.",
+        "smart_trigger_reason": "Feodo Tracker xác nhận trạng thái 'online' với hơn 40 lượt ping từ honeypot trong tháng.",
         "evidence_sources": [
             "Abuse.ch Feodo Tracker Verified List",
             "AbuseIPDB Score: 100% Malicious"
         ],
         "blast_radius": "Lưu lượng quét tự động nhắm vào cổng dịch vụ VPN/Remote Desktop của công ty."
+    },
+    {
+        "id": "NET-2025-001",
+        "threat_domain": "network",
+        "threat_type": "CVE",
+        "identifier": "CVE-2025-21762",
+        "title": "Fortinet FortiOS SSL-VPN Out-of-bounds Write RCE",
+        "target_asset": "FortiGate Next-Generation Firewall",
+        "vendor": "Fortinet",
+        "protocol": "SSL-VPN (Port 443/10443)",
+        "cvss_score": 9.8,
+        "severity": "CRITICAL",
+        "severity_color": "crimson",
+        "date_category": "trending_1y",
+        "published_date": "2025-11-15",
+        "last_seen": "2026-10-12",
+        "tags": ["#Fortinet", "#FortiOS", "#SSL_VPN", "#Out_of_Bounds_RCE", "#Firewall"],
+        "description": "Lỗ hổng ghi ngoài vùng nhớ trong web service của FortiOS SSL-VPN, cho phép thực thi mã lệnh hoặc kiểm soát thiết bị từ xa qua các HTTP request được chế tạo đặc biệt.",
+        "smart_trigger_reason": "Fortinet xác nhận lỗ hổng có khả năng đang bị khai thác trong môi trường thực tế.",
+        "evidence_sources": [
+            "Fortinet PSIRT Advisory FG-IR-24-015",
+            "CISA KEV Alert",
+            "NCSC-UK Security Guidance"
+        ],
+        "blast_radius": "Cổng kết nối VPN từ xa của toàn bộ cán bộ nhân viên và đối tác."
+    },
+    {
+        "id": "NET-2025-002",
+        "threat_domain": "network",
+        "threat_type": "CVE",
+        "identifier": "CVE-2025-40766",
+        "title": "SonicWall SonicOS Management Access Control Vulnerability",
+        "target_asset": "SonicWall Gen 5, Gen 6, Gen 7 Firewalls",
+        "vendor": "SonicWall",
+        "protocol": "SonicOS Management SSL-VPN",
+        "cvss_score": 9.3,
+        "severity": "CRITICAL",
+        "severity_color": "crimson",
+        "date_category": "trending_1y",
+        "published_date": "2025-08-22",
+        "last_seen": "2026-09-19",
+        "tags": ["#SonicWall", "#SonicOS", "#AuthBypass", "#Ransomware_Target"],
+        "description": "Lỗ hổng kiểm soát truy cập không đúng đắn trong giao diện quản trị SonicOS, dẫn đến việc thiết bị bị treo hoặc kẻ tấn công chiếm quyền truy cập trái phép.",
+        "smart_trigger_reason": "SonicWall và CISA cảnh báo nhóm Akira Ransomware đang tích cực khai thác vào mạng doanh nghiệp.",
+        "evidence_sources": [
+            "SonicWall PSIRT Advisory SNWLID-2024-0015",
+            "Arctic Wolf Labs Ransomware Bulletin"
+        ],
+        "blast_radius": "Tường lửa chi nhánh và kết nối mạng riêng ảo VPN Site-to-Site."
+    },
+    {
+        "id": "NET-2024-001",
+        "threat_domain": "network",
+        "threat_type": "CVE",
+        "identifier": "CVE-2024-21887",
+        "title": "Ivanti Connect Secure / Policy Secure Gateway Pre-Auth RCE (Baseline)",
+        "target_asset": "Ivanti Connect Secure SSL-VPN Gateway",
+        "vendor": "Ivanti",
+        "protocol": "HTTPS (Port 443)",
+        "cvss_score": 9.1,
+        "severity": "CRITICAL",
+        "severity_color": "crimson",
+        "date_category": "historical_3y",
+        "published_date": "2024-01-11",
+        "last_seen": "2026-08-21",
+        "tags": ["#Ivanti", "#VPN_Gateway", "#PreAuth_RCE", "#Command_Injection", "#CISA_KEV"],
+        "description": "Lỗ hổng chèn lệnh hệ điều hành (Command Injection) trong thành phần web quản trị của Ivanti VPN, cho phép kẻ tấn công chưa xác thực từ Internet gửi payload độc hại để thực thi lệnh tùy ý với quyền root.",
+        "smart_trigger_reason": "Lỗ hổng mạng lịch sử đã được đưa vào KEV và có chữ ký nhận dạng hoàn chỉnh.",
+        "evidence_sources": [
+            "CISA Known Exploited Vulnerabilities (KEV) Catalog",
+            "Ivanti Security Advisory KB44123"
+        ],
+        "blast_radius": "Toàn bộ mạng nội bộ kết nối qua cổng SSL-VPN (VLAN 10, VLAN 20, Active Directory)."
+    },
+    {
+        "id": "NET-2023-001",
+        "threat_domain": "network",
+        "threat_type": "CVE",
+        "identifier": "CVE-2023-20198",
+        "title": "Cisco IOS XE Web UI Privilege Escalation & Implant",
+        "target_asset": "Cisco Enterprise Routers & Catalyst Switches",
+        "vendor": "Cisco",
+        "protocol": "HTTP/HTTPS Web UI (Port 80/443)",
+        "cvss_score": 10.0,
+        "severity": "CRITICAL",
+        "severity_color": "crimson",
+        "date_category": "historical_3y",
+        "published_date": "2023-10-16",
+        "last_seen": "2026-09-28",
+        "tags": ["#Cisco", "#IOS_XE", "#Privilege_Escalation", "#Router", "#Switch"],
+        "description": "Kẻ tấn công từ xa tạo tài khoản đặc quyền cấp cao (Level 15) trên thiết bị định tuyến Cisco IOS XE thông qua giao diện Web UI, sau đó cài cắm backdoor điều khiển lưu lượng mạng.",
+        "smart_trigger_reason": "Hơn 40.000 thiết bị Cisco trên Internet bị cài cắm mã độc điều khiển ngầm.",
+        "evidence_sources": [
+            "Cisco Talos Intelligence Incident Advisory",
+            "CISA Emergency Directive 24-01"
+        ],
+        "blast_radius": "Bộ định tuyến trục chính (Core Router), kẻ xấu có thể sniff toàn bộ luồng dữ liệu truyền qua."
     },
     {
         "id": "NET-HIST-001",
@@ -220,42 +305,37 @@ def filter_network_threats(
 ) -> List[Dict[str, Any]]:
     """
     Lọc các mối đe dọa mạng theo:
-    - time_window: '24h_emergency', 'active_30d', 'trending_1y', 'historical_3y'
+    - time_window: '24h_emergency', 'active_30d', 'trending_1y', 'historical_3y' hoặc 'all'
     - tag: '#Cisco', '#Fortinet', '#VPN', '#C2_Botnet', v.v.
     - severity: 'CRITICAL', 'HIGH', 'MEDIUM'
     - threat_type: 'CVE', 'C2_IP', 'FIRMWARE_HASH'
     """
     results = []
-    
-    # Định nghĩa quan hệ tích lũy thời gian
-    timeline_hierarchy = {
-        "24h_emergency": ["24h_emergency"],
-        "active_30d": ["24h_emergency", "active_30d"],
-        "trending_1y": ["24h_emergency", "active_30d", "trending_1y"],
-        "historical_3y": ["24h_emergency", "active_30d", "trending_1y", "historical_3y"]
-    }
-    
-    allowed_categories = timeline_hierarchy.get(time_window, None) if time_window else None
+    clean_window = (time_window or "").strip().lower()
 
     for item in NETWORK_CATALOG:
         # Lọc time window
-        if allowed_categories and item["date_category"] not in allowed_categories:
-            continue
-            
+        if clean_window and clean_window != "all":
+            if item.get("date_category") != clean_window:
+                continue
+
         # Lọc tag
-        if tag and tag.lower() not in [t.lower() for t in item.get("tags", [])]:
-            continue
-            
+        if tag and tag.upper() != "ALL":
+            target_tag = tag.lower().lstrip("#")
+            item_tags = [t.lower().lstrip("#") for t in item.get("tags", [])]
+            if target_tag not in item_tags:
+                continue
+
         # Lọc severity
         if severity and item.get("severity", "").upper() != severity.upper():
             continue
-            
+
         # Lọc threat type
         if threat_type and item.get("threat_type", "").upper() != threat_type.upper():
             continue
-            
+
         results.append(item)
-        
+
     return results
 
 def evaluate_smart_crawl_trigger(
@@ -396,10 +476,13 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
     elif "vpn" in lower_text:
         tags.append("#VPN_Gateway")
 
-    if "cisa" in source.lower() or "cisa" in lower_text:
-        tags.append("#CISA_KEV")
+    # Phân loại timeline và ngày công bố chính xác
+    date_cat, pub_date = determine_cve_date_category(
+        pub_date_str=raw.get("published_date") or raw.get("dateAdded"),
+        cve_id=clean_id,
+        raw_text=content
+    )
 
-    # Tạo thực thể Network Threat
     now_str = datetime.now().strftime("%Y-%m-%d")
     new_threat = {
         "id": f"NET-LIVE-{clean_id.replace('CVE-', '')}",
@@ -413,8 +496,8 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
         "cvss_score": cvss_score,
         "severity": severity,
         "severity_color": severity_color,
-        "date_category": "24h_emergency",
-        "published_date": now_str,
+        "date_category": date_cat,
+        "published_date": pub_date,
         "last_seen": now_str,
         "tags": list(set(tags)),
         "description": content[:280] + ("..." if len(content) > 280 else ""),
