@@ -377,7 +377,7 @@ def execute_network_virtual_patch(
     
     if dry_run:
         return {{
-            "status": "SIMULATED",
+            "status": "DRY_RUN",
             "execution_id": execution_id,
             "device": device,
             "target_cidr": str(net),
@@ -385,24 +385,23 @@ def execute_network_virtual_patch(
             "rule_name": rule_name,
             "api_payload": chosen_config,
             "rollback_timer_sec": rollback_sec,
-            "message": f"Preflight check passed. Simulation confirmed policy compatibility for {identifier}."
+            "message": f"Preflight dry-run check passed for {identifier}. Policy syntax verified without live hardware commitment."
         }}
 
-    # 3. Live Enforcement (Simulated REST API invocation)
-    # response = requests.post(f"https://{{device}}.internal{{chosen_config['endpoint']}}", json=chosen_config['body'], timeout=5)
-    
-    # 4. Out-of-band Verification Probe
-    verification_success = True
-    
+    # Hardware Enforcement Guard: Không được báo ENFORCED khi chưa có kết nối thiết bị thật
     return {{
-        "status": "ENFORCED",
+        "status": "NOT_IMPLEMENTED",
         "execution_id": execution_id,
         "device": device,
         "mitigation_target": "{identifier}",
         "action": mode,
-        "signature_enforced": pattern,
-        "verified_blocked": verification_success,
+        "signature": pattern,
+        "verified_blocked": False,
         "rollback_timeout_sec": rollback_sec,
+        "message": (
+            "Trình kết nối phần cứng mạng thực tế (Fortinet/PaloAlto/Cisco) chưa được cấu hình API token/SSH key trong môi trường này. "
+            "Hệ thống tuân thủ an toàn: Từ chối báo cáo ENFORCED ảo. Vui lòng cấu hình thiết bị và kích hoạt quy trình phê duyệt."
+        ),
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ")
     }}
 '''
@@ -615,39 +614,43 @@ def execute_network_containment(
     execution_id = f"CT-{{uuid.uuid4().hex[:8].upper()}}"
     
     if method == "bgp_blackhole_community":
-        command_preview = f"router bgp 65001 -> neighbor upstream-isp send-community -> route-map SET-BLACKHOLE (Community 65535:666)"
+        command_preview = "router bgp 65001 -> neighbor upstream-isp send-community -> route-map SET-BLACKHOLE (Community 65535:666)"
     elif method == "dns_sinkhole_response":
-        command_preview = f"named.conf.rpz -> zone 'rpz' {{ {identifier} CNAME . ; }}"
+        command_preview = f"named.conf.rpz -> zone 'rpz' {{{{ {{indicator}} CNAME . ; }}}}"
     else:
-        command_preview = f"ip access-list extended DROP_C2 -> deny ip any host {identifier.split(':')[0]}"
+        command_preview = f"ip access-list extended DROP_C2 -> deny ip any host {{indicator.split(':')[0]}}"
 
     if dry_run:
         return {{
-            "status": "SIMULATED",
+            "status": "DRY_RUN",
             "execution_id": execution_id,
             "method": method,
             "indicator": indicator,
             "router_platform": router,
             "command_preview": command_preview,
             "ttl_hours": ttl_hours,
-            "message": "BGP community validation passed. Ready for autonomous upstream advertisement."
+            "message": "BGP community validation passed in dry-run mode. Ready for autonomous upstream advertisement."
         }}
 
     return {{
-        "status": "ENFORCED",
+        "status": "NOT_IMPLEMENTED",
         "execution_id": execution_id,
         "indicator": indicator,
         "method": method,
         "router": router,
         "ttl_hours": ttl_hours,
-        "verified_dropped": True,
+        "verified_dropped": False,
+        "message": (
+            "Trình kết nối BGP Peering / DNS RPZ chưa được kết nối phiên trực tiếp. "
+            "Chặn kết nối C2 mạng diện rộng bắt buộc phải có phiên BGP đã xác thực và phê duyệt NOC."
+        ),
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ")
     }}
 '''
         verification_step = "Check border router BGP RIB or perform local DNS recursion to verify the C2 indicator is dropped with 100% loss."
         rollback_skill = "network_containment_release"
 
-    return {
+    skill_object = {
         "skill_id": f"SKILL-{skill_name.upper()}",
         "skill_name": skill_name,
         "skill_title": skill_title,
@@ -665,8 +668,16 @@ def execute_network_containment(
         "execution_code": execution_code,
         "verification_step": verification_step,
         "rollback_skill": rollback_skill,
+        "execution_status": "DRY_RUN",
+        "requires_hardware_approval": True,
+        "code_compiled_successfully": True,
         "export_formats": ["OpenAI_GPT4o", "Anthropic_Claude", "Google_Gemini", "LangChain_Tool", "Python_Script"]
     }
+
+    # Static syntax validation: Đảm bảo code tự sinh luôn compile được 100% không lỗi cú pháp
+    compile(execution_code, f"<skill_{skill_name}>", "exec")
+
+    return skill_object
 
 def list_available_skills() -> List[Dict[str, Any]]:
     """Trả về danh mục 4 Kỹ năng Tác tử mạng chuẩn công nghiệp."""
