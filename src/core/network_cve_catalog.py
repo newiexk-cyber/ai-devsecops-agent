@@ -406,19 +406,21 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
     # Tra cứu live từ collector
     from src.automation.collectors.cisa_collector import fetch_cve_by_id
     raw = fetch_cve_by_id(clean_id)
+    if not raw or raw.get("status") == "not_found" or not raw.get("is_verified"):
+        raise ValueError(f"Không thể nạp {clean_id}: Lỗ hổng không tồn tại hoặc chưa được xác minh trên CISA KEV / NVD.")
 
     title = raw.get("title", f"Network Security Advisory: {clean_id}")
     content = raw.get("content", "")
-    source = raw.get("source", "CISA KEV / NVD")
+    source = raw.get("source", "NIST NVD")
 
     # Phân tích thông tin thực thể mạng
     vendor = "Network Perimeter"
     target_asset = "Network Gateway / Perimeter Service"
     protocol = "TCP / HTTPS (Port 443)"
-    cvss_score = 9.8
-    severity = "CRITICAL"
-    severity_color = "crimson"
-    tags = ["#CVE", "#Network_Exploit", "#PreAuth_RCE"]
+    cvss_score = float(raw.get("cvss_score", 9.0)) if raw.get("cvss_score") and str(raw.get("cvss_score")).replace(".", "").isdigit() else 9.0
+    severity = "CRITICAL" if cvss_score >= 9.0 else "HIGH"
+    severity_color = "crimson" if cvss_score >= 9.0 else "amber"
+    tags = ["#CVE", "#Network_Exploit"]
 
     lower_text = (title + " " + content).lower()
     if "cisco" in lower_text:
@@ -476,14 +478,20 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
     elif "vpn" in lower_text:
         tags.append("#VPN_Gateway")
 
+    # Chỉ gắn nhãn CISA KEV nếu được xác nhận có trong KEV Catalog thật sự
+    if raw.get("is_kev") is True or "cisa kev" in source.lower():
+        tags.append("#CISA_KEV")
+
     # Phân loại timeline và ngày công bố chính xác
     date_cat, pub_date = determine_cve_date_category(
-        pub_date_str=raw.get("published_date") or raw.get("dateAdded"),
+        pub_date_str=raw.get("published_date") or raw.get("date_added_to_kev"),
         cve_id=clean_id,
         raw_text=content
     )
 
     now_str = datetime.now().strftime("%Y-%m-%d")
+    now_iso = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
     new_threat = {
         "id": f"NET-LIVE-{clean_id.replace('CVE-', '')}",
         "threat_domain": "network",
@@ -498,14 +506,18 @@ def ingest_live_network_cve(cve_id: str) -> Dict[str, Any]:
         "severity_color": severity_color,
         "date_category": date_cat,
         "published_date": pub_date,
+        "date_added_to_kev": raw.get("date_added_to_kev"),
         "last_seen": now_str,
+        "observed_at": now_iso,
+        "fetched_at": now_iso,
+        "is_verified": True,
+        "is_demo": False,
         "tags": list(set(tags)),
         "description": content[:280] + ("..." if len(content) > 280 else ""),
         "smart_trigger_reason": f"Thu thập On-Demand từ {source} cho mã {clean_id}.",
         "evidence_sources": [
             f"{source} Reference",
-            "NIST National Vulnerability Database",
-            "Vendor PSIRT Advisory"
+            "NIST National Vulnerability Database"
         ],
         "blast_radius": f"Hạ tầng biên và các dịch vụ mạng liên quan tới {target_asset}."
     }

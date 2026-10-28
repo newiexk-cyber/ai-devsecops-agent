@@ -3,6 +3,8 @@
 CISA KEV CATALOG COLLECTOR (LÂM)
 Truy vấn danh mục lỗ hổng bị khai thác thực tế (Known Exploited Vulnerabilities - KEV) từ chính phủ Mỹ (CISA.gov).
 """
+import os
+import re
 import httpx
 from typing import List, Dict, Any
 from src.automation.storage.database import save_raw_article
@@ -95,6 +97,10 @@ def fetch_cve_by_id(cve_id: str) -> Dict[str, Any]:
     clean_cve = cve_id.strip().upper()
     if not clean_cve.startswith("CVE-"):
         clean_cve = f"CVE-{clean_cve}"
+
+    # Kiểm tra định dạng chuẩn CVE nghiêm ngặt (P0 Data Integrity)
+    if not re.match(r"^CVE-\d{4}-\d{4,}$", clean_cve):
+        raise ValueError(f"Định dạng mã CVE không hợp lệ: '{clean_cve}'. Chuẩn bắt buộc: CVE-YYYY-NNNN+")
         
     # 1. Thử tìm trong CISA KEV Catalog trước
     try:
@@ -121,9 +127,14 @@ def fetch_cve_by_id(cve_id: str) -> Dict[str, Any]:
                             published_date=item.get("dateAdded")
                         )
                         return {
+                            "status": "success",
                             "id": art_id,
                             "cve_id": clean_cve,
                             "source": "CISA KEV Catalog",
+                            "is_kev": True,
+                            "is_verified": True,
+                            "date_added_to_kev": item.get("dateAdded"),
+                            "published_date": item.get("dateAdded"),
                             "title": f"CISA KEV Alert: {clean_cve} - {item.get('vulnerabilityName')}",
                             "content": content,
                             "url": url
@@ -165,9 +176,14 @@ def fetch_cve_by_id(cve_id: str) -> Dict[str, Any]:
                         published_date=pub_date
                     )
                     return {
+                        "status": "success",
                         "id": art_id,
                         "cve_id": clean_cve,
                         "source": "NIST NVD",
+                        "is_kev": False,
+                        "is_verified": True,
+                        "published_date": pub_date,
+                        "cvss_score": base_score,
                         "title": f"NIST NVD Alert: {clean_cve} (CVSS: {base_score})",
                         "content": content,
                         "url": url
@@ -175,26 +191,13 @@ def fetch_cve_by_id(cve_id: str) -> Dict[str, Any]:
     except Exception:
         pass
 
-    # 3. Fallback: Tự động khởi tạo bản ghi cảnh báo khẩn cấp theo mã CVE được cung cấp
-    content = (
-        f"Security Advisory for {clean_cve}\n"
-        f"Source: On-Demand Security Threat Intelligence Ingestion\n"
-        f"Description: Critical vulnerability tracked under {clean_cve}. "
-        f"Advisory imported for emergency threat analysis, IoC extraction, and automated defensive rule synthesis."
-    )
-    url = f"https://nvd.nist.gov/vuln/detail/{clean_cve}"
-    art_id = save_raw_article(
-        source_name="On-Demand Advisory",
-        source_url=url,
-        title=f"On-Demand Security Alert: {clean_cve}",
-        raw_content=content
-    )
+    # 3. Khi không tìm thấy trên CISA KEV hoặc NIST NVD: Trả về trạng thái không tìm thấy (Không tạo dữ liệu giả)
     return {
-        "id": art_id,
+        "status": "not_found",
         "cve_id": clean_cve,
-        "source": "On-Demand Advisory",
-        "title": f"On-Demand Security Alert: {clean_cve}",
-        "content": content,
-        "url": url
+        "is_verified": False,
+        "is_kev": False,
+        "source": "unverified",
+        "message": f"Mã {clean_cve} không được tìm thấy trên CISA KEV Catalog hoặc NIST NVD."
     }
 

@@ -15,12 +15,15 @@ DB_PATH = os.path.join(DB_DIR, "cti_sentinel.db")
 
 def get_db_connection() -> sqlite3.Connection:
     os.makedirs(DB_DIR, exist_ok=True)
-    conn = sqlite3.connect(DB_PATH)
+    conn = sqlite3.connect(DB_PATH, timeout=5.0)
     conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL;")
+    conn.execute("PRAGMA foreign_keys=ON;")
+    conn.execute("PRAGMA busy_timeout=5000;")
     return conn
 
 def init_database():
-    """Khởi tạo các bảng cơ sở dữ liệu nếu chưa tồn tại"""
+    """Khởi tạo các bảng cơ sở dữ liệu nếu chưa tồn tại kèm migration an toàn"""
     conn = get_db_connection()
     cursor = conn.cursor()
     
@@ -45,14 +48,27 @@ def init_database():
     CREATE TABLE IF NOT EXISTS ioc_reputation_cache (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         ioc_type TEXT NOT NULL,
-        ioc_value TEXT UNIQUE NOT NULL,
+        ioc_value TEXT NOT NULL,
         is_malicious INTEGER NOT NULL,
         reputation_score INTEGER NOT NULL,
         enrichment_source TEXT NOT NULL,
+        is_verified INTEGER DEFAULT 0,
+        is_demo INTEGER DEFAULT 0,
         details_json TEXT,
-        updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+        updated_at TEXT DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(ioc_type, ioc_value)
     );
     """)
+
+    # Migration kiểm tra các cột mới nếu đã tạo bảng trước đó
+    try:
+        cursor.execute("ALTER TABLE ioc_reputation_cache ADD COLUMN is_verified INTEGER DEFAULT 0")
+    except Exception:
+        pass
+    try:
+        cursor.execute("ALTER TABLE ioc_reputation_cache ADD COLUMN is_demo INTEGER DEFAULT 0")
+    except Exception:
+        pass
     
     # 3. Bảng lưu báo cáo tình báo và quy tắc phòng thủ đã sinh (Phúc)
     cursor.execute("""
