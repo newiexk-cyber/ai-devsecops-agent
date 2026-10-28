@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 """
 ==============================================================================
-SAST ANALYZER & CODE VULNERABILITY AUDITOR ENGINE (LÂM / DEVSECOPS)
-Bộ máy phân tích tĩnh (SAST) kết hợp logic Taint Analysis & AI ReAct Agent
-nhằm phát hiện lỗ hổng OWASP Top 10, phân loại CWE và tự động sinh bản vá an toàn.
+RULE-BASED SAST ANALYZER & CODE VULNERABILITY AUDITOR ENGINE (LÂM / DEVSECOPS)
+Bộ máy phân tích tĩnh theo luật (Rule-based SAST) phát hiện lỗ hổng OWASP Top 10,
+phân loại CWE, ước tính độ tin cậy heuristic và đề xuất bản vá remediation.
+Lưu ý: Đây là hệ thống phân tích tĩnh heuristic, các bản vá cần được lập trình viên
+review và biên dịch/kiểm thử trước khi đưa vào production.
 ==============================================================================
 """
+import ast
 import re
-from typing import Dict, Any, List, Optional
+from typing import Dict, Any, List, Optional, Tuple
 
 # Danh mục các mẫu lỗ hổng phổ biến (Rule Catalog)
 RULES = [
@@ -27,7 +30,7 @@ RULES = [
             r"mysqli_query\s*\(.*?\$.*?\.\s*\$",
         ],
         "description": "Câu lệnh SQL được hình thành bằng cách cộng chuỗi trực tiếp từ biến đầu vào của người dùng mà không qua cơ chế tham số hóa (Parameterized Query). Kẻ tấn công có thể chèn các payload như `' OR '1'='1` để bypass xác thực hoặc trích xuất toàn bộ cơ sở dữ liệu.",
-        "remediation_advice": "Sử dụng Parameterized Query (SqlParameter / FromSqlInterpolated trong C# .NET, parameterized tuple trong Python DB-API, hoặc Prepared Statements trong PHP/Node.js).",
+        "remediation_advice": "Sử dụng Parameterized Query (SqlParameter / FromSqlInterpolated trong C# .NET, parameterized tuple (%s, ?) trong Python DB-API, hoặc Prepared Statements trong PHP/Node.js).",
         "patch_hint": "parameterized_query"
     },
     {
@@ -117,24 +120,29 @@ RULES = [
     }
 ]
 
+
 def analyze_code(code: str, language: str = "csharp", filename: Optional[str] = None) -> Dict[str, Any]:
     """
-    Rà soát mã nguồn đầu vào, phát hiện lỗ hổng và sinh bản vá tự động.
+    Rà soát mã nguồn đầu vào bằng Rule-based SAST.
+    Trả về danh sách findings, đánh giá độ tin cậy heuristic và đề xuất remediation patch.
     """
     if not code or not code.strip():
         return {
             "status": "error",
             "message": "Mã nguồn trống. Vui lòng nhập đoạn mã cần rà soát.",
+            "analysis_type": "rule_based_heuristic",
+            "confidence": 0.0,
+            "needs_review": False,
             "findings": [],
             "severity_counts": {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0},
             "agent_trace": [],
             "original_code": "",
             "patched_code": "",
-            "diff_summary": ""
+            "diff_summary": "",
+            "is_syntax_valid": True
         }
 
     lang = language.lower().strip()
-    # Chuẩn hóa tên ngôn ngữ
     if lang in ["csharp", "c#", "cs", "dotnet", ".net"] or lang.startswith("cs") or "dotnet" in lang:
         normalized_lang = "csharp"
     elif "py" in lang:
@@ -150,9 +158,8 @@ def analyze_code(code: str, language: str = "csharp", filename: Optional[str] = 
 
     lines = code.split("\n")
     findings = []
-    applied_patches = []
 
-    # Quét từng quy tắc
+    # Quét từng quy tắc regex/mẫu tĩnh
     for rule in RULES:
         if normalized_lang not in rule["languages"] and "all" not in rule["languages"]:
             continue
@@ -160,9 +167,17 @@ def analyze_code(code: str, language: str = "csharp", filename: Optional[str] = 
         for pattern_str in rule["patterns"]:
             pattern = re.compile(pattern_str, re.IGNORECASE)
             for idx, line in enumerate(lines, start=1):
+                # Bỏ qua comment đơn dòng cơ bản để giảm false positive
+                stripped = line.strip()
+                if normalized_lang == "python" and stripped.startswith("#"):
+                    continue
+                if normalized_lang in ["csharp", "javascript", "php"] and (stripped.startswith("//") or stripped.startswith("/*")):
+                    continue
+                if normalized_lang == "sql" and stripped.startswith("--"):
+                    continue
+
                 match = pattern.search(line)
                 if match:
-                    # Kiểm tra trùng lặp cho cùng 1 dòng
                     already_found = any(f["line"] == idx and f["cwe"] == rule["cwe"] for f in findings)
                     if not already_found:
                         finding = {
@@ -175,10 +190,10 @@ def analyze_code(code: str, language: str = "csharp", filename: Optional[str] = 
                             "vulnerable_code": line.strip(),
                             "description": rule["description"],
                             "remediation_advice": rule["remediation_advice"],
-                            "patch_hint": rule.get("patch_hint", "")
+                            "patch_hint": rule.get("patch_hint", ""),
+                            "confidence": 0.70  # Heuristic rule match confidence
                         }
                         findings.append(finding)
-                        applied_patches.append((idx, line, rule.get("patch_hint", "")))
 
     # Đếm số lượng theo mức độ nghiêm trọng
     severity_counts = {"CRITICAL": 0, "HIGH": 0, "MEDIUM": 0, "LOW": 0}
@@ -187,14 +202,26 @@ def analyze_code(code: str, language: str = "csharp", filename: Optional[str] = 
         if sev in severity_counts:
             severity_counts[sev] += 1
 
-    # Tạo trace AI ReAct
+    # Tạo trace nhận diện theo các bước quy tắc
     agent_trace = _generate_agent_trace(findings, normalized_lang)
 
-    # Sinh mã nguồn đã vá lỗi
+    # Sinh mã nguồn đã gợi ý vá lỗi
     patched_code, diff_summary = _synthesize_safe_patch(code, findings, normalized_lang)
+
+    # Kiểm tra cú pháp (đặc biệt với Python bằng ast.parse)
+    is_syntax_valid = True
+    if normalized_lang == "python" and patched_code:
+        try:
+            ast.parse(patched_code)
+            is_syntax_valid = True
+        except SyntaxError:
+            is_syntax_valid = False
 
     return {
         "status": "success",
+        "analysis_type": "rule_based_heuristic",
+        "confidence": 0.70 if findings else 1.0,
+        "needs_review": True if findings else False,
         "language": normalized_lang,
         "filename": filename or f"Snippet.{_get_ext(normalized_lang)}",
         "total_issues": len(findings),
@@ -203,31 +230,34 @@ def analyze_code(code: str, language: str = "csharp", filename: Optional[str] = 
         "agent_trace": agent_trace,
         "original_code": code,
         "patched_code": patched_code,
-        "diff_summary": diff_summary
+        "diff_summary": diff_summary,
+        "is_syntax_valid": is_syntax_valid
     }
+
 
 def _get_ext(lang: str) -> str:
     mapping = {"csharp": "cs", "python": "py", "javascript": "js", "php": "php", "sql": "sql"}
     return mapping.get(lang, "txt")
 
+
 def _generate_agent_trace(findings: List[Dict[str, Any]], lang: str) -> List[Dict[str, Any]]:
-    """Mô phỏng chu trình suy luận ReAct 3 bước của AI Agent."""
+    """Quy trình đánh giá tĩnh Rule-based SAST theo 3 giai đoạn."""
     if not findings:
         return [
             {
                 "step": 1,
-                "phase": "🔍 Bước 1: AST & Cú Pháp",
-                "detail": f"Rà soát toàn bộ cấu trúc mã nguồn {lang.upper()}. Không phát hiện dấu hiệu vi phạm cú pháp bảo mật cơ bản."
+                "phase": "🔍 Bước 1: Quét Mẫu Quy Tắc (Rule-based Scanning)",
+                "detail": f"Rà soát cấu trúc mã nguồn {lang.upper()} với bộ mẫu OWASP/CWE. Không phát hiện vi phạm quy tắc tĩnh."
             },
             {
                 "step": 2,
-                "phase": "🧠 Bước 2: Taint Analysis & Ngữ Cảnh",
-                "detail": "Kiểm tra luồng truyền dữ liệu từ biến đầu vào đến các hàm nhạy cảm (Sinks). Tất cả các luồng dữ liệu đều được kiểm soát an toàn."
+                "phase": "🧠 Bước 2: Kiểm Tra Ngữ Cảnh Heuristic",
+                "detail": "Không phát hiện lời gọi trực tiếp tới các Sink nhạy cảm không được kiểm soát."
             },
             {
                 "step": 3,
-                "phase": "🛡️ Bước 3: Đánh Giá Cuối Cùng",
-                "detail": "Mã nguồn đạt chuẩn an toàn phòng thủ. Không phát hiện lỗ hổng nghiêm trọng theo tiêu chuẩn OWASP Top 10."
+                "phase": "🛡️ Bước 3: Đánh Giá & Khuyến Nghị",
+                "detail": "Mã nguồn đạt chuẩn tĩnh ban đầu. Khuyến nghị kết hợp thêm Unit Test và Dynamic Testing (DAST)."
             }
         ]
 
@@ -235,34 +265,37 @@ def _generate_agent_trace(findings: List[Dict[str, Any]], lang: str) -> List[Dic
     return [
         {
             "step": 1,
-            "phase": "🔍 Bước 1: Quét Mẫu & Taint Analysis",
-            "detail": f"Phát hiện {len(findings)} điểm nghi vấn tại các dòng ({', '.join(str(f['line']) for f in findings)}). Nhận diện các mẫu rủi ro thuộc nhóm: {cwe_names}."
+            "phase": "🔍 Bước 1: Quét Mẫu Quy Tắc (Rule-based Pattern Matching)",
+            "detail": f"Khớp mẫu tĩnh tại các dòng ({', '.join(str(f['line']) for f in findings)}). Phát hiện dấu hiệu thuộc nhóm: {cwe_names}."
         },
         {
             "step": 2,
-            "phase": "🧠 Bước 2: Lọc Cảnh Báo Ảo (False Positive Elimination)",
-            "detail": f"AI Agent phân tích ngữ cảnh: Biến truyền vào không được tham số hóa hoặc escape an toàn trước khi nạp vào hệ thống. Xác nhận: {len(findings)} lỗ hổng thật (True Positives), cần lập tức khắc phục."
+            "phase": "🧠 Bước 2: Phân Tích Mức Độ Khớp Mẫu (Heuristic Matching)",
+            "detail": f"Đánh giá sơ bộ: Phát hiện {len(findings)} điểm nghi vấn không tuân thủ mẫu an toàn chuẩn. Cần lập trình viên review ngữ cảnh luồng dữ liệu."
         },
         {
             "step": 3,
-            "phase": "🛡️ Bước 3: Tự Động Tổng Hợp Bản Vá An Toàn (Safe Patch Synthesis)",
-            "detail": "Áp dụng các mẫu thiết kế bảo mật chuẩn công nghiệp (Parameterized Query, HTML Encoding, subprocess không shell, biến môi trường) để thay thế đoạn code có nguy cơ."
+            "phase": "🛡️ Bước 3: Đề Xuất Khắc Phục (Remediation Guidance)",
+            "detail": "Đã tạo đoạn mã gợi ý vá lỗi (Remediation Suggestion) sử dụng mẫu thiết kế phòng thủ (Parameterized Query, Text Content, Subprocess không shell, Biến môi trường)."
         }
     ]
 
-def _synthesize_safe_patch(code: str, findings: List[Dict[str, Any]], lang: str) -> (str, str):
-    """Thay thế các dòng code lỗi bằng mã an toàn."""
+
+def _synthesize_safe_patch(code: str, findings: List[Dict[str, Any]], lang: str) -> Tuple[str, str]:
+    """
+    Tạo bản vá đề xuất (Remediation Suggestion) bảo tồn ngữ cảnh tối đa.
+    """
     if not findings:
         return code, "Mã nguồn đã an toàn, không cần thay đổi."
 
     lines = code.split("\n")
     diff_notes = []
 
-    # Sửa từng dòng dựa trên finding
     for f in findings:
         idx = f["line"] - 1
         if 0 <= idx < len(lines):
             orig_line = lines[idx]
+            indent = orig_line[:len(orig_line) - len(orig_line.lstrip())]
             hint = f.get("patch_hint", "")
             patched_line = orig_line
 
@@ -271,60 +304,64 @@ def _synthesize_safe_patch(code: str, findings: List[Dict[str, Any]], lang: str)
                     if "FromSqlRaw" in orig_line:
                         patched_line = re.sub(
                             r"FromSqlRaw\s*\(\s*\$?\s*[\"'](.*?)[\"']\s*\)",
-                            r'FromSqlInterpolated($"\1") /* [AI-PATCH]: Parameterized Query via Entity Framework Core */',
+                            r'FromSqlInterpolated($"\1") /* [REMEDIATION]: Parameterized Query via Entity Framework Core */',
                             orig_line
                         )
                     elif "ExecuteSqlRaw" in orig_line:
                         patched_line = re.sub(
                             r"ExecuteSqlRaw\s*\(\s*\$?\s*[\"'](.*?)[\"']\s*\)",
-                            r'ExecuteSqlInterpolated($"\1") /* [AI-PATCH]: Chống SQL Injection bằng SqlParameter */',
+                            r'ExecuteSqlInterpolated($"\1") /* [REMEDIATION]: Chống SQL Injection bằng SqlParameter */',
                             orig_line
                         )
                     else:
-                        patched_line = '        // [AI-PATCH]: Sử dụng Parameterized Query với SqlParameter hoặc FromSqlInterpolated\n        string query = "SELECT * FROM Products WHERE Name = @Name"; /* An toàn chống SQL Injection */'
+                        patched_line = f'{indent}// [REMEDIATION]: Sử dụng Parameterized Query với SqlParameter hoặc FromSqlInterpolated\n{indent}/* TODO: Thay thế chuỗi ghép bằng SqlParameter: new SqlParameter("@param", paramValue) */\n{orig_line}'
                 elif lang == "python":
-                    patched_line = '        # [AI-PATCH]: Dùng parameterized tuple (%s) thay vì f-string\n        cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))'
+                    if "cursor.execute" in orig_line and "f\"" in orig_line or "f'" in orig_line:
+                        patched_line = f'{indent}# [REMEDIATION]: Dùng parameterized tuple (%s) thay vì f-string\n{indent}# cursor.execute("SELECT ... WHERE col = %s", (param,))\n{orig_line}'
+                    else:
+                        patched_line = f'{indent}# [REMEDIATION]: Dùng parameterized tuple (%s) thay vì f-string\n{indent}cursor.execute("SELECT * FROM users WHERE username = %s AND password = %s", (username, password))'
                 elif lang == "javascript":
-                    patched_line = '        // [AI-PATCH]: Sử dụng Prepared Statement với tham số $1, $2 an toàn\n        const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);'
+                    patched_line = f'{indent}// [REMEDIATION]: Sử dụng Prepared Statement với tham số $1, $2 an toàn\n{indent}const result = await db.query("SELECT * FROM users WHERE id = $1", [userId]);'
 
             elif hint == "html_encode":
                 if lang == "csharp":
-                    patched_line = orig_line.replace("@Html.Raw(", "@Html.DisplayFor(m => ").replace(")", ")") + " // [AI-PATCH]: Tự động HTML Encode chống XSS"
+                    patched_line = orig_line.replace("@Html.Raw(", "@Html.DisplayFor(m => ").replace(")", ")") + " // [REMEDIATION]: Tự động HTML Encode chống XSS"
                 elif lang == "javascript":
-                    patched_line = orig_line.replace(".innerHTML =", ".textContent =") + " // [AI-PATCH]: Thay innerHTML bằng textContent an toàn"
+                    patched_line = orig_line.replace(".innerHTML =", ".textContent =") + " // [REMEDIATION]: Thay innerHTML bằng textContent an toàn"
 
             elif hint == "safe_subprocess":
                 if lang == "python":
-                    patched_line = '    # [AI-PATCH]: Tắt shell=True và truyền argument dạng mảng\n    res = subprocess.run(["ping", "-c", "4", host], capture_output=True, text=True, check=False)'
+                    patched_line = f'{indent}# [REMEDIATION]: Tắt shell=True và truyền argument dạng mảng\n{indent}res = subprocess.run(["ping", "-c", "4", host], capture_output=True, text=True, check=False)'
                 elif lang == "csharp":
-                    patched_line = '    // [AI-PATCH]: Dùng ArgumentList để tránh chèn lệnh Command Injection\n    var psi = new ProcessStartInfo("ping") { ArgumentList = { host } }; Process.Start(psi);'
+                    patched_line = f'{indent}// [REMEDIATION]: Dùng ArgumentList để tránh chèn lệnh Command Injection\n{indent}var psi = new ProcessStartInfo("ping") {{ ArgumentList = {{ host }} }}; Process.Start(psi);'
 
             elif hint == "env_secret":
                 if lang == "csharp":
-                    patched_line = '    // [AI-PATCH]: Đọc secret từ IConfiguration / appsettings thay vì hardcode\n    var secretKey = configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("Secret missing!");'
+                    patched_line = f'{indent}// [REMEDIATION]: Đọc secret từ IConfiguration / appsettings thay vì hardcode\n{indent}var secretKey = configuration["Jwt:SecretKey"] ?? throw new InvalidOperationException("Secret missing!");'
                 elif lang == "python":
-                    patched_line = '    # [AI-PATCH]: Đọc secret từ biến môi trường\n    secret_key = os.getenv("JWT_SECRET_KEY")'
+                    patched_line = f'{indent}# [REMEDIATION]: Đọc secret từ biến môi trường\n{indent}secret_key = os.getenv("JWT_SECRET_KEY")'
                 elif lang == "javascript":
-                    patched_line = '    // [AI-PATCH]: Lấy secret an toàn qua process.env\n    const secret = process.env.JWT_SECRET || process.env.APP_SECRET;'
+                    patched_line = f'{indent}// [REMEDIATION]: Lấy secret an toàn qua process.env\n{indent}const secret = process.env.JWT_SECRET || process.env.APP_SECRET;'
 
             elif hint == "safe_filepath":
                 if lang == "csharp":
-                    patched_line = '    // [AI-PATCH]: Canonical Path Validation ngăn chặn Path Traversal\n    string safeFileName = Path.GetFileName(userInput);\n    string fullPath = Path.Combine(baseDirectory, safeFileName);'
+                    patched_line = f'{indent}// [REMEDIATION]: Canonical Path Validation ngăn chặn Path Traversal\n{indent}string safeFileName = Path.GetFileName(userInput);\n{indent}string fullPath = Path.Combine(baseDirectory, safeFileName);'
                 elif lang == "python":
-                    patched_line = '    # [AI-PATCH]: Ngăn chặn Path Traversal\n    safe_name = os.path.basename(user_input)\n    safe_path = os.path.join(BASE_DIR, safe_name)'
+                    patched_line = f'{indent}# [REMEDIATION]: Ngăn chặn Path Traversal\n{indent}safe_name = os.path.basename(user_input)\n{indent}safe_path = os.path.join(BASE_DIR, safe_name)'
 
             elif hint == "safe_deserialization":
                 if lang == "csharp":
-                    patched_line = '    // [AI-PATCH]: Thay BinaryFormatter bằng System.Text.Json\n    var data = JsonSerializer.Deserialize<MyModel>(jsonString);'
+                    patched_line = f'{indent}// [REMEDIATION]: Thay BinaryFormatter bằng System.Text.Json\n{indent}var data = JsonSerializer.Deserialize<MyModel>(jsonString);'
                 elif lang == "python":
-                    patched_line = '    # [AI-PATCH]: Dùng yaml.safe_load thay vì yaml.load\n    data = yaml.safe_load(user_content)'
+                    patched_line = f'{indent}# [REMEDIATION]: Dùng yaml.safe_load thay vì yaml.load\n{indent}data = yaml.safe_load(user_content)'
 
             lines[idx] = patched_line
-            diff_notes.append(f"- Dòng {f['line']}: Sửa [{f['cwe']}] {f['title']}")
+            diff_notes.append(f"- Dòng {f['line']}: Đề xuất sửa [{f['cwe']}] {f['title']}")
 
     patched_code = "\n".join(lines)
     diff_summary = "\n".join(diff_notes)
     return patched_code, diff_summary
+
 
 def get_preset_samples() -> Dict[str, Dict[str, Any]]:
     """Trả về 5 đoạn mã nguồn có sẵn lỗ hổng thực tế để sinh viên và giảng viên test ngay."""
