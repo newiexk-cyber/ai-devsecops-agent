@@ -70,7 +70,7 @@ def init_database():
     except Exception:
         pass
     
-    # 3. Bảng lưu báo cáo tình báo và quy tắc phòng thủ đã sinh (Phúc)
+    # 3. Bảng lưu báo cáo tình báo và kỹ năng phòng thủ đã sinh (Phúc)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS threat_reports (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,10 +86,21 @@ def init_database():
         yara_rule TEXT,
         firewall_blocklist TEXT,
         stix_bundle_json TEXT,
+        agent_skill_json TEXT,
+        analysis_mode TEXT,
         created_at TEXT DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (article_id) REFERENCES raw_threat_articles(id)
     );
     """)
+
+    for migration_sql in (
+        "ALTER TABLE threat_reports ADD COLUMN agent_skill_json TEXT",
+        "ALTER TABLE threat_reports ADD COLUMN analysis_mode TEXT",
+    ):
+        try:
+            cursor.execute(migration_sql)
+        except Exception:
+            pass
     
     conn.commit()
     conn.close()
@@ -151,8 +162,9 @@ def save_threat_report(report_data: Dict[str, Any]) -> int:
     cursor.execute("""
     INSERT INTO threat_reports (
         report_id, article_id, title, executive_summary, threat_actors, targeted_sectors,
-        extracted_iocs_json, mitre_matrix_json, sigma_rule, yara_rule, firewall_blocklist, stix_bundle_json
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        extracted_iocs_json, mitre_matrix_json, sigma_rule, yara_rule, firewall_blocklist,
+        stix_bundle_json, agent_skill_json, analysis_mode
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         report_data.get("report_id"),
         report_data.get("article_id"),
@@ -165,7 +177,9 @@ def save_threat_report(report_data: Dict[str, Any]) -> int:
         report_data.get("defensive_rules", {}).get("sigma_rule", ""),
         report_data.get("defensive_rules", {}).get("yara_rule", ""),
         json.dumps(report_data.get("defensive_rules", {}).get("firewall_blocklist", []), ensure_ascii=False),
-        json.dumps(report_data.get("stix_json", {}), ensure_ascii=False)
+        json.dumps(report_data.get("stix_json", {}), ensure_ascii=False),
+        json.dumps(report_data.get("agent_skill", {}), ensure_ascii=False),
+        report_data.get("analysis_mode", "hybrid_local_llm"),
     ))
     conn.commit()
     report_pk = cursor.lastrowid

@@ -1,16 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 RSS & WEB THREAT COLLECTOR (LÂM)
-Thu thập tự động các bài phân tích mã độc và chiến dịch tấn công từ The Hacker News và BleepingComputer.
-Hỗ trợ cả Live RSS Parsing lẫn Bundled Real-world CTI Datasets để kiểm thử offline an toàn.
+Thu thập tự động các bài phân tích mã độc, chiến dịch APT và CVE từ các nguồn CTI uy tín.
+Hỗ trợ đọc RSS nội dung đầy đủ (Cisco Talos, Securelist, Unit 42, Malwarebytes, The Hacker News)
+và bộ mẫu chuẩn offline để kiểm thử ổn định.
 """
+import re
+from typing import Any, Dict, List
+
 import feedparser
 import httpx
 from bs4 import BeautifulSoup
-from typing import List, Dict, Any
+
 from src.automation.storage.database import save_raw_article
 
-# Tập dữ liệu mẫu thực tế chuẩn CTI để kiểm thử demo ngay lập tức không cần mạng
+# Tập dữ liệu mẫu thực tế chuẩn CTI để kiểm thử offline
 BUNDLED_SAMPLES = [
     {
         "source_name": "The Hacker News",
@@ -25,7 +29,7 @@ The attackers dropped an open-source reverse shell called UP-STREAM, transmittin
 5e064653a1a6b06385cfcf62d3a37c3558694ff81467576594c92da0cf8e8da8
 
 Organizations are strongly advised to apply mitigation measures immediately and inspect firewall logs for suspicious outbound sessions to the identified malicious IP addresses.""",
-        "published_date": "2024-04-12T14:30:00Z"
+        "published_date": "2024-04-12T14:30:00Z",
     },
     {
         "source_name": "BleepingComputer",
@@ -37,8 +41,8 @@ Once inside the enterprise perimeter, the operators employ PowerShell scripts (T
 
 Command and control traffic was directed to the malicious domain akira-payment-gateway.top and sync.cloud-update-service.org. Staged encryption executable 'akira_v2.exe' with MD5 hash a6d8cf01b1e3f892c571937d2f9b12e4 encrypts local network shares using ChaCha20 encryption and leaves ransom notes demanding payment in Bitcoin.
 
-Blue team defenders must enforce MFA with number matching, isolate compromised VPN credentials, and deploy YARA detection rules targeting the Akira header signature.""",
-        "published_date": "2024-05-18T09:15:00Z"
+Blue team defenders must enforce MFA with number matching, isolate compromised VPN credentials, and deploy detection skills targeting the Akira indicators.""",
+        "published_date": "2024-05-18T09:15:00Z",
     },
     {
         "source_name": "The Hacker News",
@@ -54,64 +58,76 @@ IP: 91.240.118.172, 193.233.132.88
 Domain: cdn-verify-human.site, api.lumma-c2-traffic.biz
 
 Security teams should alert users regarding fake browser verification prompts and implement strict PowerShell script block logging to flag unprompted base64 execution.""",
-        "published_date": "2024-06-20T11:45:00Z"
-    }
+        "published_date": "2024-06-20T11:45:00Z",
+    },
 ]
 
-def fetch_rss_feeds(max_per_source: int = 5) -> List[Dict[str, Any]]:
-    """Cào bài viết mới từ The Hacker News và BleepingComputer RSS"""
-    results = []
-    
-    # Nạp dữ liệu mẫu trước để luôn luôn có dữ liệu kiểm thử
+LIVE_RSS_FEEDS = [
+    {"name": "Cisco Talos", "url": "https://blog.talosintelligence.com/rss/"},
+    {"name": "Palo Alto Unit 42", "url": "https://unit42.paloaltonetworks.com/feed/"},
+    {"name": "Securelist (Kaspersky)", "url": "https://securelist.com/feed/"},
+    {"name": "Malwarebytes Labs", "url": "https://www.malwarebytes.com/blog/feed/index.xml"},
+    {"name": "The Hacker News", "url": "https://feeds.feedburner.com/TheHackersNews"},
+]
+
+
+def _extract_clean_rss_content(entry: Any) -> str:
+    parts: List[str] = []
+    if entry.get("content"):
+        for chunk in entry["content"]:
+            val = chunk.get("value", "")
+            if val:
+                parts.append(BeautifulSoup(val, "html.parser").get_text(" ", strip=True))
+    desc = entry.get("summary") or entry.get("description") or ""
+    if desc:
+        parts.append(BeautifulSoup(desc, "html.parser").get_text(" ", strip=True))
+    text = "\n\n".join(p for p in parts if p)
+    return re.sub(r"[ \t]+", " ", text).strip()
+
+
+def fetch_rss_feeds(max_per_source: int = 8) -> List[Dict[str, Any]]:
+    """Cào bài viết CTI mới từ các nguồn RSS uy tín kèm fallback dữ liệu mẫu."""
+    results: List[Dict[str, Any]] = []
+
     for sample in BUNDLED_SAMPLES:
         save_raw_article(
             source_name=sample["source_name"],
             source_url=sample["source_url"],
             title=sample["title"],
             raw_content=sample["raw_content"],
-            published_date=sample["published_date"]
+            published_date=sample["published_date"],
         )
         results.append(sample)
-        
-    # Cố gắng kết nối RSS thật nếu có Internet
-    feeds = [
-        {"name": "The Hacker News", "url": "https://feeds.feedburner.com/TheHackersNews"},
-        {"name": "BleepingComputer", "url": "https://www.bleepingcomputer.com/feed/"}
-    ]
-    
-    import socket
-    socket.setdefaulttimeout(3.5)
-    
-    for f in feeds:
-        try:
-            parsed = feedparser.parse(f["url"])
-            for entry in parsed.entries[:max_per_source]:
-                # Làm sạch nội dung HTML
-                raw_summary = entry.get("summary", "") or entry.get("description", "")
-                soup = BeautifulSoup(raw_summary, "html.parser")
-                clean_text = soup.get_text(separator=" ").strip()
-                
-                title = entry.get("title", "No Title")
-                link = entry.get("link", "")
-                pub_date = entry.get("published", "")
-                
-                if link and clean_text:
-                    save_raw_article(
-                        source_name=f["name"],
-                        source_url=link,
-                        title=title,
-                        raw_content=f"{title}\n\n{clean_text}",
-                        published_date=pub_date
-                    )
-                    results.append({
-                        "source_name": f["name"],
-                        "source_url": link,
-                        "title": title,
-                        "raw_content": clean_text,
-                        "published_date": pub_date
-                    })
-        except Exception as e:
-            # Nếu mất mạng hoặc bị timeout, hệ thống vẫn an toàn với dữ liệu mẫu
-            continue
-            
+
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CTI-Sentinel-Collector/1.0"}
+    with httpx.Client(timeout=6.0, follow_redirects=True, headers=headers) as client:
+        for feed in LIVE_RSS_FEEDS:
+            try:
+                resp = client.get(feed["url"])
+                if resp.status_code != 200:
+                    continue
+                parsed = feedparser.parse(resp.text)
+                for entry in parsed.entries[:max_per_source]:
+                    clean_text = _extract_clean_rss_content(entry)
+                    title = (entry.get("title") or "No Title").strip()
+                    link = (entry.get("link") or "").strip()
+                    pub_date = (entry.get("published") or entry.get("updated") or "").strip()
+                    if link and clean_text:
+                        save_raw_article(
+                            source_name=feed["name"],
+                            source_url=link,
+                            title=title,
+                            raw_content=f"{title}\n\n{clean_text[:12000]}",
+                            published_date=pub_date,
+                        )
+                        results.append({
+                            "source_name": feed["name"],
+                            "source_url": link,
+                            "title": title,
+                            "raw_content": clean_text[:12000],
+                            "published_date": pub_date,
+                        })
+            except Exception:
+                continue
+
     return results
