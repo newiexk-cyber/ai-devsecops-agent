@@ -1,126 +1,217 @@
 # -*- coding: utf-8 -*-
 """
 FASTAPI SERVER & REST API (LÂM)
-Cung cấp API điều khiển pipeline CTI, kích hoạt tác tử AI và phục vụ giao diện Web Dashboard.
+Cung cấp REST API cho quy trình CTI chuẩn xác:
+1. Thu thập bản tin CTI thật (RSS đa nguồn + CISA KEV / NVD)
+2. Phân tích bằng Hybrid CTI Local Agent (Regex Context + Ollama Local LLM)
+3. Làm giàu IOC đa nguồn thật (VirusTotal, AbuseIPDB, Shodan InternetDB, MalwareBazaar, OpenPhish)
+4. Sinh Dynamic Agent Skill (Python + OpenAI/Claude/Gemini/LangChain schemas) & kiểm chứng AST/Sandbox
+5. Quản lý tập 50 bài báo gán nhãn tay & chạy Benchmark đo Precision/Recall/F1 thực tế
 """
+import json
 import os
 import uuid
-from typing import Optional, Dict, Any
-from fastapi import FastAPI, HTTPException, Body
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, Response
+from contextlib import asynccontextmanager
+from typing import Any, Dict, List, Optional
+
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from fastapi.responses import FileResponse, Response
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
-from src.automation.storage.database import (
-    init_database, get_all_articles, get_article_by_id, mark_article_analyzed,
-    save_threat_report, get_all_reports, get_report_by_id, get_system_stats
-)
-from src.automation.collectors.rss_collector import fetch_rss_feeds
 from src.automation.collectors.cisa_collector import fetch_cisa_kev, fetch_cve_by_id
+from src.automation.collectors.rss_collector import fetch_rss_feeds
+from src.automation.storage.database import (
+    get_all_articles,
+    get_all_reports,
+    get_article_by_id,
+    get_report_by_id,
+    get_system_stats,
+    init_database,
+    mark_article_analyzed,
+    save_threat_report,
+)
+from src.core.cti_agent import analyze_cti_article
 from src.core.ioc_extractor import extract_iocs_from_text
-from src.core.mitre_mapper import map_mitre_techniques
+from src.core.local_llm_client import check_ollama_health
+from src.core.rule_generator import generate_stix_bundle
+from src.core.skill_synthesizer import synthesize_cti_skill
+from src.core.skill_verifier import run_skill_sandbox_probes, verify_skill_ast
+from src.security.benchmark.corpus_manager import (
+    DEFAULT_CORPUS_PATH,
+    collect_real_cti_corpus,
+    load_corpus,
+    update_human_annotation,
+)
+from src.security.benchmark.evaluator import (
+    DEFAULT_REPORT_JSON_PATH,
+    evaluate_cti_benchmark,
+)
 from src.security.enrichment_service import enrich_ioc_list
-from src.core.rule_generator import (
-    generate_sigma_rule, generate_yara_rule, generate_firewall_blocklist, generate_stix_bundle
-)
-from src.core.sast_analyzer import analyze_code, get_preset_samples
-from src.core.network_cve_catalog import (
-    get_network_threat_catalog, filter_network_threats, evaluate_smart_crawl_trigger,
-    ingest_live_network_cve, crawl_whitelist_sources
-)
-from src.core.network_skill_generator import (
-    generate_explainable_trust_card, generate_network_agent_skill, list_available_skills
-)
 
-# Khởi tạo DB khi khởi động
 init_database()
+
+
+@asynccontextmanager
+async def lifespan(app_instance: FastAPI):
+    articles = get_all_articles(limit=1)
+    if not articles:
+        fetch_rss_feeds(max_per_source=5)
+        fetch_cisa_kev(limit=15)
+    yield
+
 
 app = FastAPI(
     title="CTI-Sentinel API",
-    description="REST API cho Hệ thống Tình báo Mạng và Sinh Quy tắc Phòng thủ AI Agent",
-    version="1.0.0"
+    description="REST API cho Hệ thống Tình báo CTI với Local LLM Agent, Sinh Kỹ năng Phòng thủ & Benchmark",
+    version="2.0.0",
+    lifespan=lifespan,
 )
 
-# Bật CORS
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS",
+    "http://127.0.0.1:8080,http://localhost:8080,http://127.0.0.1:3000,http://localhost:3000",
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[orig.strip() for orig in ALLOWED_ORIGINS if orig.strip()],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self' 'unsafe-inline' https:; "
+        "img-src 'self' data: https:; "
+        "font-src 'self' https: data:; "
+        "connect-src 'self' http: https: ws:;"
+    )
+    return response
+
+
 class AnalyzeRequest(BaseModel):
     article_id: Optional[int] = None
-    custom_title: Optional[str] = None
-    custom_text: Optional[str] = None
+    custom_title: Optional[str] = Field(default=None, max_length=250)
+    custom_text: Optional[str] = Field(default=None, max_length=500000)
+    mode: str = Field(default="hybrid", pattern=r"^(hybrid|regex_only)$")
 
-class SastScanRequest(BaseModel):
-    code: str
-    language: Optional[str] = "csharp"
-    filename: Optional[str] = None
 
-@app.on_event("startup")
-def startup_event():
-    # Tự động nạp dữ liệu mẫu ban đầu nếu DB chưa có bài nào
-    articles = get_all_articles(limit=1)
-    if not articles:
-        fetch_rss_feeds()
-        fetch_cisa_kev()
+class FetchCVERequest(BaseModel):
+    cve_id: str = Field(..., pattern=r"^CVE-\d{4}-\d{4,}$")
+
+
+class SkillVerifyRequest(BaseModel):
+    skill_name: Optional[str] = "custom_skill"
+    execution_code: str = Field(..., min_length=1, max_length=150000)
+    iocs_embedded: Dict[str, List[str]] = Field(default_factory=dict)
+
+
+class AnnotateArticleRequest(BaseModel):
+    annotated_by: str = Field(..., min_length=2, max_length=60)
+    ips: List[str] = Field(default_factory=list)
+    domains: List[str] = Field(default_factory=list)
+    urls: List[str] = Field(default_factory=list)
+    md5: List[str] = Field(default_factory=list)
+    sha256: List[str] = Field(default_factory=list)
+    cves: List[str] = Field(default_factory=list)
+    threat_actors: List[str] = Field(default_factory=list)
+    malware_families: List[str] = Field(default_factory=list)
+    notes: str = Field(default="", max_length=1000)
+
+
+class BenchmarkRunRequest(BaseModel):
+    modes: List[str] = Field(default_factory=lambda: ["regex_only", "hybrid"])
+    include_pending: bool = False
+
 
 @app.get("/api/status")
 def get_status():
+    corpus = load_corpus(DEFAULT_CORPUS_PATH)
+    articles = corpus.get("articles", [])
+    verified_count = sum(
+        1 for a in articles if a.get("annotation_meta", {}).get("status") == "human_verified"
+    )
     return {
         "status": "online",
-        "system": "CTI-Sentinel Agentic Engine",
-        "stats": get_system_stats()
+        "system": "CTI-Sentinel Local Agent & Skill Synthesizer",
+        "stats": get_system_stats(),
+        "ollama_health": check_ollama_health(),
+        "corpus_summary": {
+            "total_articles": len(articles),
+            "human_verified_count": verified_count,
+        },
     }
+
+
+@app.get("/api/llm/status")
+def get_llm_status():
+    return check_ollama_health()
+
 
 @app.get("/api/feeds")
-def get_feeds(limit: int = 50):
+def get_feeds(
+    limit: int = Query(default=50, ge=1, le=200),
+    source: Optional[str] = None,
+    q: Optional[str] = None,
+):
     articles = get_all_articles(limit=limit)
     if not articles:
-        fetch_rss_feeds()
-        fetch_cisa_kev()
+        fetch_rss_feeds(max_per_source=5)
+        fetch_cisa_kev(limit=15)
         articles = get_all_articles(limit=limit)
+
+    if source and source.upper() != "ALL":
+        articles = [a for a in articles if source.lower() in (a.get("source_name") or "").lower()]
+    if q and q.strip():
+        kw = q.strip().lower()
+        articles = [
+            a for a in articles
+            if kw in (a.get("title") or "").lower() or kw in (a.get("raw_content") or "").lower()
+        ]
+
     return {"articles": articles, "total": len(articles)}
 
-class FetchCVERequest(BaseModel):
-    cve_id: str
 
 @app.post("/api/feeds/fetch")
-def trigger_fetch(limit: int = 25):
-    # Kéo thêm nhiều bài mới hơn từ RSS và CISA KEV catalog (kho hơn 1.100 lỗ hổng)
-    rss = fetch_rss_feeds(max_per_source=max(5, limit // 2))
+def trigger_fetch(limit: int = Query(default=25, ge=1, le=100)):
+    rss = fetch_rss_feeds(max_per_source=max(5, limit // 4))
     cisa = fetch_cisa_kev(limit=limit)
     return {
-        "message": f"Thu thập dữ liệu thành công với hạn mức {limit}!",
+        "status": "success",
+        "message": f"Đã thu thập {len(rss)} tin từ RSS đa nguồn và {len(cisa)} mục CISA KEV!",
         "rss_count": len(rss),
-        "cisa_count": len(cisa)
+        "cisa_count": len(cisa),
     }
+
 
 @app.post("/api/feeds/fetch-cve")
 def on_demand_cve_fetch(payload: FetchCVERequest):
-    """Kéo dữ liệu khẩn cấp cho một mã CVE cụ thể từ CISA KEV hoặc NIST NVD"""
     res = fetch_cve_by_id(payload.cve_id)
-    if not res:
-        raise HTTPException(status_code=404, detail=f"Không thể truy vấn thông tin cho mã {payload.cve_id}")
+    if not res or res.get("status") == "not_found":
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy dữ liệu xác thực cho {payload.cve_id}")
     return {
         "status": "success",
         "message": f"Đã kéo thành công lỗ hổng {res['cve_id']} từ {res['source']}!",
-        "article": res
+        "article": res,
     }
+
 
 @app.post("/api/analyze")
 def run_ai_analysis(payload: AnalyzeRequest):
     """
-    Kích hoạt chu trình Tác tử AI (ReAct Loop) phân tích toàn diện bài viết:
-    1. Thu thập văn bản
-    2. Bóc tách IOCs (Regex + LLM)
-    3. Thẩm định danh tiếng (VirusTotal / AbuseIPDB)
-    4. Ánh xạ ma trận MITRE ATT&CK
-    5. Biên dịch 3 lớp luật phòng thủ (Sigma, YARA, Blocklist) + STIX 2.1
+    Chạy quy trình Tác tử CTI đầy đủ:
+    1. Trích xuất Regex kèm ngữ cảnh + Local LLM (Ollama) lọc nhiễu & giải trình XAI
+    2. Làm giàu IOC đa nguồn thật (không tạo điểm giả)
+    3. Sinh Dynamic Agent Skill (Python + đa chuẩn schema) & kiểm chứng AST/Sandbox
     """
     article_id = payload.article_id
     if article_id:
@@ -130,319 +221,249 @@ def run_ai_analysis(payload: AnalyzeRequest):
         title = article["title"]
         text = article["raw_content"]
     else:
-        title = payload.custom_title or "Báo cáo Đe dọa Tùy chỉnh (Ad-hoc Threat Alert)"
+        title = payload.custom_title or "Báo cáo CTI Tùy chỉnh"
         text = payload.custom_text
         if not text:
             raise HTTPException(status_code=400, detail="Vui lòng cung cấp nội dung bài viết cần phân tích")
 
-    # 1. Trích xuất IOCs
-    extracted = extract_iocs_from_text(text)
-    
-    # 2. Thẩm định danh tiếng qua Caching & VirusTotal/AbuseIPDB
-    enriched = enrich_ioc_list(extracted["iocs"])
-    
-    # 3. Ánh xạ MITRE ATT&CK
-    mitre_techniques = map_mitre_techniques(text)
-    
-    # 4. Sinh quy tắc phòng thủ
-    sigma_code = generate_sigma_rule(title, enriched, mitre_techniques)
-    yara_code = generate_yara_rule(title, enriched)
-    blocklist_code = generate_firewall_blocklist(enriched)
-    stix_bundle = generate_stix_bundle(title, enriched, mitre_techniques)
-    
+    analysis = analyze_cti_article(title=title, raw_content=text, mode=payload.mode)
+    enriched = enrich_ioc_list(analysis["iocs"])
+
+    try:
+        agent_skill = synthesize_cti_skill(analysis, enriched)
+    except ValueError as exc:
+        agent_skill = {
+            "skill_name": "no_actionable_skill",
+            "description": str(exc),
+            "execution_status": "NOT_IMPLEMENTED",
+            "code_compiled_successfully": False,
+            "ast_safe": True,
+            "execution_code": f"# {exc}",
+            "model_schemas": {},
+            "verification": {"syntax_valid": False, "ast_safe": True, "sandbox_verified": False, "error": str(exc)},
+        }
+
+    stix_bundle = generate_stix_bundle(title, enriched, analysis["mitre_techniques"])
     report_id = f"CTI-REP-{uuid.uuid4().hex[:8].upper()}"
-    
+
     report_data = {
         "report_id": report_id,
         "article_id": article_id,
         "title": title,
-        "executive_summary": f"Chiến dịch đe dọa liên quan đến {', '.join(extracted['threat_actors']) if extracted['threat_actors'] else 'mối đe dọa không xác định'}. Bóc tách thành công {len(enriched)} chỉ số xâm nhập (IOCs) và ánh xạ {len(mitre_techniques)} kỹ thuật MITRE ATT&CK.",
-        "threat_actors": extracted["threat_actors"],
-        "targeted_sectors": ["Doanh nghiệp", "Hạ tầng trọng yếu", "Dịch vụ tài chính"],
+        "analysis_mode": analysis["analysis_mode"],
+        "llm_used": analysis["llm_used"],
+        "llm_model": analysis["llm_model"],
+        "llm_error": analysis["llm_error"],
+        "executive_summary": analysis["executive_summary"],
+        "threat_actors": analysis["threat_actors"],
+        "malware_families": analysis["malware_families"],
+        "targeted_sectors": [],
         "enriched_iocs": enriched,
-        "mitre_attack_matrix": mitre_techniques,
-        "defensive_rules": {
-            "sigma_rule": sigma_code,
-            "yara_rule": yara_code,
-            "firewall_blocklist": [ioc["value"] for ioc in enriched if ioc["type"] in ["IP", "DOMAIN"]]
+        "dropped_iocs": analysis["dropped_iocs"],
+        "iocs_summary": {
+            "ips": analysis["ips"],
+            "domains": analysis["domains"],
+            "urls": analysis["urls"],
+            "sha256": analysis["sha256"],
+            "md5": analysis["md5"],
+            "cves": analysis["cves"],
         },
-        "raw_blocklist_text": blocklist_code,
-        "stix_json": stix_bundle
+        "mitre_attack_matrix": analysis["mitre_techniques"],
+        "xai_report": analysis["xai_report"],
+        "agent_skill": agent_skill,
+        "stix_json": stix_bundle,
     }
-    
-    # Lưu báo cáo vào Database
+
     save_threat_report(report_data)
     if article_id:
         mark_article_analyzed(article_id)
-        
+
     return {
         "status": "success",
-        "report": report_data
+        "report": report_data,
+        "agent_skill": agent_skill,
     }
 
-@app.get("/api/reports")
-def list_reports(limit: int = 20):
-    reports = get_all_reports(limit=limit)
-    return {"reports": reports}
 
-@app.get("/api/download/{report_id}/{rule_type}")
-def download_rule_file(report_id: str, rule_type: str):
+@app.get("/api/reports")
+def list_reports(limit: int = Query(default=20, ge=1, le=100)):
+    return {"reports": get_all_reports(limit=limit)}
+
+
+@app.post("/api/skills/verify")
+def verify_skill_endpoint(payload: SkillVerifyRequest):
+    """Kiểm tra an toàn AST và chạy thử mẫu dương tính/âm tính trong sandbox cho Python Skill."""
+    skill_dict = {
+        "skill_name": payload.skill_name,
+        "execution_code": payload.execution_code,
+        "iocs_embedded": payload.iocs_embedded,
+    }
+    if any(payload.iocs_embedded.values()):
+        verification = run_skill_sandbox_probes(skill_dict)
+    else:
+        ast_res = verify_skill_ast(payload.execution_code)
+        verification = {
+            **ast_res,
+            "positive_probes_total": 0,
+            "positive_probes_passed": 0,
+            "negative_probe_passed": None,
+            "sandbox_verified": False,
+            "execution_status": "DRY_RUN" if ast_res["ast_safe"] else "FAILED",
+            "probe_results": [],
+        }
+    return {"status": "success", "verification": verification}
+
+
+@app.get("/api/download/{report_id}/{artifact_type}")
+def download_artifact_file(report_id: str, artifact_type: str):
     report = get_report_by_id(report_id)
     if not report:
         raise HTTPException(status_code=404, detail="Báo cáo không tồn tại")
-        
-    if rule_type == "sigma":
-        content = report["sigma_rule"]
-        filename = f"{report_id}_sigma_rule.yml"
-        media_type = "text/yaml"
-    elif rule_type == "yara":
-        content = report["yara_rule"]
-        filename = f"{report_id}_endpoint.yar"
-        media_type = "text/plain"
-    elif rule_type == "firewall":
-        content = report["firewall_blocklist"]
-        filename = f"{report_id}_firewall_blocklist.txt"
-        media_type = "text/plain"
-    elif rule_type == "stix":
-        content = report["stix_bundle_json"]
+
+    if artifact_type == "skill":
+        skill_raw = report.get("agent_skill_json")
+        skill_obj = json.loads(skill_raw) if skill_raw else {}
+        content = skill_obj.get("execution_code", "# No Python skill available")
+        filename = f"{report_id}_agent_skill.py"
+        media_type = "text/x-python"
+    elif artifact_type == "stix":
+        content = report.get("stix_bundle_json") or "{}"
         filename = f"{report_id}_stix21_bundle.json"
         media_type = "application/json"
+    elif artifact_type == "report":
+        content = json.dumps(report, indent=2, ensure_ascii=False)
+        filename = f"{report_id}_report.json"
+        media_type = "application/json"
     else:
-        raise HTTPException(status_code=400, detail="Loại quy tắc không hợp lệ")
-        
+        raise HTTPException(status_code=400, detail="Chỉ hỗ trợ tải skill, stix hoặc report")
+
     return Response(
         content=content,
         media_type=media_type,
-        headers={"Content-Disposition": f"attachment; filename={filename}"}
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
     )
 
+
 # ==============================================================================
-# SAST DEVSECOPS API (AI CODE SECURITY AUDIT & AUTO-PATCH)
+# CORPUS 50 BÀI BÁO GÁN NHÃN TAY & BENCHMARK ĐO ĐỘ CHÍNH XÁC AGENT
 # ==============================================================================
-@app.post("/api/sast/scan")
-def scan_code_security(payload: SastScanRequest):
-    """
-    Rà soát mã nguồn đầu vào bằng AI SAST Analyzer:
-    - Phát hiện lỗ hổng theo chuẩn OWASP Top 10 và CWE
-    - Thực hiện suy luận ReAct Agent để phân tích ngữ cảnh
-    - Tự động sinh bản vá mã nguồn an toàn (Remediation Patch)
-    """
-    result = analyze_code(
-        code=payload.code,
-        language=payload.language or "csharp",
-        filename=payload.filename
+@app.get("/api/corpus")
+def get_corpus_summary():
+    corpus = load_corpus(DEFAULT_CORPUS_PATH)
+    articles = corpus.get("articles", [])
+    summary_items = []
+    verified = 0
+    for art in articles:
+        meta = art.get("annotation_meta", {})
+        status = meta.get("status", "pending_human_review")
+        if status == "human_verified":
+            verified += 1
+        gt = art.get("ground_truth", {})
+        gt_count = sum(len(gt.get(k, [])) for k in ("ips", "domains", "md5", "sha256", "cves"))
+        summary_items.append({
+            "article_id": art.get("article_id"),
+            "title": art.get("title"),
+            "source": art.get("source"),
+            "url": art.get("url"),
+            "published_date": art.get("published_date"),
+            "char_length": len(art.get("raw_content", "")),
+            "status": status,
+            "annotated_by": meta.get("annotated_by", ""),
+            "reviewed_at": meta.get("reviewed_at", ""),
+            "gt_ioc_count": gt_count,
+        })
+    return {
+        "status": "success",
+        "total_articles": len(articles),
+        "human_verified_count": verified,
+        "articles": summary_items,
+    }
+
+
+@app.get("/api/corpus/{article_id}")
+def get_corpus_article_detail(article_id: str):
+    corpus = load_corpus(DEFAULT_CORPUS_PATH)
+    art = next((a for a in corpus.get("articles", []) if a.get("article_id") == article_id), None)
+    if not art:
+        raise HTTPException(status_code=404, detail=f"Không tìm thấy bài {article_id}")
+
+    suggestions = extract_iocs_from_text(art.get("raw_content", ""))
+    return {
+        "status": "success",
+        "article": art,
+        "regex_suggestions": {
+            "ips": suggestions["ips"],
+            "domains": suggestions["domains"],
+            "urls": suggestions["urls"],
+            "md5": suggestions["md5"],
+            "sha256": suggestions["sha256"],
+            "cves": suggestions["cves"],
+            "threat_actors": suggestions["threat_actors"],
+            "malware_families": suggestions["malware_families"],
+        },
+    }
+
+
+@app.post("/api/corpus/collect")
+def collect_corpus_endpoint(limit: int = Query(default=50, ge=5, le=80)):
+    corpus = collect_real_cti_corpus(target_count=limit, fetch_full_html=True, refresh_pending=False)
+    return {
+        "status": "success",
+        "total_articles": corpus.get("total_articles", 0),
+        "human_verified_count": corpus.get("human_verified_count", 0),
+        "message": f"Đã cập nhật bộ {corpus.get('total_articles', 0)} bài CTI thật (giữ nguyên các bài đã gán tay).",
+    }
+
+
+@app.post("/api/corpus/{article_id}/annotate")
+def annotate_corpus_article(article_id: str, payload: AnnotateArticleRequest):
+    try:
+        updated = update_human_annotation(
+            article_id=article_id,
+            ground_truth=payload.model_dump(exclude={"annotated_by", "notes"}),
+            annotated_by=payload.annotated_by,
+            notes=payload.notes,
+            status="human_verified",
+            path=DEFAULT_CORPUS_PATH,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc))
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    return {
+        "status": "success",
+        "message": f"Đã lưu đáp án gán tay của '{payload.annotated_by}' cho bài {article_id}.",
+        "article": updated,
+    }
+
+
+@app.post("/api/benchmark/run")
+def run_benchmark_endpoint(payload: BenchmarkRunRequest):
+    valid_modes = [m for m in payload.modes if m in {"regex_only", "hybrid"}]
+    if not valid_modes:
+        raise HTTPException(status_code=400, detail="modes phải chứa regex_only hoặc hybrid")
+
+    results = evaluate_cti_benchmark(
+        corpus_path=DEFAULT_CORPUS_PATH,
+        modes=valid_modes,
+        include_pending=payload.include_pending,
     )
-    return result
-
-@app.get("/api/sast/presets")
-def get_sast_presets():
-    """
-    Trả về danh sách 5 bộ mã nguồn mẫu có sẵn lỗ hổng thực tế
-    để giảng viên và sinh viên kiểm thử nhanh trên Dashboard.
-    """
-    presets = get_preset_samples()
-    return {"status": "success", "presets": presets}
-
-# ==============================================================================
-# NETWORK INTELLIGENCE & DYNAMIC AGENT SKILLS API
-# ==============================================================================
-class NetworkSkillRequest(BaseModel):
-    threat_id: Optional[str] = None
-    identifier: Optional[str] = None
-
-@app.get("/api/network-intel/feeds")
-def get_network_intel_feeds(
-    time_window: Optional[str] = None,
-    tag: Optional[str] = None,
-    severity: Optional[str] = None,
-    threat_type: Optional[str] = None
-):
-    """
-    Lấy danh mục tình báo an toàn mạng (Network-Only Threats)
-    Hỗ trợ lọc theo Timeline Date (24h_emergency, active_30d, trending_1y, historical_3y)
-    và Thẻ Tags phân màu.
-    """
-    threats = filter_network_threats(
-        time_window=time_window,
-        tag=tag,
-        severity=severity,
-        threat_type=threat_type
-    )
-    return {
-        "status": "success",
-        "total": len(threats),
-        "threats": threats
-    }
-
-@app.get("/api/network-intel/trigger-status")
-def get_smart_trigger_status():
-    """
-    Trả về đánh giá của Bộ Kích Hoạt Thông Minh: Khi nào nên cào?
-    Đo đạc độ khẩn cấp dựa trên CVE mạng mới, IP C2 bùng phát và thời gian sống (TTL).
-    """
-    # Đếm số sự kiện khẩn cấp
-    catalog = get_network_threat_catalog()
-    crit_count = sum(1 for t in catalog if t.get("severity") == "CRITICAL" and t.get("date_category") == "24h_emergency")
-    has_cisa = any("#CISA_KEV" in t.get("tags", []) for t in catalog)
-    
-    evaluation = evaluate_smart_crawl_trigger(
-        high_severity_events=crit_count,
-        cisa_network_update=has_cisa,
-        hours_since_last_crawl=2.5,
-        surge_detected=(crit_count >= 1)
-    )
-    return {
-        "status": "success",
-        "trigger": evaluation
-    }
-
-@app.post("/api/network-intel/generate-skill")
-def generate_skill_for_network_threat(payload: NetworkSkillRequest):
-    """
-    Sinh Thẻ Giải trình XAI (Explainable AI Trust Card) và
-    Kỹ năng Tác tử động (Dynamic Agent Skill) cho một mối đe dọa mạng.
-    """
-    catalog = get_network_threat_catalog()
-    threat = None
-    
-    if payload.threat_id:
-        threat = next((t for t in catalog if t["id"] == payload.threat_id), None)
-    elif payload.identifier:
-        threat = next((t for t in catalog if t["identifier"].lower() == payload.identifier.lower()), None)
-        
-    if not threat:
-        # Nếu không tìm thấy trong catalog mẫu, dùng phần tử đầu tiên làm mẫu
-        threat = catalog[0]
-        
-    xai_trust = generate_explainable_trust_card(threat)
-    agent_skill = generate_network_agent_skill(threat)
-    
-    return {
-        "status": "success",
-        "threat": threat,
-        "xai_trust": xai_trust,
-        "agent_skill": agent_skill
-    }
-
-@app.get("/api/network-intel/skills-library")
-def get_skills_library():
-    """
-    Trả về danh mục các Kỹ năng Tác tử mạng (Agent Skills) có sẵn
-    để các Agent phòng thủ khác có thể nạp vào hệ thống.
-    """
-    skills = list_available_skills()
-    return {
-        "status": "success",
-        "total_skills": len(skills),
-        "skills": skills
-    }
-
-class IngestNetworkCVERequest(BaseModel):
-    cve_id: str
-
-@app.post("/api/network-intel/ingest-cve")
-def ingest_network_cve_endpoint(payload: IngestNetworkCVERequest):
-    """
-    Cào và phân tích khẩn cấp một CVE mạng theo thời gian thực (CISA KEV / NIST NVD).
-    Tự động sinh Thẻ Giải trình XAI và Kỹ năng Tác tử (Dynamic Agent Skill).
-    """
-    threat = ingest_live_network_cve(payload.cve_id)
-    if not threat:
-        raise HTTPException(status_code=404, detail="Không thể truy vấn hoặc xử lý CVE mạng này")
-    xai_trust = generate_explainable_trust_card(threat)
-    agent_skill = generate_network_agent_skill(threat)
-    return {
-        "status": "success",
-        "message": f"Đã cào và sinh kỹ năng thành công cho {threat['identifier']}!",
-        "threat": threat,
-        "xai_trust": xai_trust,
-        "agent_skill": agent_skill
-    }
-
-@app.post("/api/network-intel/live-crawl")
-def execute_live_crawl(limit: int = 35):
-    """
-    Kích hoạt tiến trình cào dữ liệu mối đe dọa mạng trực tiếp từ CISA KEV & Threat Feeds.
-    """
-    res = crawl_whitelist_sources(source_type="all", limit=limit)
-    return res
-
-@app.post("/api/crawler/cisa-kev")
-def crawl_cisa_kev_endpoint(limit: int = 35):
-    """
-    Chủ động cào các Web CVE & Lỗ hổng Mạng trực tiếp từ CISA KEV Catalog.
-    """
-    return crawl_whitelist_sources(source_type="cisa_kev", limit=limit)
-
-@app.post("/api/crawler/whitelist-rss")
-def crawl_whitelist_rss_endpoint(limit: int = 35):
-    """
-    Chủ động cào từ các trang tin an ninh mạng uy tín trong Whitelist (The Hacker News, BleepingComputer).
-    """
-    return crawl_whitelist_sources(source_type="whitelist_rss", limit=limit)
-
-@app.post("/api/crawler/sync-all")
-def crawl_all_whitelist_endpoint(limit: int = 35):
-    """
-    Chủ động cào toàn diện từ toàn bộ các nguồn trong Whitelist.
-    """
-    return crawl_whitelist_sources(source_type="all", limit=limit)
-
-@app.get("/api/crawler/whitelist")
-def get_whitelist_sources_endpoint():
-    """
-    Trả về danh sách các nguồn an ninh mạng đã được kiểm duyệt và đưa vào Whitelist.
-    """
-    return {
-        "status": "success",
-        "total_sources": 4,
-        "sources": [
-            {
-                "id": "cisa_kev",
-                "name": "CISA KEV Catalog",
-                "domain": "cisa.gov",
-                "category": "Known Exploited Vulnerabilities",
-                "status": "ONLINE",
-                "trust_weight": 99,
-                "description": "Danh mục chính thức từ Cơ quan An ninh Mạng và Cơ sở Hạ tầng Mỹ ghi nhận các lỗ hổng đang bị khai thác thực tế."
-            },
-            {
-                "id": "the_hacker_news",
-                "name": "The Hacker News",
-                "domain": "thehackernews.com",
-                "category": "Threat Intelligence Journalism",
-                "status": "ONLINE",
-                "trust_weight": 95,
-                "description": "Kênh tin tức an ninh mạng toàn cầu cập nhật các chiến dịch 0-Day và Web/Network CVE mới nhất."
-            },
-            {
-                "id": "bleeping_computer",
-                "name": "BleepingComputer",
-                "domain": "bleepingcomputer.com",
-                "category": "Cyber Threat & Ransomware",
-                "status": "ONLINE",
-                "trust_weight": 95,
-                "description": "Chuyên trang phân tích kỹ thuật về các cuộc tấn công khai thác VPN Gateway, Firewall và mã độc tống tiền."
-            },
-            {
-                "id": "nist_nvd",
-                "name": "NIST NVD API v2",
-                "domain": "nvd.nist.gov",
-                "category": "National Vulnerability Database",
-                "status": "ONLINE",
-                "trust_weight": 98,
-                "description": "Cơ sở dữ liệu quốc gia Mỹ lưu trữ toàn bộ chỉ số CVSS v3.1 và vector tấn công chuẩn hóa."
-            }
-        ]
-    }
+    return {"status": "success", "results": results}
 
 
-# Phục vụ thư mục Dashboard tĩnh
+@app.get("/api/benchmark/latest")
+def get_latest_benchmark():
+    if not DEFAULT_REPORT_JSON_PATH.exists():
+        return {"status": "not_run", "results": None}
+    data = json.loads(DEFAULT_REPORT_JSON_PATH.read_text(encoding="utf-8"))
+    return {"status": "success", "results": data}
+
+
 dashboard_dir = os.path.join(os.path.dirname(__file__), "dashboard")
 if os.path.exists(dashboard_dir):
     app.mount("/static", StaticFiles(directory=dashboard_dir), name="static")
 
     @app.get("/")
     def serve_dashboard():
-        index_file = os.path.join(dashboard_dir, "index.html")
-        return FileResponse(index_file)
+        return FileResponse(os.path.join(dashboard_dir, "index.html"))

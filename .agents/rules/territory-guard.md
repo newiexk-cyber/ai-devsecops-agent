@@ -1,15 +1,11 @@
 # LUẬT BẢO VỆ RANH GIỚI VÀ PHÂN QUYỀN MÃ NGUỒN (TERRITORY GUARD)
 
-## 1. Bản đồ quyền sở hữu:
-- PHÚC sở hữu độc quyền: thư mục `src/core/`
-- KHANG sở hữu độc quyền: thư mục `src/security/`
-- LÂM sở hữu độc quyền: thư mục `src/automation/`
+## 1. Bản đồ quyền sở hữu module:
+- PHÚC phụ trách: `src/core/` (Local LLM Agent, IOC Extractor, MITRE Mapper, Dynamic Agent Skill Synthesizer & Sandbox Verifier)
+- KHANG phụ trách: `src/security/` (Enrichment API VirusTotal/AbuseIPDB/Shodan/OpenPhish/MalwareBazaar, STIX 2.1, Dataset 50 bài & Evaluator Benchmark)
+- LÂM phụ trách: `src/automation/` (OSINT Collectors RSS/CISA KEV, SQLite Cache, FastAPI Backend & Web Dashboard)
 
-## 2. Luật bảo vệ bất khả xâm phạm:
-- Agent trên máy của thành viên nào CHỈ ĐƯỢC PHÉP chỉnh sửa file trong thư mục của thành viên đó.
-- NẾU phát hiện yêu cầu sửa code nằm ngoài thư mục của mình:
-  -> DỪNG LẠI NGAY LẬP TỨC.
-  -> Không được tự ý sửa file.
-  -> Đưa ra cảnh báo cho người dùng: 
-     "⚠️ CẢNH BÁO: File này thuộc quyền sở hữu của [Tên chủ code]. Bạn không nên chỉnh sửa trực tiếp. Hãy liên hệ với [Tên chủ code] để thống nhất hoặc gọi qua hàm Interface trong shared/schemas.py!"
-- Khi cần kết nối với module của người khác: Chỉ được ĐỌC (Read-Only) để hiểu cách gọi hàm, TUYỆT ĐỐI không được sửa mã nguồn bên trong của bạn mình.
+## 2. Quy tắc làm việc trên nhánh tích hợp chung (`feat/cti-local-agent-skills`):
+- Mặc định trên nhánh cá nhân (`feat/[tên]-dev`), mỗi thành viên chỉ sửa module thuộc quyền sở hữu của mình.
+- Riêng trên nhánh tích hợp tái cấu trúc theo góp ý GVHD (`feat/cti-local-agent-skills`), nhóm thống nhất cho phép cập nhật đồng bộ giữa `src/core/`, `src/security/` và `src/automation/` nhưng phải giữ rõ tên người phụ trách trong docstring đầu file và giao ước schema tại `shared/schemas.py`.
+- Không được đẩy thẳng lên `main`; mọi thay đổi phải chạy `python -m pytest tests/ -v` đạt trước khi push lên nhánh tính năng.
