@@ -1,32 +1,37 @@
 # -*- coding: utf-8 -*-
 """
 IOC EXTRACTOR ENGINE (PHÚC & LÂM)
-Bóc tách tự động, khử defang đa dạng và chuẩn hóa canonical các chỉ số xâm nhập (IOCs):
-- IPv4 (loại trừ RFC 1918 Private, Loopback, Multicast, Public DNS)
-- Domains (khử defang case-insensitive, strip port/path, canonical lowercase)
+Bóc tách tự động, khử defang đa dạng, gắn câu ngữ cảnh gốc và chuẩn hóa canonical các chỉ số xâm nhập (IOCs):
+- IPv4 (loại trừ RFC 1918 Private, Loopback, Multicast, Public DNS và chuỗi version phần mềm)
+- Domains & URLs (khử defang case-insensitive, bỏ hậu tố file thực thi, loại domain nguồn tin/tài liệu)
 - Hashes (SHA256, MD5 chuẩn hóa lowercase)
 - CVEs (chuẩn hóa uppercase CVE-YYYY-NNNN)
 - Threat Actors & Malware Families
-- Kết quả trả về luôn được sắp xếp deterministic (có thứ tự ổn định).
 """
-import re
 import ipaddress
-from typing import List, Dict, Any, Set
+import re
+from typing import Any, Dict, List, Set
 from urllib.parse import urlparse
 
-# Danh sách trắng hạ tầng mạng công cộng để phòng ngừa False Positive (Chặn nhầm)
+# Danh sách trắng hạ tầng công cộng để phòng ngừa chặn nhầm (False Positive)
 PUBLIC_INFRASTRUCTURE_WHITELIST = {
     "1.1.1.1", "1.0.0.1", "8.8.8.8", "8.8.4.4", "9.9.9.9",
     "127.0.0.1", "0.0.0.0", "cloudflare.com", "google.com",
     "microsoft.com", "paloaltonetworks.com", "cisco.com", "github.com",
-    "cisa.gov", "nist.gov", "virustotal.com"
+    "cisa.gov", "nist.gov", "nvd.nist.gov", "virustotal.com",
+    "mitre.org", "attack.mitre.org", "thehackernews.com",
+    "bleepingcomputer.com", "www.bleepingcomputer.com", "feeds.feedburner.com",
+    "securityweek.com", "krebsonsecurity.com", "therecord.media",
+    "darkreading.com", "twitter.com", "x.com", "linkedin.com", "youtube.com",
 }
 
-# Các phần mở rộng tệp tin không phải là TLD
+# Các phần mở rộng tệp tin không phải là TLD của Domain
 FILE_EXT_BLACKLIST = {
     "exe", "dll", "bin", "sh", "bat", "ps1", "vbs", "js", "py",
-    "png", "jpg", "jpeg", "gif", "svg", "webp", "pdf", "docx", "xlsx",
-    "zip", "rar", "7z", "tar", "gz"
+    "png", "jpg", "jpeg", "gif", "svg", "webp", "pdf", "doc", "docx",
+    "xls", "xlsx", "zip", "rar", "7z", "tar", "gz", "txt", "log",
+    "json", "yml", "yaml", "xml", "yar", "csv", "pdb", "lnk", "hta",
+    "msi", "iso", "cfg", "conf", "ini", "tmp", "sys", "php", "asp", "aspx",
 }
 
 KNOWN_THREAT_ENTITIES = [
@@ -43,8 +48,20 @@ KNOWN_THREAT_ENTITIES = [
     {"name": "Scattered Spider", "type": "threat_actor"},
     {"name": "Lumma", "type": "malware_family"},
     {"name": "RedLine", "type": "malware_family"},
-    {"name": "Cobalt Strike", "type": "tool"}
+    {"name": "Cobalt Strike", "type": "tool"},
+    {"name": "Play", "type": "malware_family"},
+    {"name": "Qilin", "type": "malware_family"},
+    {"name": "Rhysida", "type": "malware_family"},
+    {"name": "MuddyWater", "type": "threat_actor"},
+    {"name": "Kimsuky", "type": "threat_actor"},
+    {"name": "Sandworm", "type": "threat_actor"},
 ]
+
+_VERSION_PREFIX_RE = re.compile(
+    r"(?i)(?:\bv(?:er(?:sion)?)?\.?\s*|\bbuild\s+|\brelease\s+|\bpatch\s+"
+    r"|\bpan-os\s+|\bfortios\s+|\bchrome\s+|\bfirefox\s+|\bios\s+|\bmacos\s+"
+    r"|\bwindows\s+|\bopenssl\s+|\bapache\s+|\bnginx\s+|\bsdk\s+)$"
+)
 
 
 def clean_defanged(text: str) -> str:
@@ -59,23 +76,30 @@ def clean_defanged(text: str) -> str:
         return ""
 
     cleaned = text
-    # Chuẩn hóa giao thức defang
-    cleaned = re.sub(r'(?i)\bhxxps?://', lambda m: 'https://' if 's' in m.group(0).lower() else 'http://', cleaned)
-    cleaned = re.sub(r'(?i)\bfxps?://', 'ftp://', cleaned)
-
-    # Chuẩn hóa dấu chấm và 2 chấm defanged
-    cleaned = re.sub(r'\[\.\]|\(\.\)|\{\.\}|\[dot\]', '.', cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r'\[:\]|\(:\)|\[colon\]', ':', cleaned, flags=re.IGNORECASE)
-    cleaned = re.sub(r'\[@\]|\[at\]', '@', cleaned, flags=re.IGNORECASE)
-
+    cleaned = re.sub(
+        r"(?i)\bhxxps?://",
+        lambda m: "https://" if "s" in m.group(0).lower() else "http://",
+        cleaned,
+    )
+    cleaned = re.sub(r"(?i)\bfxps?://", "ftp://", cleaned)
+    cleaned = re.sub(r"\[\.\]|\(\.\)|\{\.\}|\[dot\]", ".", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\[:\]|\(:\)|\[colon\]", ":", cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r"\[@\]|\[at\]", "@", cleaned, flags=re.IGNORECASE)
     return cleaned
 
 
 def is_valid_public_ip(ip_str: str) -> bool:
-    """Kiểm tra IP hợp lệ và không nằm trong dải Private (RFC 1918) hoặc Whitelist"""
+    """Kiểm tra IP hợp lệ và không nằm trong dải Private (RFC 1918) hoặc Whitelist."""
     try:
         ip = ipaddress.ip_address(ip_str.strip())
-        if ip.is_private or ip.is_loopback or ip.is_reserved or ip.is_multicast or ip.is_link_local:
+        if (
+            ip.is_private
+            or ip.is_loopback
+            or ip.is_reserved
+            or ip.is_multicast
+            or ip.is_link_local
+            or ip.is_unspecified
+        ):
             return False
         if str(ip) in PUBLIC_INFRASTRUCTURE_WHITELIST:
             return False
@@ -84,114 +108,178 @@ def is_valid_public_ip(ip_str: str) -> bool:
         return False
 
 
+def _is_version_like_ip(text: str, match_start: int) -> bool:
+    """Kiểm tra xem chuỗi dạng x.x.x.x có đi ngay sau từ khóa version/sản phẩm không."""
+    prefix_window = text[max(0, match_start - 24) : match_start]
+    return bool(_VERSION_PREFIX_RE.search(prefix_window))
+
+
 def sanitize_domain(dom_raw: str) -> str:
-    """Loại bỏ port, trailing dots, schema nếu lọt vào domain string."""
+    """Loại bỏ port, trailing dots, scheme nếu lọt vào domain string."""
     dom = dom_raw.strip().lower()
-    # Nếu có http/https scheme, parse bằng urllib
     if "://" in dom:
         parsed = urlparse(dom)
         dom = parsed.netloc or parsed.path
-    # Bỏ port nếu có
     if ":" in dom:
         dom = dom.split(":")[0]
-    # Bỏ dấu gạch chéo cuối
     dom = dom.rstrip("/.")
     return dom
+
+
+def _is_whitelisted_host(host: str) -> bool:
+    clean = host.strip().lower()
+    return clean in PUBLIC_INFRASTRUCTURE_WHITELIST or any(
+        clean.endswith(f".{w}") for w in PUBLIC_INFRASTRUCTURE_WHITELIST if "." in w and not w[0].isdigit()
+    )
+
+
+def find_context_sentence(text: str, needle: str) -> str:
+    """Tìm câu chứa IOC trong văn bản để Agent đánh giá ngữ cảnh và xuất dẫn chứng XAI."""
+    if not text or not needle:
+        return ""
+    sentences = re.split(r"(?<=[.!?\n])\s+", text.strip())
+    low_needle = needle.lower()
+    for sent in sentences:
+        if low_needle in sent.lower():
+            compact = re.sub(r"\s+", " ", sent).strip()
+            return compact[:280]
+    return ""
 
 
 def extract_iocs_from_text(raw_text: str) -> Dict[str, Any]:
     """
     Trích xuất và chuẩn hóa canonical toàn bộ IOCs từ văn bản thô.
-    Toàn bộ danh sách trả về đều được sort deterministic.
+    Mỗi IOC đều gắn kèm câu ngữ cảnh gốc (`context_sentence`) và sắp xếp deterministic.
     """
     if not raw_text:
         return {
             "iocs": [],
             "ips": [],
             "domains": [],
+            "urls": [],
             "sha256": [],
             "md5": [],
             "cves": [],
             "threat_actors": [],
-            "malware_families": []
+            "malware_families": [],
         }
 
     text = clean_defanged(raw_text)
 
-    # 1. Trích xuất IPv4
-    ip_pattern = r'\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
-    raw_ips = re.findall(ip_pattern, text)
+    # 1. Trích xuất IPv4 (bỏ qua version phần mềm và dải private/whitelist)
+    ip_pattern = r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b"
     valid_ips_set: Set[str] = set()
-    for ip in raw_ips:
-        if is_valid_public_ip(ip):
-            valid_ips_set.add(str(ipaddress.ip_address(ip)))
-    valid_ips = sorted(list(valid_ips_set))
+    for match in re.finditer(ip_pattern, text):
+        ip_str = match.group(0)
+        if _is_version_like_ip(text, match.start()):
+            continue
+        if is_valid_public_ip(ip_str):
+            valid_ips_set.add(str(ipaddress.ip_address(ip_str)))
+    valid_ips = sorted(valid_ips_set)
 
-    # 2. Trích xuất Domains
-    domain_pattern = r'\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,24}\b'
-    raw_domains = re.findall(domain_pattern, text)
+    # 2. Trích xuất URLs độc hại (khử dấu câu thừa cuối câu)
+    url_pattern = r"https?://[^\s<>\"'\)\]]+"
+    valid_urls_set: Set[str] = set()
+    for raw_url in re.findall(url_pattern, text, flags=re.IGNORECASE):
+        clean_url = raw_url.rstrip(".,;:!?")
+        parsed = urlparse(clean_url)
+        host = (parsed.hostname or "").lower()
+        if not host or _is_whitelisted_host(host):
+            continue
+        valid_urls_set.add(clean_url)
+    valid_urls = sorted(valid_urls_set)
+
+    # 3. Trích xuất Domains
+    domain_pattern = r"\b(?:[a-zA-Z0-9](?:[a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,24}\b"
     valid_domains_set: Set[str] = set()
-    for d in raw_domains:
+    for d in re.findall(domain_pattern, text):
         clean_d = sanitize_domain(d)
         parts = clean_d.split(".")
         tld = parts[-1].lower() if parts else ""
         if (
             len(parts) >= 2
-            and clean_d not in PUBLIC_INFRASTRUCTURE_WHITELIST
+            and not _is_whitelisted_host(clean_d)
             and tld not in FILE_EXT_BLACKLIST
-            and not re.match(r'^\d+\.\d+\.\d+\.\d+$', clean_d)
+            and not re.match(r"^\d+\.\d+\.\d+\.\d+$", clean_d)
         ):
             valid_domains_set.add(clean_d)
-    valid_domains = sorted(list(valid_domains_set))
+    valid_domains = sorted(valid_domains_set)
 
-    # 3. Trích xuất Mã băm SHA256 (canonical lowercase)
-    sha256_pattern = r'\b[a-fA-F0-9]{64}\b'
-    sha256_hashes = sorted(list(set([h.lower() for h in re.findall(sha256_pattern, text)])))
+    # 4. Trích xuất SHA256 & MD5
+    sha256_hashes = sorted({h.lower() for h in re.findall(r"\b[a-fA-F0-9]{64}\b", text)})
+    md5_hashes = sorted({h.lower() for h in re.findall(r"\b[a-fA-F0-9]{32}\b", text)})
 
-    # Trích xuất Mã băm MD5 (canonical lowercase)
-    md5_pattern = r'\b[a-fA-F0-9]{32}\b'
-    md5_hashes = sorted(list(set([h.lower() for h in re.findall(md5_pattern, text)])))
+    # 5. Trích xuất CVE
+    cves = sorted({c.upper() for c in re.findall(r"\bCVE-\d{4}-\d{4,7}\b", text, re.IGNORECASE)})
 
-    # 4. Trích xuất CVE (canonical uppercase)
-    cve_pattern = r'\bCVE-\d{4}-\d{4,7}\b'
-    raw_cves = re.findall(cve_pattern, text, re.IGNORECASE)
-    cves = sorted(list(set([c.upper() for c in raw_cves])))
-
-    # 5. Nhận diện Threat Actors & Malware Families
+    # 6. Nhận diện Threat Actors & Malware Families
     detected_actors_set: Set[str] = set()
     detected_malware_set: Set[str] = set()
     for entity in KNOWN_THREAT_ENTITIES:
         name = entity["name"]
         etype = entity["type"]
-        if re.search(r'\b' + re.escape(name) + r'\b', text, re.IGNORECASE):
+        if re.search(r"\b" + re.escape(name) + r"\b", text, re.IGNORECASE):
             if etype == "threat_actor":
                 detected_actors_set.add(name)
             else:
                 detected_malware_set.add(name)
 
-    detected_actors = sorted(list(detected_actors_set))
-    detected_malware = sorted(list(detected_malware_set))
+    detected_actors = sorted(detected_actors_set)
+    detected_malware = sorted(detected_malware_set)
 
-    # Đóng gói danh sách có cấu trúc
-    structured_iocs = []
+    # Đóng gói danh sách IOC kèm câu ngữ cảnh gốc
+    structured_iocs: List[Dict[str, Any]] = []
     for ip in valid_ips:
-        structured_iocs.append({"type": "IP", "value": ip, "confidence": 0.95})
+        structured_iocs.append({
+            "type": "IP",
+            "value": ip,
+            "confidence": 0.90,
+            "context_sentence": find_context_sentence(text, ip),
+        })
     for d in valid_domains:
-        structured_iocs.append({"type": "DOMAIN", "value": d, "confidence": 0.90})
+        structured_iocs.append({
+            "type": "DOMAIN",
+            "value": d,
+            "confidence": 0.85,
+            "context_sentence": find_context_sentence(text, d),
+        })
+    for u in valid_urls:
+        structured_iocs.append({
+            "type": "URL",
+            "value": u,
+            "confidence": 0.88,
+            "context_sentence": find_context_sentence(text, u),
+        })
     for h in sha256_hashes:
-        structured_iocs.append({"type": "SHA256", "value": h, "confidence": 1.0})
+        structured_iocs.append({
+            "type": "SHA256",
+            "value": h,
+            "confidence": 0.98,
+            "context_sentence": find_context_sentence(text, h),
+        })
     for h in md5_hashes:
-        structured_iocs.append({"type": "MD5", "value": h, "confidence": 1.0})
+        structured_iocs.append({
+            "type": "MD5",
+            "value": h,
+            "confidence": 0.95,
+            "context_sentence": find_context_sentence(text, h),
+        })
     for c in cves:
-        structured_iocs.append({"type": "CVE", "value": c, "confidence": 1.0})
+        structured_iocs.append({
+            "type": "CVE",
+            "value": c,
+            "confidence": 0.95,
+            "context_sentence": find_context_sentence(text, c),
+        })
 
     return {
         "iocs": structured_iocs,
         "ips": valid_ips,
         "domains": valid_domains,
+        "urls": valid_urls,
         "sha256": sha256_hashes,
         "md5": md5_hashes,
         "cves": cves,
         "threat_actors": detected_actors,
-        "malware_families": detected_malware
+        "malware_families": detected_malware,
     }
