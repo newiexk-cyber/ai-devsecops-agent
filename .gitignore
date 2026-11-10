@@ -11,4 +11,12 @@ venv/
 
 # Local SQLite Database
 data/*.db
+data/*.db-*
 data/*.sqlite3
+data/*.sqlite
+
+# Unrelated scratch / external files
+*.docx
+!docs/*.docx
+!docs/**/*.docx
+Bao_Cao_Do_An_SFSA_RS_HUTECH.docx
